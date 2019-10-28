@@ -16,6 +16,7 @@ public class Window extends JFrame {
 
     private KeyboardListener keyboardListener;
     JSplitPane split;
+    private static final double SPLIT_PANE_HALF = 0.5;
 
     public Window() {
         super();
@@ -44,6 +45,7 @@ public class Window extends JFrame {
         this.keyboardListener = new KeyboardListener(this.panel);
         this.addKeyListener(this.keyboardListener);
         this.panel.addKeyListener(this.keyboardListener);
+        split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     }
 
     public Window(GraphicPanel left, GraphicPanel right) {
@@ -54,6 +56,7 @@ public class Window extends JFrame {
         split.addMouseMotionListener(new MyMouseMotionListener());
         split.addMouseWheelListener(new MyMouseWheelListener());
         this.add(split);
+        split.setDividerLocation(SPLIT_PANE_HALF);
     }
 
     /**
@@ -72,6 +75,7 @@ public class Window extends JFrame {
             split.add(this.panel);
             split.add(newPanel);
             this.add(split);
+            split.setDividerLocation(SPLIT_PANE_HALF);
             this.panel = null;
         }
         newPanel.addMouseListener(new MyMouseListener());
@@ -79,13 +83,15 @@ public class Window extends JFrame {
         newPanel.addMouseWheelListener(new MyMouseWheelListener());
     }
 
+    public void resetSplitPosition() {
+        split.setResizeWeight(SPLIT_PANE_HALF);
+    }
+
     /* Change the zoom factor and keep unchanged only the point hovered by the mouse. */
     public void zoomOnMouse(double fact) {
         if (panel != null) {
-//            System.out.println("Window.zoomOnMouse; panel != null");
             this.panel.zoomOnMouse(fact, xMouse, yMouse);
         } else {
-//            System.out.println("Window.zoomOnMouse; panel == null");
             System.out.println(split.getDividerLocation() + ":");
         }
     }
@@ -99,7 +105,6 @@ public class Window extends JFrame {
         public void mouseMoved(MouseEvent e) {
             xMouse = e.getX();
             yMouse = e.getY();
-//            System.out.println("mouse moved to " + xMouse + ", " + yMouse);
         }
 
         public void mouseDragged(MouseEvent e) {
@@ -139,10 +144,8 @@ public class Window extends JFrame {
             // Define the zoom factor
             double zoomFactor;
             if (e.getWheelRotation() > 0) {
-                // System.out.println("down");
                 zoomFactor = 1 / 1.1;
             } else {
-                // System.out.println("up");
                 zoomFactor = 1.1;
             }
 
@@ -150,12 +153,9 @@ public class Window extends JFrame {
                 panel.zoomOnMouse(zoomFactor, xMouse, yMouse);
             } else {
                 // Transmit the zoom instruction to the appropriate panel
-//                System.out.println("xMouse: " + xMouse + ", divider: " + split.getDividerLocation());
                 if (xMouse < split.getDividerLocation()) {
-//                    System.out.println("zoom on left component");
                     ((GraphicPanel) split.getLeftComponent()).zoomOnMouse(zoomFactor, xMouse, yMouse);
                 } else {
-//                    System.out.println("zoom on right component");
                     ((GraphicPanel) split.getRightComponent()).zoomOnMouse(zoomFactor, xMouse - split.getDividerLocation(), yMouse);
                 }
             }

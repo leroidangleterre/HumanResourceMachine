@@ -10,18 +10,15 @@ import java.awt.Graphics;
  *
  * @author arthurmanoha
  */
-public class Terrain {
+public class Terrain extends Displayable {
 
     // The grid that contains squares (walls, ground, ...) and in which workers evolve.
     private Square[][] grid;
     // The dimensions of the grid.
     private int nbCols, nbLines;
 
-    // Flag that indicates that the simulation is running.
-    private boolean isRunning;
-
     public Terrain(int nbLines, int nbCols) {
-        isRunning = false;
+        pause();
         this.nbLines = nbLines;
         this.nbCols = nbCols;
         grid = new Square[nbLines][];
@@ -71,17 +68,4 @@ public class Terrain {
         return this.nbCols;
     }
 
-    public void play() {
-        if (!this.isRunning) {
-            this.isRunning = true;
-        }
-
-    }
-
-    public void pause() {
-        if (this.isRunning) {
-            this.isRunning = false;
-        }
-
-    }
 }

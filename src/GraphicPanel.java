@@ -14,7 +14,7 @@ public class GraphicPanel extends JPanel {
      and the point of coordinates (1, 0).  */
     private double x0, y0, zoom;
 
-    private Terrain terrain;
+    private Displayable displayable;
     private Timer timer;
     private boolean isRunning;
 
@@ -30,7 +30,7 @@ public class GraphicPanel extends JPanel {
         ActionListener listener = new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
                 date++;
-                terrain.evolve();
+                displayable.evolve();
                 repaint();
             }
         };
@@ -40,9 +40,9 @@ public class GraphicPanel extends JPanel {
         this.date = 0;
     }
 
-    public GraphicPanel(Terrain w) {
+    public GraphicPanel(Displayable d) {
         this();
-        this.terrain = w;
+        this.displayable = d;
     }
 
     public void eraseAll(Graphics g) {
@@ -60,7 +60,7 @@ public class GraphicPanel extends JPanel {
 
         int panelHeight = (int) (this.getSize().getHeight());
 
-        this.terrain.paint(g, panelHeight, this.x0, this.y0, this.zoom);
+        this.displayable.paint(g, panelHeight, this.x0, this.y0, this.zoom);
 
         this.drawAxis(g, panelHeight);
     }
@@ -157,12 +157,12 @@ public class GraphicPanel extends JPanel {
 //    }
     public void play() {
         this.timer.start();
-        this.terrain.play();
+        this.displayable.play();
     }
 
     public void pause() {
         this.timer.stop();
-        this.terrain.pause();
+        this.displayable.pause();
     }
 
     public void togglePlayPause() {
