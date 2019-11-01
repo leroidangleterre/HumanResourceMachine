@@ -59,8 +59,23 @@ public class Script extends Displayable {
      */
     @Override
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
+        super.paint(g, panelHeight, x0, y0, zoom);
         for (Instruction instruction : instructions) {
             instruction.paint(g, panelHeight, x0, y0, zoom);
         }
     }
+
+    @Override
+    public void receiveLeftClick(double x, double y) {
+        this.xClick = x;
+        this.yClick = y;
+    }
+
+    @Override
+    public void receiveLeftRelease(double x, double y) {
+
+        this.xRelease = x;
+        this.yRelease = y;
+    }
+
 }

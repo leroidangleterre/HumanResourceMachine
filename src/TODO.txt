@@ -1,0 +1,9 @@
+TODO
+
+Terrain.setSquare: solve the special case of line/column index over/underflow;
+
+Mouse events:
+When a click happens on one panel, every mouse movement or mouse release should be redirected to that same panel,
+even when the mouse hovers the other panel.
+
+

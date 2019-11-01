@@ -1,7 +1,8 @@
 import java.awt.Color;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -22,11 +23,18 @@ public class GraphicPanel extends JPanel {
 
     private Window window;
 
+    private static int NB_GP_CREATED = 0;
+    private int serialNumber;
+
+    // Mouse information
+    protected double xClick, yClick, xRelease, yRelease, xMouse, yMouse;
+    protected double xRightClick, yRightClick;
+
     public GraphicPanel() {
         super();
-        this.x0 = 237;
-        this.y0 = 659;
-        this.zoom = 9.64;
+        this.x0 = 67;
+        this.y0 = 69;
+        this.zoom = 110.8;
         ActionListener listener = new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
                 date++;
@@ -38,11 +46,18 @@ public class GraphicPanel extends JPanel {
         this.timer = new Timer(period, listener);
         this.isRunning = false;
         this.date = 0;
+
+        this.serialNumber = GraphicPanel.NB_GP_CREATED;
+        GraphicPanel.NB_GP_CREATED++;
     }
 
     public GraphicPanel(Displayable d) {
         this();
         this.displayable = d;
+    }
+
+    public String toString() {
+        return "GraphicPanel n° " + this.serialNumber + displayable;
     }
 
     public void eraseAll(Graphics g) {
@@ -54,7 +69,6 @@ public class GraphicPanel extends JPanel {
 
     @Override
     public void paintComponent(Graphics g) {
-//        System.out.println("GP.paintComponent()");
 
         this.eraseAll(g);
 
@@ -63,6 +77,10 @@ public class GraphicPanel extends JPanel {
         this.displayable.paint(g, panelHeight, this.x0, this.y0, this.zoom);
 
         this.drawAxis(g, panelHeight);
+
+        if (this.displayable.lefClickIsActive) {
+            paintSelectionRectangle(g, panelHeight, this.x0, this.y0, this.zoom);
+        }
     }
 
     public void drawAxis(Graphics g, double panelHeight) {
@@ -111,9 +129,8 @@ public class GraphicPanel extends JPanel {
         repaint();
     }
 
-    public void zoomOnMouse(double fact, int xMouse, int yMouse) {
+    public void receiveMouseWheelMovement(double fact, int xMouse, int yMouse) {
 
-//        System.out.print("GraphicPanel.zoomOnMouse(...) ; old zoom is" + zoom);
         double panelHeight = this.getSize().getHeight();
 
         x0 = fact * (x0 - xMouse) + xMouse;
@@ -121,15 +138,14 @@ public class GraphicPanel extends JPanel {
 
         this.zoom *= fact;
         repaint();
-//        System.out.println("; fact is " + fact + "; new zoom is " + zoom);
     }
 
     public void resetView() {
 
-        /* Maximal dimensions of the world (blocks + machines). */
         int width = this.getWidth();
         int height = this.getHeight();
 
+        // TODO set the scroll and zoom to show all the terrain at once.
         this.x0 = 0;
         this.y0 = 0;
         this.zoom = 1;
@@ -152,9 +168,6 @@ public class GraphicPanel extends JPanel {
         repaint();
     }
 
-//    public void evolve() {
-//        this.evolve();
-//    }
     public void play() {
         this.timer.start();
         this.displayable.play();
@@ -173,5 +186,69 @@ public class GraphicPanel extends JPanel {
             this.isRunning = true;
             this.play();
         }
+    }
+
+    /**
+     * Action performed when a left click is received.
+     *
+     */
+    public void mousePressed(MouseEvent e) {
+        xClick = e.getX();
+        yClick = e.getY();
+        displayable.receiveLeftClick((xClick - this.x0) / this.zoom, (this.getHeight() - yClick - this.y0) / this.zoom);
+    }
+
+    /**
+     * Action performed when a left click release is received.
+     *
+     */
+    public void mouseReleased(MouseEvent e) {
+        xRelease = e.getX();
+        yRelease = e.getY();
+        displayable.receiveLeftRelease((xRelease - this.x0) / this.zoom, (this.getHeight() - yRelease - this.y0) / this.zoom);
+        repaint();
+    }
+
+    /**
+     * Action performed when the mouse is moved to the pixel (x, y)
+     *
+     * @param x the x-position of the mouse after the move, in pixel
+     * @param y the y-position of the mouse after the move, in pixel
+     */
+    public void receiveMouseMoved(int x, int y) {
+        /**
+         * Action performed when the mouse is dragged to the pixel (x, y)
+         *
+         * @param x the x-position of the mouse after the drag, in pixel
+         * @param y the y-position of the mouse after the drag, in pixel
+         */
+        displayable.receiveMouseMoved((x - this.x0) / this.zoom, (this.getHeight() - y - this.y0) / this.zoom);
+
+        xMouse = x;
+        yMouse = y;
+
+        repaint();
+    }
+
+    public void receiveMouseDragged(int x, int y) {
+        displayable.receiveMouseDragged((x - this.x0) / this.zoom, (this.getHeight() - y - this.y0) / this.zoom);
+
+        xMouse = x;
+        yMouse = y;
+
+        repaint();
+    }
+
+    private void paintSelectionRectangle(Graphics g, int panelHeight, double x0, double y0, double zoom) {
+
+        g.setColor(Color.red);
+
+        int xLeft = (int) Math.min(xClick, xMouse);
+        int xRight = (int) Math.max(xClick, xMouse);
+
+        int yMax = (int) Math.max(yClick, yMouse);
+        int yMin = (int) Math.min(yClick, yMouse);
+
+        g.drawRect(xLeft, yMin, xRight - xLeft, yMax - yMin);
     }
 }

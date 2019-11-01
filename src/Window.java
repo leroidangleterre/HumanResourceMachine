@@ -14,21 +14,22 @@ public class Window extends JFrame {
     private int xMouse, yMouse;
     private boolean leftClickActive, centerClickActive, rightClickActive;
 
+    int WINDOW_WIDTH = 1000;
+    int WINDOW_HEIGHT = 800;
+
     private KeyboardListener keyboardListener;
     JSplitPane split;
-    private static final double SPLIT_PANE_HALF = 0.5;
+    private static final double SPLIT_PANE_HALF = 0.95;
 
     public Window() {
         super();
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
-        this.setSize(new Dimension(1200, 1020));
+        this.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
+        this.pack();
+        this.setLocationRelativeTo(null);
         split = null;
-
-        this.addMouseListener(new MyMouseListener());
-        this.addMouseMotionListener(new MyMouseMotionListener());
-        this.addMouseWheelListener(new MyMouseWheelListener());
 
         this.xMouse = 0;
         this.yMouse = 0;
@@ -37,6 +38,8 @@ public class Window extends JFrame {
         this.rightClickActive = false;
 
         this.setLayout(new BorderLayout());
+
+        this.pack();
     }
 
     public Window(GraphicPanel pan) {
@@ -51,12 +54,15 @@ public class Window extends JFrame {
     public Window(GraphicPanel left, GraphicPanel right) {
         this();
         split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        split.setOneTouchExpandable(true);
+        split.resetToPreferredSizes();
         split.add(left);
         split.add(right);
         split.addMouseMotionListener(new MyMouseMotionListener());
         split.addMouseWheelListener(new MyMouseWheelListener());
+        split.addMouseListener(new MyMouseListener());
+
         this.add(split);
-        split.setDividerLocation(SPLIT_PANE_HALF);
     }
 
     /**
@@ -75,25 +81,13 @@ public class Window extends JFrame {
             split.add(this.panel);
             split.add(newPanel);
             this.add(split);
-            split.setDividerLocation(SPLIT_PANE_HALF);
             this.panel = null;
         }
-        newPanel.addMouseListener(new MyMouseListener());
-        newPanel.addMouseMotionListener(new MyMouseMotionListener());
-        newPanel.addMouseWheelListener(new MyMouseWheelListener());
     }
 
     public void resetSplitPosition() {
         split.setResizeWeight(SPLIT_PANE_HALF);
-    }
-
-    /* Change the zoom factor and keep unchanged only the point hovered by the mouse. */
-    public void zoomOnMouse(double fact) {
-        if (panel != null) {
-            this.panel.zoomOnMouse(fact, xMouse, yMouse);
-        } else {
-            System.out.println(split.getDividerLocation() + ":");
-        }
+        split.setDividerLocation(SPLIT_PANE_HALF);
     }
 
     private class MyMouseMotionListener implements MouseMotionListener {
@@ -105,12 +99,23 @@ public class Window extends JFrame {
         public void mouseMoved(MouseEvent e) {
             xMouse = e.getX();
             yMouse = e.getY();
+            if (split != null) {
+                // Transmit the zoom instruction to the appropriate panel,
+                // based on the position of the mouse relative to the split.
+                int xLimit = split.getDividerLocation();
+                if (xMouse < xLimit) {
+                    ((GraphicPanel) split.getLeftComponent()).receiveMouseMoved(e.getX(), (e.getY()));
+                } else {
+                    ((GraphicPanel) split.getRightComponent()).receiveMouseMoved(e.getX(), (e.getY()));
+                }
+            }
         }
 
         public void mouseDragged(MouseEvent e) {
+            xMouse = e.getX();
+            yMouse = e.getY();
 
             if (split == null) {
-                // TODO:  the left and right clicks may have other properties.
                 if (centerClickActive || rightClickActive) {
                     /* The Y coordinate axis is oriented downwards in the window,
                      upwards in the GraphicPanel. */
@@ -121,15 +126,13 @@ public class Window extends JFrame {
             } else {
                 // Transmit the zoom instruction to the appropriate panel
                 if (xMouse < split.getDividerLocation()) {
-                    ((GraphicPanel) split.getLeftComponent()).translate(e.getX() - xMouse,
-                            -(e.getY() - yMouse));
+                    ((GraphicPanel) split.getLeftComponent()).receiveMouseDragged(e.getX(),
+                            (e.getY()));
                 } else {
-                    ((GraphicPanel) split.getRightComponent()).translate(e.getX() - xMouse,
-                            -(e.getY() - yMouse));
+                    ((GraphicPanel) split.getRightComponent()).receiveMouseDragged(e.getX(),
+                            (e.getY()));
                 }
             }
-            xMouse = e.getX();
-            yMouse = e.getY();
         }
     }
 
@@ -141,6 +144,9 @@ public class Window extends JFrame {
 
         public void mouseWheelMoved(MouseWheelEvent e) {
 
+            xMouse = e.getX();
+            yMouse = e.getY();
+
             // Define the zoom factor
             double zoomFactor;
             if (e.getWheelRotation() > 0) {
@@ -150,13 +156,13 @@ public class Window extends JFrame {
             }
 
             if (split == null) {
-                panel.zoomOnMouse(zoomFactor, xMouse, yMouse);
+                panel.receiveMouseWheelMovement(zoomFactor, xMouse, yMouse);
             } else {
                 // Transmit the zoom instruction to the appropriate panel
                 if (xMouse < split.getDividerLocation()) {
-                    ((GraphicPanel) split.getLeftComponent()).zoomOnMouse(zoomFactor, xMouse, yMouse);
+                    ((GraphicPanel) split.getLeftComponent()).receiveMouseWheelMovement(zoomFactor, xMouse, yMouse);
                 } else {
-                    ((GraphicPanel) split.getRightComponent()).zoomOnMouse(zoomFactor, xMouse - split.getDividerLocation(), yMouse);
+                    ((GraphicPanel) split.getRightComponent()).receiveMouseWheelMovement(zoomFactor, xMouse - split.getDividerLocation(), yMouse);
                 }
             }
         }
@@ -172,14 +178,23 @@ public class Window extends JFrame {
         }
 
         public void mouseEntered(MouseEvent e) {
-            // System.out.println("Mouse entered");
         }
 
         public void mouseExited(MouseEvent e) {
-            // System.out.println("Mouse exited");
         }
 
         public void mousePressed(MouseEvent e) {
+
+            // One of the two panels will receive the event.
+            GraphicPanel panel;
+            if (xMouse < split.getDividerLocation()) {
+                panel = (GraphicPanel) split.getLeftComponent();
+            } else {
+                panel = (GraphicPanel) split.getRightComponent();
+            }
+
+            panel.mousePressed(e);
+
             if (e.getButton() == MouseEvent.BUTTON1) {
                 leftClickActive = true;
             }
@@ -192,6 +207,17 @@ public class Window extends JFrame {
         }
 
         public void mouseReleased(MouseEvent e) {
+
+            // One of the two panels will receive the event.
+            GraphicPanel panel;
+            if (xMouse < split.getDividerLocation()) {
+                panel = (GraphicPanel) split.getLeftComponent();
+            } else {
+                panel = (GraphicPanel) split.getRightComponent();
+            }
+
+            panel.mouseReleased(e);
+
             if (e.getButton() == MouseEvent.BUTTON1) {
                 leftClickActive = false;
             }
@@ -202,7 +228,5 @@ public class Window extends JFrame {
                 rightClickActive = false;
             }
         }
-
     }
-
 }
