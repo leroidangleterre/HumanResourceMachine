@@ -1,9 +1,14 @@
-TODO
+TODO:
 
-Terrain.setSquare: solve the special case of line/column index over/underflow;
+Keyboard events: Detect them and connect them to the appropriate actions.
+
+
+DONE:
+
 
 Mouse events:
 When a click happens on one panel, every mouse movement or mouse release should be redirected to that same panel,
 even when the mouse hovers the other panel.
 
 
+Terrain.setSquare: solve the special case of line/column index over/underflow;

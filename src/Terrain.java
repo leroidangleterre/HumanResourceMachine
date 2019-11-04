@@ -1,4 +1,3 @@
-import java.awt.Color;
 import java.awt.Graphics;
 
 /*
@@ -16,7 +15,6 @@ public class Terrain extends Displayable {
     private Square[][] grid;
     // The dimensions of the grid.
     private int nbCols, nbLines;
-    private double xMin, xMax, yMin, yMax;
     private double elemSize;
 
     public enum TerrainMode {
@@ -32,6 +30,7 @@ public class Terrain extends Displayable {
     private TerrainTool currentTool;
 
     public Terrain(int nbLines, int nbCols) {
+        super();
 
         this.currentMode = TerrainMode.EDITION;
         this.currentTool = TerrainTool.HOLE;
@@ -63,6 +62,11 @@ public class Terrain extends Displayable {
     /**
      * Paint the terrain, the workers, the data blocks.
      *
+     * @param g the Graphics where the Displayable will be painted
+     * @param panelHeight the height of the panel
+     * @param x0 x-offset for the display
+     * @param y0 y-offset for the display
+     * @param zoom zoom factor
      */
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
         super.paint(g, panelHeight, x0, y0, zoom);
@@ -105,20 +109,18 @@ public class Terrain extends Displayable {
      */
     @Override
     public void receiveLeftClick(double x, double y) {
-        this.xClick = x;
-        this.yClick = y;
-        lefClickIsActive = true;
+        super.receiveLeftClick(x, y);
+//        System.out.println("Terrain.receiveLeftClick()");
         if (currentTool == TerrainTool.SELECTION) {
             isSelecting = true;
+//            System.out.println("IsSelecting becomes true");
         }
     }
 
     @Override
     public void receiveLeftRelease(double x, double y) {
-
-        this.xRelease = x;
-        this.yRelease = y;
-        lefClickIsActive = false;
+        super.receiveLeftRelease(x, y);
+//        System.out.println("Terrain.receiveLeftRelease()");
 
         if (currentTool == TerrainTool.SELECTION) {
             isSelecting = false;

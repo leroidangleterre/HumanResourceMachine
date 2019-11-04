@@ -15,9 +15,18 @@ public class Script extends Displayable {
 
     private ArrayList<Instruction> instructions;
 
+    public enum ScriptTool {
+
+        MOVE, PICKUP, DROP, SELECTION
+        //TODO Add all the instructions
+    }
+    private ScriptTool currentTool;
+
     public Script() {
+        super();
         pause();
         instructions = new ArrayList<>();
+        currentTool = ScriptTool.SELECTION;
     }
 
     /**
@@ -29,6 +38,7 @@ public class Script extends Displayable {
     public void addInstruction(Instruction newIns, int rank) {
         newIns.setRank(rank);
         this.instructions.add(rank, newIns);
+        computeDimensions();
     }
 
     /**
@@ -67,15 +77,43 @@ public class Script extends Displayable {
 
     @Override
     public void receiveLeftClick(double x, double y) {
-        this.xClick = x;
-        this.yClick = y;
+        super.receiveLeftClick(x, y);
+        if (currentTool == ScriptTool.SELECTION) {
+            isSelecting = true;
+        }
     }
 
     @Override
     public void receiveLeftRelease(double x, double y) {
-
-        this.xRelease = x;
-        this.yRelease = y;
+        super.receiveLeftRelease(x, y);
+        switch (currentTool) {
+            case SELECTION:
+                isSelecting = false;
+                // TODO Select everything that is inside the selection rectangle.
+                break;
+            default:
+                break;
+        }
     }
 
+    /**
+     * Analyse the list of instructions to know the width and height of the
+     * script.
+     *
+     */
+    private void computeDimensions() {
+        xMin = 0;
+        yMin = 0;
+        xMax = 0;
+        yMax = 0;
+        for (Instruction i : instructions) {
+            yMax += i.getHeight();
+            xMax = Math.max(xMax, i.getWidth());
+        }
+    }
+
+    public double getWidth() {
+        computeDimensions();
+        return xMax - xMin;
+    }
 }

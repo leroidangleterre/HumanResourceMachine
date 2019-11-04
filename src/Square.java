@@ -11,7 +11,7 @@ import java.awt.Graphics;
  *
  * @author arthurmanoha
  */
-class Square {
+public class Square {
 
     private double xCenter, yCenter;
     private double size;

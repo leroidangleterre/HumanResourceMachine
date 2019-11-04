@@ -1,6 +1,8 @@
 import java.awt.MenuItem;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -16,7 +18,7 @@ import javax.swing.event.MenuListener;
  *
  * @author arthurmanoha
  */
-public class MenuBar extends JMenuBar {
+public class MenuBar extends JMenuBar implements KeyListener {
 
 //    private JButton holeButton;
 //    private JButton groundButton;
@@ -113,6 +115,21 @@ public class MenuBar extends JMenuBar {
         terrainMenu.add(item);
 
         this.add(terrainMenu);
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        System.out.println("MenuBar.keyTyped");
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        System.out.println("MenuBar.keyPressed");
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        System.out.println("MenuBar.keyReleased");
     }
 
 }

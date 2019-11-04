@@ -2,11 +2,13 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-public class GraphicPanel extends JPanel {
+public class GraphicPanel extends JPanel implements KeyListener {
 
     /* The origin of the represented environment will be visible
      at the x0-th pixel column and at the y0-th pixel line,
@@ -29,6 +31,7 @@ public class GraphicPanel extends JPanel {
     // Mouse information
     protected double xClick, yClick, xRelease, yRelease, xMouse, yMouse;
     protected double xRightClick, yRightClick;
+    private boolean wheelClickIsActive;
 
     public GraphicPanel() {
         super();
@@ -49,6 +52,10 @@ public class GraphicPanel extends JPanel {
 
         this.serialNumber = GraphicPanel.NB_GP_CREATED;
         GraphicPanel.NB_GP_CREATED++;
+
+        wheelClickIsActive = false;
+
+        this.addKeyListener(new KeyboardListener(this));
     }
 
     public GraphicPanel(Displayable d) {
@@ -56,6 +63,7 @@ public class GraphicPanel extends JPanel {
         this.displayable = d;
     }
 
+    @Override
     public String toString() {
         return "GraphicPanel n° " + this.serialNumber + displayable;
     }
@@ -76,9 +84,8 @@ public class GraphicPanel extends JPanel {
 
         this.displayable.paint(g, panelHeight, this.x0, this.y0, this.zoom);
 
-        this.drawAxis(g, panelHeight);
-
-        if (this.displayable.lefClickIsActive) {
+//        this.drawAxis(g, panelHeight);
+        if (this.displayable.leftClickIsActive) {
             paintSelectionRectangle(g, panelHeight, this.x0, this.y0, this.zoom);
         }
     }
@@ -142,13 +149,23 @@ public class GraphicPanel extends JPanel {
 
     public void resetView() {
 
-        int width = this.getWidth();
-        int height = this.getHeight();
+        int panelWidth = this.getWidth();
+        int panelHeight = this.getHeight();
+
+        // Displayable dimensions:
+        double dispXMax = displayable.getXMax();
+        double dispXMin = displayable.getXMin();
+        double dispYMax = displayable.getYMax();
+        double dispYMin = displayable.getYMin();
 
         // TODO set the scroll and zoom to show all the terrain at once.
-        this.x0 = 0;
-        this.y0 = 0;
-        this.zoom = 1;
+//        this.x0 = 0;
+//        this.y0 = 0;
+//        this.zoom = 1;
+        zoom = panelWidth / (dispXMax - dispXMin);
+        x0 = 0;
+        y0 = panelHeight / 2 - (dispYMin + dispYMax) * zoom / 2; // Half the panel height plus half the terrain apparent height.
+
         repaint();
     }
 
@@ -191,21 +208,32 @@ public class GraphicPanel extends JPanel {
     /**
      * Action performed when a left click is received.
      *
+     * @param e The event received by the panel
      */
     public void mousePressed(MouseEvent e) {
         xClick = e.getX();
         yClick = e.getY();
-        displayable.receiveLeftClick((xClick - this.x0) / this.zoom, (this.getHeight() - yClick - this.y0) / this.zoom);
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            displayable.receiveLeftClick((xClick - this.x0) / this.zoom, (this.getHeight() - yClick - this.y0) / this.zoom);
+        } else if (e.getButton() == MouseEvent.BUTTON2) {
+            wheelClickIsActive = true;
+        }
     }
 
     /**
      * Action performed when a left click release is received.
      *
+     * @param e The event recceived by the panel
      */
     public void mouseReleased(MouseEvent e) {
         xRelease = e.getX();
         yRelease = e.getY();
-        displayable.receiveLeftRelease((xRelease - this.x0) / this.zoom, (this.getHeight() - yRelease - this.y0) / this.zoom);
+
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            displayable.receiveLeftRelease((xRelease - this.x0) / this.zoom, (this.getHeight() - yRelease - this.y0) / this.zoom);
+        } else if (e.getButton() == MouseEvent.BUTTON2) {
+            wheelClickIsActive = false;
+        }
         repaint();
     }
 
@@ -216,12 +244,6 @@ public class GraphicPanel extends JPanel {
      * @param y the y-position of the mouse after the move, in pixel
      */
     public void receiveMouseMoved(int x, int y) {
-        /**
-         * Action performed when the mouse is dragged to the pixel (x, y)
-         *
-         * @param x the x-position of the mouse after the drag, in pixel
-         * @param y the y-position of the mouse after the drag, in pixel
-         */
         displayable.receiveMouseMoved((x - this.x0) / this.zoom, (this.getHeight() - y - this.y0) / this.zoom);
 
         xMouse = x;
@@ -230,13 +252,34 @@ public class GraphicPanel extends JPanel {
         repaint();
     }
 
+    /**
+     * Receive a MouseDragged event, and interpret it as if it happened at the
+     * given x-coordinate
+     *
+     * @param x The x-coordinate of the mouse after the drag event, in pixel
+     * @param y The y-coordinate of the mouse after the drag event, in pixel
+     */
     public void receiveMouseDragged(int x, int y) {
-        displayable.receiveMouseDragged((x - this.x0) / this.zoom, (this.getHeight() - y - this.y0) / this.zoom);
+
+        if (wheelClickIsActive) {
+            this.translate(x - xMouse, yMouse - y);
+        } else {
+            displayable.receiveMouseDragged((x - this.x0) / this.zoom, (this.getHeight() - y - this.y0) / this.zoom);
+        }
 
         xMouse = x;
         yMouse = y;
 
         repaint();
+    }
+
+    /**
+     * Mouse drag: interact with the content of the Displayable
+     *
+     * @param e the mouse event
+     */
+    public void receiveMouseDragged(MouseEvent e) {
+        receiveMouseDragged(e.getX(), e.getY());
     }
 
     private void paintSelectionRectangle(Graphics g, int panelHeight, double x0, double y0, double zoom) {
@@ -250,5 +293,39 @@ public class GraphicPanel extends JPanel {
         int yMin = (int) Math.min(yClick, yMouse);
 
         g.drawRect(xLeft, yMin, xRight - xLeft, yMax - yMin);
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        switch (e.getKeyChar()) {
+            case '0':
+                resetView();
+                break;
+            case '4':
+                swipe(-1, 0);
+                break;
+            case '6':
+                swipe(+1, 0);
+                break;
+            case '8':
+                swipe(0, +1);
+                break;
+            case '2':
+                swipe(0, -1);
+                break;
+            case 'p':
+                togglePlayPause();
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
     }
 }

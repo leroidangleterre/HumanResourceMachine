@@ -17,6 +17,8 @@ public class Instruction {
     private double apparentSize;
     protected Color color;
 
+    private double width, height;
+
     /**
      * Create a new instruction at a specific position in a script.
      *
@@ -26,6 +28,8 @@ public class Instruction {
         this.rank = r;
         this.color = Color.red;
         this.apparentSize = 1.0;
+        this.width = 5;
+        this.height = 1;
     }
 
     /**
@@ -62,5 +66,13 @@ public class Instruction {
 
         g.setColor(this.color);
         g.fillRect(xDisplay, yDisplay, sizeApp, sizeApp);
+    }
+
+    public double getHeight() {
+        return height;
+    }
+
+    public double getWidth() {
+        return width;
     }
 }
