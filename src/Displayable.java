@@ -192,4 +192,10 @@ public abstract class Displayable implements KeyListener {
     public void keyReleased(KeyEvent e) {
         System.out.println("Displayable.keyReleased");
     }
+
+    /**
+     * Select any element that is inside the selection rectangle.
+     *
+     */
+    public abstract void selectContent();
 }

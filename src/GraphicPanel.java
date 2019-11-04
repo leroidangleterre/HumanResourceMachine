@@ -84,7 +84,7 @@ public class GraphicPanel extends JPanel implements KeyListener {
 
         this.displayable.paint(g, panelHeight, this.x0, this.y0, this.zoom);
 
-//        this.drawAxis(g, panelHeight);
+        this.drawAxis(g, panelHeight);
         if (this.displayable.leftClickIsActive) {
             paintSelectionRectangle(g, panelHeight, this.x0, this.y0, this.zoom);
         }

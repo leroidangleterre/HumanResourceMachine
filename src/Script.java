@@ -36,7 +36,6 @@ public class Script extends Displayable {
      * @param rank
      */
     public void addInstruction(Instruction newIns, int rank) {
-        newIns.setRank(rank);
         this.instructions.add(rank, newIns);
         computeDimensions();
     }
@@ -70,8 +69,14 @@ public class Script extends Displayable {
     @Override
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
         super.paint(g, panelHeight, x0, y0, zoom);
-        for (Instruction instruction : instructions) {
-            instruction.paint(g, panelHeight, x0, y0, zoom);
+        if (instructions != null && instructions.size() != 0) {
+            int xDisplay = (int) x0;
+            int instrSize = (int) (zoom * instructions.get(0).getHeight());
+            int yDisplay = (int) (panelHeight - (y0 + instrSize * length()));
+            for (Instruction instruction : instructions) {
+                instruction.paint(g, panelHeight, xDisplay, yDisplay, zoom);
+                yDisplay += instrSize;
+            }
         }
     }
 
@@ -90,6 +95,7 @@ public class Script extends Displayable {
             case SELECTION:
                 isSelecting = false;
                 // TODO Select everything that is inside the selection rectangle.
+                selectContent();
                 break;
             default:
                 break;
@@ -112,8 +118,48 @@ public class Script extends Displayable {
         }
     }
 
+    @Override
     public double getWidth() {
         computeDimensions();
         return xMax - xMin;
+    }
+
+    /**
+     * Return the number of instructions
+     *
+     * @return the number of instructions.
+     */
+    public int length() {
+        return instructions.size();
+    }
+
+    /**
+     * Select the appropriate instructions.
+     */
+    @Override
+    public void selectContent() {
+        if (instructions != null && !instructions.isEmpty()) {
+
+            double size = instructions.get(0).getSize();
+            if (size < 0) {
+                size = 1;
+            }
+            int numLineClick = (int) ((yMax - yClick) / size);
+            int numLineRelease = (int) ((yMax - yRelease) / size);
+
+            int firstLine = Math.min(numLineClick, numLineRelease);
+            firstLine = Math.max(0, Math.min(this.length() - 1, firstLine));
+
+            int lastLine = Math.max(numLineClick, numLineRelease);
+            lastLine = Math.max(0, Math.min(this.length() - 1, lastLine));
+
+            for (int line = 0; line < length(); line++) {
+                if (line >= firstLine && line <= lastLine) {
+                    instructions.get(line).setSelected(true);
+                } else {
+                    instructions.get(line).setSelected(false);
+                }
+            }
+        }
     }
 }

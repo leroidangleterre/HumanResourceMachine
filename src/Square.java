@@ -18,6 +18,8 @@ public class Square {
 
     private Color color;
 
+    private boolean isSelected;
+
     /**
      * Create a square centered at the given (x,y)
      *
@@ -31,6 +33,7 @@ public class Square {
         this.yCenter = y;
         this.size = size;
         this.color = c;
+        isSelected = false;
     }
 
     public Square() {
@@ -45,6 +48,9 @@ public class Square {
         g.setColor(this.color);
         g.fillRect(xDisplay, yDisplay, sizeApp, sizeApp);
         g.setColor(Color.black);
+        if (isSelected) {
+            g.setColor(Color.red);
+        }
         g.drawRect(xDisplay, yDisplay, sizeApp, sizeApp);
     }
 
@@ -70,5 +76,9 @@ public class Square {
 
     public double getYMax() {
         return this.yCenter + this.size / 2;
+    }
+
+    public void setSelected(boolean newIsSelected) {
+        isSelected = newIsSelected;
     }
 }

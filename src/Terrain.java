@@ -125,6 +125,7 @@ public class Terrain extends Displayable {
         if (currentTool == TerrainTool.SELECTION) {
             isSelecting = false;
             // TODO Select everything that is inside the selection rectangle.
+            selectContent();
         }
         switch (currentTool) {
             case HOLE:
@@ -233,6 +234,44 @@ public class Terrain extends Displayable {
     public void setSquare(Square newSquare, int line, int col) {
         if (line >= 0 && col >= 0 && line < nbLines && col < nbCols) {
             this.grid[line][col] = newSquare;
+        }
+    }
+
+    @Override
+    public void selectContent() {
+
+        int numLineClick = (int) ((this.yMax - yClick) / this.elemSize);
+        int numColumnClick = (int) ((xClick - this.xMin) / this.elemSize);
+        int numLineRelease = (int) ((this.yMax - yRelease) / this.elemSize);
+        int numColumnRelease = (int) ((xRelease - this.xMin) / this.elemSize);
+
+        // Special cases when the click happens outside the grid
+        if (xClick < 0) {
+            numColumnClick--;
+        }
+        if (xRelease < 0) {
+            numColumnRelease--;
+        }
+        if (yClick > nbLines) {
+            numLineClick--;
+        }
+        if (yRelease > nbLines) {
+            numLineRelease--;
+        }
+
+        int bottomLine = Math.max(numLineClick, numLineRelease);
+        int topLine = Math.min(numLineClick, numLineRelease) + 1;
+        int leftCol = Math.min(numColumnClick, numColumnRelease) + 1;
+        int rightCol = Math.max(numColumnClick, numColumnRelease);
+
+        for (int line = topLine; line < bottomLine; line++) {
+            for (int col = leftCol; col < rightCol; col++) {
+                if (line >= topLine && line < bottomLine && col >= leftCol && col < rightCol) {
+                    grid[line][col].setSelected(true);
+                } else {
+                    grid[line][col].setSelected(false);
+                }
+            }
         }
     }
 }
