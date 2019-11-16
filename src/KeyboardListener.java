@@ -3,12 +3,12 @@ import java.awt.event.KeyListener;
 
 public class KeyboardListener implements KeyListener {
 
-    private final GraphicPanel panel;
+    private final MyDefaultComponent panel;
 
     private static int NB_KL_INSTANCIATED = 0;
     private final int serialNumber;
 
-    public KeyboardListener(GraphicPanel p) {
+    public KeyboardListener(MyDefaultComponent p) {
         super();
         this.serialNumber = NB_KL_INSTANCIATED;
         NB_KL_INSTANCIATED++;
@@ -39,7 +39,7 @@ public class KeyboardListener implements KeyListener {
                     panel.swipe(0, -1);
                     break;
                 case 'p':
-                    panel.togglePlayPause();
+//                    panel.togglePlayPause();
                     break;
                 default:
                     break;

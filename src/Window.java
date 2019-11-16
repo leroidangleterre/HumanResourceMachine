@@ -1,6 +1,9 @@
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -8,14 +11,14 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
 public class Window extends JFrame implements KeyListener {
 
-    private GraphicPanel panel;
+    private MyDefaultComponent panel;
     private int xMouse, yMouse;
     private boolean leftClickActive, centerClickActive, rightClickActive;
 
@@ -26,6 +29,8 @@ public class Window extends JFrame implements KeyListener {
     private static final double SPLIT_PANE_HALF = 0.5;
     private boolean leftPanelActive;
     private boolean rightPanelActive;
+
+    private JPanel buttonsPanel;
 
     public Window() {
         super();
@@ -45,29 +50,20 @@ public class Window extends JFrame implements KeyListener {
 
         this.setLayout(new BorderLayout());
 
+        buttonsPanel = new JPanel();
+        buttonsPanel.setLayout(new GridLayout(1, 10));
+        prepareButtonsPanel();
+
+        this.add(buttonsPanel, BorderLayout.NORTH);
+
         this.pack();
 
         this.setLocationRelativeTo(null);
 
-        addWindowFocusListener(new WindowAdapter() {
-            @Override
-            public void windowGainedFocus(WindowEvent e) {
-//                System.out.println("Window gained focus.");
-                if (split != null) {
-//                    System.out.println("Split has focus ?  " + split.hasFocus());
-                }
-            }
-
-            @Override
-            public void windowLostFocus(WindowEvent e) {
-//                System.out.println("Window lost focus.");
-            }
-        });
-
         this.setVisible(true);
     }
 
-    public Window(GraphicPanel pan) {
+    public Window(MyDefaultComponent pan) {
         this();
         this.setPanel(pan);
         split = new CustomSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -75,7 +71,7 @@ public class Window extends JFrame implements KeyListener {
         this.setVisible(true);
     }
 
-    public Window(GraphicPanel left, GraphicPanel right) {
+    public Window(MyDefaultComponent left, MyDefaultComponent right) {
         this();
         split = new CustomSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         split.setOneTouchExpandable(true);
@@ -86,7 +82,7 @@ public class Window extends JFrame implements KeyListener {
         split.addMouseWheelListener(new MyMouseWheelListener());
         split.addMouseListener(new MyMouseListener());
 
-        this.add(split);
+        this.add(split, BorderLayout.CENTER);
     }
 
     /**
@@ -95,7 +91,7 @@ public class Window extends JFrame implements KeyListener {
      *
      * @param newPanel
      */
-    public void setPanel(GraphicPanel newPanel) {
+    public void setPanel(MyDefaultComponent newPanel) {
         if (panel == null) {
             this.panel = newPanel;
             this.getContentPane().add(this.panel, BorderLayout.CENTER);
@@ -115,6 +111,28 @@ public class Window extends JFrame implements KeyListener {
 
     }
 
+    /**
+     * Create the control buttons and place them on their panel.
+     *
+     */
+    private void prepareButtonsPanel() {
+
+        String buttonNames[] = {"Selection", "Hole", "Ground", "Input", "Worker", "Move", "Pickup", "Drop"};
+        int rank = 0;
+        for (String text : buttonNames) {
+            JButton newButton = new JButton(text);
+            newButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    split.receiveCommand(text.toUpperCase());
+                }
+            });
+            buttonsPanel.add(newButton, rank);
+            rank++;
+        }
+    }
+
     private class MyMouseMotionListener implements MouseMotionListener {
 
         public MyMouseMotionListener() {
@@ -130,9 +148,9 @@ public class Window extends JFrame implements KeyListener {
                 // based on the position of the mouse relative to the split.
                 int xLimit = split.getDividerLocation();
                 if (xMouse < xLimit) {
-                    ((GraphicPanel) split.getLeftComponent()).receiveMouseMoved(e.getX(), (e.getY()));
+                    ((MyDefaultComponent) split.getLeftComponent()).mouseMoved(e.getX(), (e.getY()));
                 } else {
-                    ((GraphicPanel) split.getRightComponent()).receiveMouseMoved(e.getX() - split.getDividerLocation(), (e.getY()));
+                    ((MyDefaultComponent) split.getRightComponent()).mouseMoved(e.getX() - split.getDividerLocation(), (e.getY()));
                 }
                 split.setXMouse(xMouse);
             }
@@ -155,15 +173,17 @@ public class Window extends JFrame implements KeyListener {
                 // Transmit the zoom instruction to the appropriate panel
                 // A click is ongoing, the panel where the click happened receives the mouseMoved event. 
                 if (leftPanelActive) {
-                    ((GraphicPanel) split.getLeftComponent()).receiveMouseDragged(e);
+                    ((MyDefaultComponent) split.getLeftComponent()).mouseDragged(e);
                 } else if (rightPanelActive) {
-                    ((GraphicPanel) split.getRightComponent()).receiveMouseDragged(e.getX() - split.getDividerLocation(), e.getY());
+                    MouseEvent eOffset = new MouseEvent((Component) e.getSource(), e.getID(), e.getWhen(), e.getModifiers(), e.getX() - split.getDividerLocation(), e.getY(), e.getClickCount(), false);
+                    ((MyDefaultComponent) split.getRightComponent()).mouseDragged(eOffset);
                 } else {
                     // No click is ongoing, the panel where the mouse is receives the event.
                     if (xMouse < split.getDividerLocation()) {
-                        ((GraphicPanel) split.getLeftComponent()).receiveMouseDragged(e);
+                        ((MyDefaultComponent) split.getLeftComponent()).mouseDragged(e);
                     } else {
-                        ((GraphicPanel) split.getRightComponent()).receiveMouseDragged(e.getX() - split.getDividerLocation(), e.getY());
+                        MouseEvent eOffset = new MouseEvent((Component) e.getSource(), e.getID(), e.getWhen(), e.getModifiers(), e.getX() - split.getDividerLocation(), e.getY(), e.getClickCount(), false);
+                        ((MyDefaultComponent) split.getRightComponent()).mouseDragged(eOffset);
                     }
                 }
             }
@@ -192,17 +212,17 @@ public class Window extends JFrame implements KeyListener {
             }
 
             if (split == null) {
-                panel.receiveMouseWheelMovement(zoomFactor, xMouse, yMouse);
+                panel.mouseWheelMoved(zoomFactor, xMouse, yMouse);
             } else {
                 // Transmit the zoom instruction to the appropriate panel
                 if (leftPanelActive) {
-                    ((GraphicPanel) split.getLeftComponent()).receiveMouseWheelMovement(zoomFactor, xMouse, yMouse);
+                    ((MyDefaultComponent) split.getLeftComponent()).mouseWheelMoved(zoomFactor, xMouse, yMouse);
                 } else if (rightPanelActive) {
-                    ((GraphicPanel) split.getRightComponent()).receiveMouseWheelMovement(zoomFactor, xMouse - split.getDividerLocation(), yMouse);
+                    ((MyDefaultComponent) split.getRightComponent()).mouseWheelMoved(zoomFactor, xMouse - split.getDividerLocation(), yMouse);
                 } else if (xMouse < split.getDividerLocation()) {
-                    ((GraphicPanel) split.getLeftComponent()).receiveMouseWheelMovement(zoomFactor, xMouse, yMouse);
+                    ((MyDefaultComponent) split.getLeftComponent()).mouseWheelMoved(zoomFactor, xMouse, yMouse);
                 } else {
-                    ((GraphicPanel) split.getRightComponent()).receiveMouseWheelMovement(zoomFactor, xMouse - split.getDividerLocation(), yMouse);
+                    ((MyDefaultComponent) split.getRightComponent()).mouseWheelMoved(zoomFactor, xMouse - split.getDividerLocation(), yMouse);
                 }
             }
         }
@@ -230,19 +250,19 @@ public class Window extends JFrame implements KeyListener {
         public void mousePressed(MouseEvent e) {
 
             // One of the two panels will receive the event.
-            GraphicPanel panel;
+            MyDefaultComponent panel;
             // x-offset : zero for the left panel, non-zero for the right panel
             int xOffset = 0;
             if (leftPanelActive) {
-                panel = (GraphicPanel) split.getLeftComponent();
+                panel = (MyDefaultComponent) split.getLeftComponent();
             } else if (rightPanelActive) {
-                panel = (GraphicPanel) split.getRightComponent();
+                panel = (MyDefaultComponent) split.getRightComponent();
             } else {
                 if (xMouse < split.getDividerLocation()) {
-                    panel = (GraphicPanel) split.getLeftComponent();
+                    panel = (MyDefaultComponent) split.getLeftComponent();
                     leftPanelActive = true;
                 } else {
-                    panel = (GraphicPanel) split.getRightComponent();
+                    panel = (MyDefaultComponent) split.getRightComponent();
                     xOffset = -split.getDividerLocation();
                     rightPanelActive = true;
                 }
@@ -271,16 +291,16 @@ public class Window extends JFrame implements KeyListener {
         public void mouseReleased(MouseEvent e) {
 
             // One of the two panels will receive the event.
-            GraphicPanel panel;
+            MyDefaultComponent panel;
             if (leftPanelActive) {
-                panel = (GraphicPanel) split.getLeftComponent();
+                panel = (MyDefaultComponent) split.getLeftComponent();
             } else if (rightPanelActive) {
-                panel = (GraphicPanel) split.getRightComponent();
+                panel = (MyDefaultComponent) split.getRightComponent();
             } else {
                 if (xMouse < split.getDividerLocation()) {
-                    panel = (GraphicPanel) split.getLeftComponent();
+                    panel = (MyDefaultComponent) split.getLeftComponent();
                 } else {
-                    panel = (GraphicPanel) split.getRightComponent();
+                    panel = (MyDefaultComponent) split.getRightComponent();
                 }
             }
 
@@ -309,24 +329,22 @@ public class Window extends JFrame implements KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
-        System.out.println("Window: keyTyped");
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        System.out.println("Window: keyPressed");
 
         // One of the two panels will receive the event.
-        GraphicPanel activePanel;
+        MyDefaultComponent activePanel;
         if (leftPanelActive) {
-            activePanel = (GraphicPanel) split.getLeftComponent();
+            activePanel = (MyDefaultComponent) split.getLeftComponent();
         } else if (rightClickActive) {
-            activePanel = (GraphicPanel) split.getRightComponent();
+            activePanel = (MyDefaultComponent) split.getRightComponent();
         } else {
             if (xMouse < split.getDividerLocation()) {
-                activePanel = (GraphicPanel) split.getLeftComponent();
+                activePanel = (MyDefaultComponent) split.getLeftComponent();
             } else {
-                activePanel = (GraphicPanel) split.getRightComponent();
+                activePanel = (MyDefaultComponent) split.getRightComponent();
             }
         }
 
@@ -335,7 +353,6 @@ public class Window extends JFrame implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
-        System.out.println("Window: keyReleased");
     }
 
 }

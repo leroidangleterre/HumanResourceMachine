@@ -1,71 +1,54 @@
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import javax.swing.JPanel;
-import javax.swing.Timer;
 
-public class GraphicPanel extends JPanel implements KeyListener {
+public abstract class MyDefaultComponent extends JPanel
+        implements KeyListener, MouseMotionListener, MouseWheelListener {
+
+    protected MyDefaultModel model;
 
     /* The origin of the represented environment will be visible
      at the x0-th pixel column and at the y0-th pixel line,
      starting from the lower-left corner.
      The zoom value is the amount of pixels between that origin
      and the point of coordinates (1, 0).  */
-    private double x0, y0, zoom;
+    protected double x0, y0, zoom;
+    protected int panelHeight;
 
-    private Displayable displayable;
-    private Timer timer;
-    private boolean isRunning;
+    protected boolean selectionIsMoving;
+    protected boolean isSelecting;
 
-    private int date;
-
-    private Window window;
+    protected Window window;
 
     private static int NB_GP_CREATED = 0;
-    private int serialNumber;
+    protected int serialNumber;
 
-    // Mouse information
+    // Mouse information. In PIXELS, not converted !
     protected double xClick, yClick, xRelease, yRelease, xMouse, yMouse;
     protected double xRightClick, yRightClick;
-    private boolean wheelClickIsActive;
+    protected boolean leftClickIsActive, wheelClickIsActive;
 
-    public GraphicPanel() {
+    public MyDefaultComponent() {
         super();
         this.x0 = 67;
         this.y0 = 69;
         this.zoom = 110.8;
-        ActionListener listener = new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                date++;
-                displayable.evolve();
-                repaint();
-            }
-        };
-        int period = 10;
-        this.timer = new Timer(period, listener);
-        this.isRunning = false;
-        this.date = 0;
 
-        this.serialNumber = GraphicPanel.NB_GP_CREATED;
-        GraphicPanel.NB_GP_CREATED++;
+        this.serialNumber = MyDefaultComponent.NB_GP_CREATED;
+        MyDefaultComponent.NB_GP_CREATED++;
 
         wheelClickIsActive = false;
+        leftClickIsActive = false;
+        selectionIsMoving = false;
+        isSelecting = false;
 
         this.addKeyListener(new KeyboardListener(this));
-    }
-
-    public GraphicPanel(Displayable d) {
-        this();
-        this.displayable = d;
-    }
-
-    @Override
-    public String toString() {
-        return "GraphicPanel n° " + this.serialNumber + displayable;
     }
 
     public void eraseAll(Graphics g) {
@@ -78,16 +61,25 @@ public class GraphicPanel extends JPanel implements KeyListener {
     @Override
     public void paintComponent(Graphics g) {
 
-        this.eraseAll(g);
-
-        int panelHeight = (int) (this.getSize().getHeight());
-
-        this.displayable.paint(g, panelHeight, this.x0, this.y0, this.zoom);
+        panelHeight = (int) (this.getSize().getHeight());
 
         this.drawAxis(g, panelHeight);
-        if (this.displayable.leftClickIsActive) {
+        if (this.leftClickIsActive && !selectionIsMoving) {
             paintSelectionRectangle(g, panelHeight, this.x0, this.y0, this.zoom);
         }
+    }
+
+    private void paintSelectionRectangle(Graphics g, int panelHeight, double x0, double y0, double zoom) {
+
+        g.setColor(Color.blue);
+
+        int xLeft = (int) Math.min(xClick, xMouse);
+        int xRight = (int) Math.max(xClick, xMouse);
+
+        int yMax = (int) Math.max(yClick, yMouse);
+        int yMin = (int) Math.min(yClick, yMouse);
+
+        g.drawRect(xLeft, yMin, xRight - xLeft, yMax - yMin);
     }
 
     public void drawAxis(Graphics g, double panelHeight) {
@@ -136,35 +128,20 @@ public class GraphicPanel extends JPanel implements KeyListener {
         repaint();
     }
 
-    public void receiveMouseWheelMovement(double fact, int xMouse, int yMouse) {
-
-        double panelHeight = this.getSize().getHeight();
-
-        x0 = fact * (x0 - xMouse) + xMouse;
-        y0 = (panelHeight - yMouse) + fact * (y0 - (panelHeight - yMouse));
-
-        this.zoom *= fact;
-        repaint();
-    }
-
     public void resetView() {
 
         int panelWidth = this.getWidth();
         int panelHeight = this.getHeight();
 
         // Displayable dimensions:
-        double dispXMax = displayable.getXMax();
-        double dispXMin = displayable.getXMin();
-        double dispYMax = displayable.getYMax();
-        double dispYMin = displayable.getYMin();
+        double dispXMax = model.getXMax();
+        double dispXMin = model.getXMin();
+        double dispYMax = model.getYMax();
+        double dispYMin = model.getYMin();
 
-        // TODO set the scroll and zoom to show all the terrain at once.
-//        this.x0 = 0;
-//        this.y0 = 0;
-//        this.zoom = 1;
         zoom = panelWidth / (dispXMax - dispXMin);
         x0 = 0;
-        y0 = panelHeight / 2 - (dispYMin + dispYMax) * zoom / 2; // Half the panel height plus half the terrain apparent height.
+        y0 = panelHeight / 2 - (dispYMin + dispYMax) * zoom / 2;
 
         repaint();
     }
@@ -185,26 +162,6 @@ public class GraphicPanel extends JPanel implements KeyListener {
         repaint();
     }
 
-    public void play() {
-        this.timer.start();
-        this.displayable.play();
-    }
-
-    public void pause() {
-        this.timer.stop();
-        this.displayable.pause();
-    }
-
-    public void togglePlayPause() {
-        if (this.isRunning) {
-            this.isRunning = false;
-            this.pause();
-        } else {
-            this.isRunning = true;
-            this.play();
-        }
-    }
-
     /**
      * Action performed when a left click is received.
      *
@@ -214,7 +171,7 @@ public class GraphicPanel extends JPanel implements KeyListener {
         xClick = e.getX();
         yClick = e.getY();
         if (e.getButton() == MouseEvent.BUTTON1) {
-            displayable.receiveLeftClick((xClick - this.x0) / this.zoom, (this.getHeight() - yClick - this.y0) / this.zoom);
+            leftClickIsActive = true;
         } else if (e.getButton() == MouseEvent.BUTTON2) {
             wheelClickIsActive = true;
         }
@@ -230,7 +187,7 @@ public class GraphicPanel extends JPanel implements KeyListener {
         yRelease = e.getY();
 
         if (e.getButton() == MouseEvent.BUTTON1) {
-            displayable.receiveLeftRelease((xRelease - this.x0) / this.zoom, (this.getHeight() - yRelease - this.y0) / this.zoom);
+            leftClickIsActive = false;
         } else if (e.getButton() == MouseEvent.BUTTON2) {
             wheelClickIsActive = false;
         }
@@ -243,56 +200,61 @@ public class GraphicPanel extends JPanel implements KeyListener {
      * @param x the x-position of the mouse after the move, in pixel
      * @param y the y-position of the mouse after the move, in pixel
      */
-    public void receiveMouseMoved(int x, int y) {
-        displayable.receiveMouseMoved((x - this.x0) / this.zoom, (this.getHeight() - y - this.y0) / this.zoom);
-
+    public void mouseMoved(int x, int y) {
         xMouse = x;
         yMouse = y;
 
         repaint();
     }
 
-    /**
-     * Receive a MouseDragged event, and interpret it as if it happened at the
-     * given x-coordinate
-     *
-     * @param x The x-coordinate of the mouse after the drag event, in pixel
-     * @param y The y-coordinate of the mouse after the drag event, in pixel
-     */
-    public void receiveMouseDragged(int x, int y) {
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        xMouse = e.getX();
+        yMouse = e.getY();
+    }
 
-        if (wheelClickIsActive) {
-            this.translate(x - xMouse, yMouse - y);
+    /**
+     * Action performed when the mouse is dragged to the pixel (x, y)
+     *
+     * @param e
+     */
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        if (isSelecting) {
+        } else if (selectionIsMoving) {
+
         } else {
-            displayable.receiveMouseDragged((x - this.x0) / this.zoom, (this.getHeight() - y - this.y0) / this.zoom);
+            this.x0 += e.getX() - xMouse;
+            this.y0 -= e.getY() - yMouse; // Y-axis is inverted
+        }
+        xMouse = e.getX();
+        yMouse = e.getY();
+
+        repaint();
+    }
+
+    public void mouseWheelMoved(double fact, int xMouse, int yMouse) {
+
+        panelHeight = (int) this.getSize().getHeight();
+
+        x0 = fact * (x0 - xMouse) + xMouse;
+        y0 = (panelHeight - yMouse) + fact * (y0 - (panelHeight - yMouse));
+
+        this.zoom *= fact;
+        repaint();
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        // Define the zoom factor
+        double zoomFactor;
+        if (e.getWheelRotation() > 0) {
+            zoomFactor = 1 / 1.1;
+        } else {
+            zoomFactor = 1.1;
         }
 
-        xMouse = x;
-        yMouse = y;
-
-        repaint();
-    }
-
-    /**
-     * Mouse drag: interact with the content of the Displayable
-     *
-     * @param e the mouse event
-     */
-    public void receiveMouseDragged(MouseEvent e) {
-        receiveMouseDragged(e.getX(), e.getY());
-    }
-
-    private void paintSelectionRectangle(Graphics g, int panelHeight, double x0, double y0, double zoom) {
-
-        g.setColor(Color.red);
-
-        int xLeft = (int) Math.min(xClick, xMouse);
-        int xRight = (int) Math.max(xClick, xMouse);
-
-        int yMax = (int) Math.max(yClick, yMouse);
-        int yMin = (int) Math.min(yClick, yMouse);
-
-        g.drawRect(xLeft, yMin, xRight - xLeft, yMax - yMin);
+        mouseWheelMoved(zoomFactor, e.getX(), e.getY());
     }
 
     @Override
@@ -313,9 +275,6 @@ public class GraphicPanel extends JPanel implements KeyListener {
             case '2':
                 swipe(0, -1);
                 break;
-            case 'p':
-                togglePlayPause();
-                break;
             default:
                 break;
         }
@@ -328,4 +287,17 @@ public class GraphicPanel extends JPanel implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
     }
+
+    /**
+     * Tell if a given point lies inside a selected component.
+     *
+     * @param x
+     * @param y
+     * @return true when the point located at (x, y) is inside a selected
+     * instruction
+     */
+    public abstract boolean pointIsInSelection(double x, double y);
+
+    public abstract void receiveCommand(String s);
+
 }

@@ -15,15 +15,15 @@ import javax.swing.JSplitPane;
  */
 public class CustomSplitPane extends JSplitPane implements KeyListener {
 
-    private boolean leftPanelActive;
-    private boolean rightPanelActive;
+    private boolean leftComponentActive;
+    private boolean rightComponentActive;
     private boolean rightClickActive;
     private int xMouse;
 
     public CustomSplitPane(int orientation) {
         super(orientation);
-        leftPanelActive = false;
-        rightPanelActive = false;
+        leftComponentActive = false;
+        rightComponentActive = false;
         rightClickActive = false;
         xMouse = 0;
 
@@ -31,53 +31,50 @@ public class CustomSplitPane extends JSplitPane implements KeyListener {
 
             @Override
             public void focusGained(FocusEvent e) {
-                super.focusGained(e); //To change body of generated methods, choose Tools | Templates.
+                super.focusGained(e);
             }
 
             @Override
             public void focusLost(FocusEvent e) {
-                super.focusLost(e); //To change body of generated methods, choose Tools | Templates.
+                super.focusLost(e);
             }
         });
     }
 
     @Override
     public void keyTyped(KeyEvent e) {
-//        System.out.println("CustomSplit: keyTyped");
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-//        System.out.println("CustomSplit: keyPressed");
 
-        // One of the two panels will receive the event.
-        GraphicPanel activePanel;
-        if (leftPanelActive) {
-            activePanel = (GraphicPanel) getLeftComponent();
-        } else if (rightPanelActive) {
-            activePanel = (GraphicPanel) getRightComponent();
+        // One of the two components will receive the event.
+        MyDefaultComponent activeComponent;
+        if (leftComponentActive) {
+            activeComponent = (MyDefaultComponent) getLeftComponent();
+        } else if (rightComponentActive) {
+            activeComponent = (MyDefaultComponent) getRightComponent();
         } else {
             if (xMouse < getDividerLocation()) {
-                activePanel = (GraphicPanel) getLeftComponent();
+                activeComponent = (MyDefaultComponent) getLeftComponent();
             } else {
-                activePanel = (GraphicPanel) getRightComponent();
+                activeComponent = (MyDefaultComponent) getRightComponent();
             }
         }
 
-        activePanel.keyPressed(e);
+        activeComponent.keyPressed(e);
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-//        System.out.println("CustomSplit: keyReleased");
     }
 
     public void setLeftPanelActive(boolean param) {
-        leftPanelActive = param;
+        leftComponentActive = param;
     }
 
     public void setRightPanelActive(boolean param) {
-        rightPanelActive = param;
+        rightComponentActive = param;
     }
 
     public void setRightClickActive(boolean param) {
@@ -86,5 +83,10 @@ public class CustomSplitPane extends JSplitPane implements KeyListener {
 
     public void setXMouse(int newXMouse) {
         xMouse = newXMouse;
+    }
+
+    public void receiveCommand(String s) {
+        ((MyDefaultComponent) leftComponent).receiveCommand(s);
+        ((MyDefaultComponent) rightComponent).receiveCommand(s);
     }
 }

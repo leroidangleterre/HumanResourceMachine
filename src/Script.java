@@ -1,4 +1,6 @@
 import java.awt.Graphics;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 
 /*
@@ -11,33 +13,43 @@ import java.util.ArrayList;
  *
  * @author arthurmanoha
  */
-public class Script extends Displayable {
+public class Script extends MyDefaultComponent {
 
-    private ArrayList<Instruction> instructions;
+    double initY0 = 800;
 
     public enum ScriptTool {
 
         MOVE, PICKUP, DROP, SELECTION
-        //TODO Add all the instructions
     }
-    private ScriptTool currentTool;
+    protected ScriptTool currentTool;
+
+    private ArrayList<Instruction> instList;
 
     public Script() {
         super();
-        pause();
-        instructions = new ArrayList<>();
+        model = new ScriptModel();
         currentTool = ScriptTool.SELECTION;
+        instList = new ArrayList<>();
+
+        y0 = initY0;
+
+        zoom = 1.0;
     }
 
     /**
      * Add a new instruction at the specified position.
      *
      * @param newIns
-     * @param rank
+     * @param rank if -1, add at the end.
      */
     public void addInstruction(Instruction newIns, int rank) {
-        this.instructions.add(rank, newIns);
-        computeDimensions();
+        if (rank == -1) {
+            rank = instList.size();
+        }
+        ((ScriptModel) model).addInstruction(newIns.getModel(), rank);
+        this.instList.add(rank, newIns);
+
+        computeSizesAndPositions();
     }
 
     /**
@@ -46,7 +58,7 @@ public class Script extends Displayable {
      * @param newIns
      */
     public void addInstruction(Instruction newIns) {
-        addInstruction(newIns, instructions.size());
+        this.addInstruction(newIns, -1);
     }
 
     /**
@@ -58,6 +70,88 @@ public class Script extends Displayable {
     }
 
     /**
+     * Return the number of instructions
+     *
+     * @return the number of instructions.
+     */
+    public int length() {
+        return ((ScriptModel) model).size();
+    }
+
+    public void unselectEverything() {
+        model.unselectEverything();
+    }
+
+    /**
+     * Receive a command.
+     *
+     * @param text the command
+     */
+    @Override
+    public void receiveCommand(String text) {
+        setTool(text);
+    }
+
+    /**
+     * Set the new tool.
+     *
+     * @param newTool
+     *
+     */
+    public void setTool(ScriptTool newTool) {
+        this.currentTool = newTool;
+    }
+
+    /**
+     * Set the new tool.
+     *
+     * @param s the String in capital letters (ex: "HOLE", or "SELECTION")
+     */
+    public void setTool(String s) {
+        switch (s) {
+            // Valid commands: MOVE, PICKUP, DROP, SELECTION
+            case "SELECTION":
+                this.setTool(ScriptTool.SELECTION);
+                break;
+            case "MOVE":
+                this.setTool(ScriptTool.MOVE);
+                break;
+            case "PICKUP":
+                this.setTool(ScriptTool.PICKUP);
+                break;
+            case "DROP":
+                this.setTool(ScriptTool.DROP);
+                break;
+            default:
+                // Keep the current tool unchanged.
+                break;
+        }
+    }
+
+    /**
+     * Tell if a given point lies inside a selected component.
+     *
+     * @param x
+     * @param y
+     * @return true when the point located at (x, y) is inside a selected
+     * instruction
+     */
+    @Override
+    public boolean pointIsInSelection(double x, double y) {
+
+        return false;
+    }
+
+    /**
+     * Move the selection. Movement started at (yClick) and is now at (yMouse)
+     *
+     * @param x
+     * @param y
+     */
+    public void moveSelection(double x, double y) {
+    }
+
+    /**
      * Paint the script.
      *
      * @param g the Graphics on which the script is painted
@@ -66,100 +160,122 @@ public class Script extends Displayable {
      * @param y0 the y-component of the scroll
      * @param zoom the zoom factor
      */
-    @Override
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
-        super.paint(g, panelHeight, x0, y0, zoom);
-        if (instructions != null && instructions.size() != 0) {
-            int xDisplay = (int) x0;
-            int instrSize = (int) (zoom * instructions.get(0).getHeight());
-            int yDisplay = (int) (panelHeight - (y0 + instrSize * length()));
-            for (Instruction instruction : instructions) {
-                instruction.paint(g, panelHeight, xDisplay, yDisplay, zoom);
-                yDisplay += instrSize;
-            }
+
+        for (Instruction inst : instList) {
+            inst.paint(g, panelHeight, x0, y0, zoom);
         }
     }
 
     @Override
-    public void receiveLeftClick(double x, double y) {
-        super.receiveLeftClick(x, y);
-        if (currentTool == ScriptTool.SELECTION) {
+    public void paintComponent(Graphics g) {
+        eraseAll(g);
+        this.paint(g, panelHeight, x0, y0, zoom);
+        super.paintComponent(g);
+    }
+
+    /**
+     * Action performed when a left click is received.
+     *
+     * @param e The event received by the panel
+     */
+    @Override
+    public void mousePressed(MouseEvent e) {
+        xClick = e.getX();
+        yClick = e.getY();
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            leftClickIsActive = true;
             isSelecting = true;
+        } else if (e.getButton() == MouseEvent.BUTTON2) {
+            wheelClickIsActive = true;
         }
     }
 
     @Override
-    public void receiveLeftRelease(double x, double y) {
-        super.receiveLeftRelease(x, y);
-        switch (currentTool) {
-            case SELECTION:
-                isSelecting = false;
-                // TODO Select everything that is inside the selection rectangle.
-                selectContent();
-                break;
-            default:
-                break;
+    public void mouseReleased(MouseEvent e) {
+
+        super.mouseReleased(e);
+
+        ScriptModel sModel = ((ScriptModel) model);
+
+        xRelease = e.getX(); // after refacto; may need to be removed
+        yRelease = e.getY();
+
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            leftClickIsActive = false;
+        } else if (e.getButton() == MouseEvent.BUTTON2) {
+            wheelClickIsActive = false;
         }
-    }
 
-    /**
-     * Analyse the list of instructions to know the width and height of the
-     * script.
-     *
-     */
-    private void computeDimensions() {
-        xMin = 0;
-        yMin = 0;
-        xMax = 0;
-        yMax = 0;
-        for (Instruction i : instructions) {
-            yMax += i.getHeight();
-            xMax = Math.max(xMax, i.getWidth());
+        double yClickInTerrain = (panelHeight - yClick - y0) / zoom;
+        double yReleaseInTerrain = (panelHeight - yRelease - y0) / zoom;
+
+        double xClickInTerrain = (xClick - x0) / zoom;
+        double xReleaseInTerrain = (xRelease - x0) / zoom;
+
+        int numLineClick = 0;
+        int numColumnClick = 0;
+        int numLineRelease = 0;
+        int numColumnRelease = 0;
+
+        int bottomLine = Math.max(numLineClick, numLineRelease);
+        int topLine = Math.min(numLineClick, numLineRelease);
+        int leftCol = Math.min(numColumnClick, numColumnRelease);
+        int rightCol = Math.max(numColumnClick, numColumnRelease);
+
+        if (currentTool == ScriptTool.SELECTION && isSelecting) {
+            sModel.unselectEverything();
         }
-    }
-
-    @Override
-    public double getWidth() {
-        computeDimensions();
-        return xMax - xMin;
-    }
-
-    /**
-     * Return the number of instructions
-     *
-     * @return the number of instructions.
-     */
-    public int length() {
-        return instructions.size();
-    }
-
-    /**
-     * Select the appropriate instructions.
-     */
-    @Override
-    public void selectContent() {
-        if (instructions != null && !instructions.isEmpty()) {
-
-            double size = instructions.get(0).getSize();
-            if (size < 0) {
-                size = 1;
-            }
-            int numLineClick = (int) ((yMax - yClick) / size);
-            int numLineRelease = (int) ((yMax - yRelease) / size);
-
-            int firstLine = Math.min(numLineClick, numLineRelease);
-            firstLine = Math.max(0, Math.min(this.length() - 1, firstLine));
-
-            int lastLine = Math.max(numLineClick, numLineRelease);
-            lastLine = Math.max(0, Math.min(this.length() - 1, lastLine));
-
-            for (int line = 0; line < length(); line++) {
-                if (line >= firstLine && line <= lastLine) {
-                    instructions.get(line).setSelected(true);
-                } else {
-                    instructions.get(line).setSelected(false);
+        // Click in a square and release in another one: regular selection by rectangle.
+        for (int line = topLine; line <= bottomLine; line++) {
+            for (int col = leftCol; col <= rightCol; col++) {
+                switch (currentTool) {
+                    case SELECTION:
+                        if (isSelecting) {
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
+        }
+        isSelecting = false;
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        super.mouseDragged(e);
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        super.mouseMoved(e);
+    }
+
+    @Override
+    public void mouseWheelMoved(double fact, int xMouse, int yMouse) {
+        super.mouseWheelMoved(fact, xMouse, yMouse);
+        computeSizesAndPositions();
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        super.mouseWheelMoved(e);
+        computeSizesAndPositions();
+    }
+
+    /**
+     * Compute the sizes and positions of all instructions. Maybe we should name
+     * this function "layout"...
+     */
+    private void computeSizesAndPositions() {
+
+        // The instructions will be located in the (x positive, y negative) region,
+        // with the first instruction starting at (0,0).
+        int x = 0, y = 0;
+        for (Instruction inst : instList) {
+            inst.setPosition(x, y);
+            y -= inst.getHeight() * zoom;
         }
     }
 }

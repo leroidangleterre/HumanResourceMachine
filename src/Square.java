@@ -20,6 +20,8 @@ public class Square {
 
     private boolean isSelected;
 
+    private Worker worker;
+
     /**
      * Create a square centered at the given (x,y)
      *
@@ -34,6 +36,7 @@ public class Square {
         this.size = size;
         this.color = c;
         isSelected = false;
+        worker = null;
     }
 
     public Square() {
@@ -49,9 +52,13 @@ public class Square {
         g.fillRect(xDisplay, yDisplay, sizeApp, sizeApp);
         g.setColor(Color.black);
         if (isSelected) {
-            g.setColor(Color.red);
+            g.setColor(Color.yellow);
         }
         g.drawRect(xDisplay, yDisplay, sizeApp, sizeApp);
+
+        if (worker != null) {
+            worker.paint(g, panelHeight, x0, y0, zoom);
+        }
     }
 
     public double getX() {
@@ -80,5 +87,12 @@ public class Square {
 
     public void setSelected(boolean newIsSelected) {
         isSelected = newIsSelected;
+    }
+
+    public void receiveWorker(Worker newGuy) {
+        if (worker == null) {
+            worker = newGuy;
+            worker.setPosition(xCenter, yCenter);
+        }
     }
 }

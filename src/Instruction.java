@@ -1,6 +1,8 @@
 import java.awt.Color;
 import java.awt.Graphics;
-import java.util.Random;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -11,62 +13,127 @@ import java.util.Random;
  *
  * @author arthurmanoha
  */
-public class Instruction {
-
-    protected Color color;
-
-    private final double width, height;
+public class Instruction extends MyDefaultComponent {
 
     private boolean isSelected;
 
+    // Dimensions in pixels
+    private int width, height;
+
+    // Position in pixels
+    private int x, y;
+
+    private static int NB_CREATED = 0;
+    private int serial;
+    private Color color;
+
     /**
-     * Create a new instruction
+     * Create a new "instruction" component, which will be linked to its model.
      */
     public Instruction() {
-        this.color = Color.red;
-        this.width = 3 + 2 * Math.random();
-        this.height = 1;
-    }
-
-    /**
-     * Paint the representation of the instruction on the given panel.
-     *
-     * @param g the panel
-     * @param panelHeight the panel's height (in pixels)
-     * @param xDisplay the x apparent position on the graphics
-     * @param yDisplay the y apparent position on the graphics
-     * @param zoom the zoom factor
-     */
-    public void paint(Graphics g, int panelHeight, int xDisplay, int yDisplay, double zoom) {
-        int appWidth = (int) (this.width * zoom);
-        int appHeight = (int) (this.height * zoom);
-
-        g.setColor(this.color);
-        g.fillRect(xDisplay, yDisplay, appWidth, appHeight);
-        if (isSelected) {
-            g.setColor(Color.green);
+        width = (int) (100 * (1 + Math.random()));
+        height = 20;
+        x = 0;
+        y = 0;
+        serial = NB_CREATED;
+        NB_CREATED++;
+        switch (serial - 5 * (serial / 5)) {
+            case 0:
+                color = Color.red;
+                break;
+            case 1:
+                color = Color.blue;
+                break;
+            case 2:
+                color = Color.orange;
+                break;
+            case 3:
+                color = Color.green;
+                break;
+            case 4:
+                color = Color.magenta;
+                break;
+            default:
+                color = Color.gray;
         }
-        g.drawRect(xDisplay, yDisplay, appWidth, appHeight - 1);
-    }
 
-    public double getHeight() {
-        return height;
-    }
-
-    public double getWidth() {
-        return width;
+        // Model creation
+        this.model = new InstructionModel();
     }
 
     public void setSelected(boolean newIsSelected) {
         isSelected = newIsSelected;
     }
 
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    //* Specify at what position the component will be drawn.
+    public void setPosition(int newX, int newY) {
+        x = newX;
+        y = newY;
+    }
+
+    public InstructionModel getModel() {
+        return (InstructionModel) model;
+    }
+
     /**
-     * The height of each instruction.
+     * Paint the instruction
      *
-     * @return the height (in meters, not pixels) of any given instruction.
+     * @param g the Graphics we paint on
+     * @param panelHeight the height of the drawing area
+     * @param x0 x-offset for the origin of the drawing
+     * @param y0 y-offset for the origin of the drawing
+     * @param zoom zoom factor
      */
-    public double getSize() {
+    public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
+        g.setColor(color);
+
+        int xDisplay = (int) x0;
+        int yDisplay = (int) (panelHeight - (y0 + this.y));
+
+        g.fillRect(xDisplay, yDisplay, (int) (width * zoom), (int) (height * zoom));
+    }
+
+    /**
+     * Tell if a given point lies inside a selected component.
+     *
+     * @param x
+     * @param y
+     * @return true when the point located at (x, y) is inside a selected
+     * instruction
+     */
+    @Override
+    public boolean pointIsInSelection(double x, double y) {
+
+        return false;
+    }
+
+    @Override
+    public int getWidth() {
+        return width;
+    }
+
+    @Override
+    public int getHeight() {
         return height;
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+    }
+
+    @Override
+    public void receiveCommand(String s) {
     }
 }

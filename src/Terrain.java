@@ -1,4 +1,6 @@
 import java.awt.Graphics;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -9,47 +11,14 @@ import java.awt.Graphics;
  *
  * @author arthurmanoha
  */
-public class Terrain extends Displayable {
+public class Terrain extends MyDefaultComponent {
 
-    // The grid that contains squares (walls, ground, ...) and in which workers evolve.
-    private Square[][] grid;
-    // The dimensions of the grid.
-    private int nbCols, nbLines;
-    private double elemSize;
-
-    public enum TerrainMode {
-
-        EDITION, PLAY
-    }
-    private TerrainMode currentMode;
-
-    public enum TerrainTool {
-
-        HOLE, GROUND, WALL, INPUT, OUTPUT, SELECTION
-    }
-    private TerrainTool currentTool;
+    protected TerrainTool currentTool;
 
     public Terrain(int nbLines, int nbCols) {
-        super();
 
-        this.currentMode = TerrainMode.EDITION;
-        this.currentTool = TerrainTool.HOLE;
-
-        pause();
-        this.nbLines = nbLines;
-        this.nbCols = nbCols;
-        grid = new Square[nbLines][];
-        elemSize = 1;
-        for (int i = 0; i < nbLines; i++) {
-            grid[i] = new Square[nbCols];
-            for (int j = 0; j < nbCols; j++) {
-                grid[i][j] = new Ground((j + 0.5) * elemSize, (nbLines - 0.5 - i) * elemSize, elemSize);
-            }
-        }
-        this.xMin = this.getSquare(0, 0).getXMin();
-        this.xMax = this.getSquare(0, this.nbCols - 1).getXMax();
-        this.yMin = this.getSquare(this.nbLines - 1, 0).getYMin();
-        this.yMax = this.getSquare(0, 0).getYMax();
+        model = new TerrainModel(nbLines, nbCols);
+        currentTool = TerrainTool.SELECTION;
     }
 
     /**
@@ -57,6 +26,13 @@ public class Terrain extends Displayable {
      * the script.
      */
     public void evolve() {
+    }
+
+    @Override
+    public void paintComponent(Graphics g) {
+        eraseAll(g);
+        this.paint(g, panelHeight, x0, y0, zoom);
+        super.paintComponent(g);
     }
 
     /**
@@ -69,209 +45,167 @@ public class Terrain extends Displayable {
      * @param zoom zoom factor
      */
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
-        super.paint(g, panelHeight, x0, y0, zoom);
-        for (int i = 0; i < nbLines; i++) {
-            for (int j = 0; j < nbCols; j++) {
-                grid[i][j].paint(g, panelHeight, x0, y0, zoom);
-            }
+
+        for (Square s : ((TerrainModel) model).getSquares()) {
+            s.paint(g, panelHeight, x0, y0, zoom);
         }
     }
 
-    public double getWidth() {
-        return this.nbCols;
-    }
-
-    /**
-     * Switch between Edition and Play modes.
-     *
-     * @return the newly selected mode
-     */
-    public TerrainMode switchModes() {
-        if (currentMode == TerrainMode.EDITION) {
-            currentMode = TerrainMode.PLAY;
-        } else {
-            currentMode = TerrainMode.EDITION;
-        }
-        return currentMode;
+    @Override
+    public boolean pointIsInSelection(double x, double y) {
+        double xConv = x0 + x * zoom;
+        double yConv = panelHeight - (y0 + y * zoom);
+        return ((TerrainModel) model).pointIsInSelection(xConv, yConv);
     }
 
     /**
      * Set the new tool.
      *
      * @param newTool
+     *
      */
     public void setTool(TerrainTool newTool) {
         this.currentTool = newTool;
     }
 
     /**
-     * Action performed when a left click occurs. Usually place or move stuff.
+     * Set the new tool.
+     *
+     * @param s the String in capital letters (ex: "HOLE", or "SELECTION")
      */
-    @Override
-    public void receiveLeftClick(double x, double y) {
-        super.receiveLeftClick(x, y);
-//        System.out.println("Terrain.receiveLeftClick()");
-        if (currentTool == TerrainTool.SELECTION) {
-            isSelecting = true;
-//            System.out.println("IsSelecting becomes true");
-        }
-    }
-
-    @Override
-    public void receiveLeftRelease(double x, double y) {
-        super.receiveLeftRelease(x, y);
-//        System.out.println("Terrain.receiveLeftRelease()");
-
-        if (currentTool == TerrainTool.SELECTION) {
-            isSelecting = false;
-            // TODO Select everything that is inside the selection rectangle.
-            selectContent();
-        }
-        switch (currentTool) {
-            case HOLE:
-            case GROUND:
-            case INPUT:
-            case OUTPUT:
-            case WALL:
-                this.placeSquares();
+    public void setTool(String s) {
+        switch (s) {
+            case "SELECTION":
+                this.setTool(TerrainTool.SELECTION);
+                break;
+            case "GROUND":
+                this.setTool(TerrainTool.GROUND);
+                break;
+            case "HOLE":
+                this.setTool(TerrainTool.HOLE);
+                break;
+            case "INPUT":
+                this.setTool(TerrainTool.INPUT);
+                break;
+            case "OUTPUT":
+                this.setTool(TerrainTool.OUTPUT);
+                break;
+            case "WALL":
+                this.setTool(TerrainTool.WALL);
+                break;
+            case "WORKER":
+                this.setTool(TerrainTool.WORKER);
                 break;
             default:
-                break;
+            // Keep the current tool unchanged.
         }
     }
 
     /**
-     * Get the square that contains the specified coordinates.
+     * Action performed when a left click is received.
      *
-     * @param x x-coordinate of the point we are looking for
-     * @param y y-coordinate of the point we are looking for
-     * @return the square that contains the given point
+     * @param e The event received by the panel
      */
-    public Square getSquareFromCoordinates(double x, double y) {
-        int numLine = (int) ((this.yMax - y) / this.elemSize);
-        int numColumn = (int) ((x - this.xMin) / this.elemSize);
-
-        if (numColumn < 0 || numLine < 0 || numColumn >= nbCols || numLine >= nbLines) {
-            return null;
+    @Override
+    public void mousePressed(MouseEvent e) {
+        xClick = e.getX();
+        yClick = e.getY();
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            leftClickIsActive = true;
+            isSelecting = true;
+        } else if (e.getButton() == MouseEvent.BUTTON2) {
+            wheelClickIsActive = true;
         }
-
-        return this.grid[numLine][numColumn];
-    }
-
-    public Square getSquare(int numLine, int numCol) {
-        return grid[numLine][numCol];
     }
 
     /**
-     * Place squares of the current tool type in the region defined by the
-     * click/release.
+     * Action performed when a left click release is received.
+     *
+     * @param e The event recceived by the panel
      */
-    public void placeSquares() {
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        super.mouseReleased(e);
 
-        int numLineClick = (int) ((this.yMax - yClick) / this.elemSize);
-        int numColumnClick = (int) ((xClick - this.xMin) / this.elemSize);
-        int numLineRelease = (int) ((this.yMax - yRelease) / this.elemSize);
-        int numColumnRelease = (int) ((xRelease - this.xMin) / this.elemSize);
+        TerrainModel tModel = ((TerrainModel) model);
 
-        // Special cases when the click happens outside the grid
-        if (xClick < 0) {
-            numColumnClick--;
-        }
-        if (xRelease < 0) {
-            numColumnRelease--;
-        }
-        if (yClick > nbLines) {
-            numLineClick--;
-        }
-        if (yRelease > nbLines) {
-            numLineRelease--;
-        }
+        double elemSize = tModel.getElemSize();
 
-        int bottomLine = Math.max(numLineClick, numLineRelease);
-        int topLine = Math.min(numLineClick, numLineRelease) + 1;
-        int leftCol = Math.min(numColumnClick, numColumnRelease) + 1;
-        int rightCol = Math.max(numColumnClick, numColumnRelease);
+        xRelease = e.getX();
+        yRelease = e.getY();
 
-        for (int line = topLine; line < bottomLine; line++) {
-            for (int col = leftCol; col < rightCol; col++) {
-                Square newSquare;
-                switch (currentTool) {
-                    case HOLE:
-                        newSquare = new Hole((col + 0.5) * elemSize,
-                                (nbLines - 0.5 - line) * elemSize, elemSize);
-                        break;
-                    case WALL:
-                        newSquare = new Wall((col + 0.5) * elemSize,
-                                (nbLines - 0.5 - line) * elemSize, elemSize);
-                        break;
-                    case INPUT:
-                        newSquare = new Input((col + 0.5) * elemSize,
-                                (nbLines - 0.5 - line) * elemSize, elemSize);
-                        break;
-                    case OUTPUT:
-                        newSquare = new Output((col + 0.5) * elemSize,
-                                (nbLines - 0.5 - line) * elemSize, elemSize);
-                        break;
-                    case GROUND:
-                    default: // Default is ground.
-                        newSquare = new Ground((col + 0.5) * elemSize,
-                                (nbLines - 0.5 - line) * elemSize, elemSize);
-                        break;
-                }
-                setSquare(newSquare, line, col);
+        if (e.getButton() == MouseEvent.BUTTON1) {
+            leftClickIsActive = false;
+
+            double yClickInTerrain = (panelHeight - yClick - y0) / zoom;
+            double yReleaseInTerrain = (panelHeight - yRelease - y0) / zoom;
+
+            double xClickInTerrain = (xClick - x0) / zoom;
+            double xReleaseInTerrain = (xRelease - x0) / zoom;
+
+            int numLineClick = (int) ((model.getYMax() - yClickInTerrain) / elemSize);
+            int numColumnClick = (int) ((xClickInTerrain - model.getXMin()) / elemSize);
+            int numLineRelease = (int) ((model.getYMax() - yReleaseInTerrain) / elemSize);
+            int numColumnRelease = (int) ((xReleaseInTerrain - model.getYMin()) / elemSize);
+
+            int bottomLine = Math.max(numLineClick, numLineRelease);
+            int topLine = Math.min(numLineClick, numLineRelease);
+            int leftCol = Math.min(numColumnClick, numColumnRelease);
+            int rightCol = Math.max(numColumnClick, numColumnRelease);
+
+            if (currentTool == TerrainTool.SELECTION && isSelecting) {
+                tModel.unselectEverything();
             }
+            // Click in a square and release in another one: regular selection by rectangle.
+            for (int line = topLine; line <= bottomLine; line++) {
+                for (int col = leftCol; col <= rightCol; col++) {
+                    switch (currentTool) {
+                        case SELECTION:
+                            if (isSelecting) {
+                                tModel.setSelected(line, col);
+                            }
+                            break;
+                        case HOLE:
+                        case GROUND:
+                        case INPUT:
+                        case OUTPUT:
+                        case WALL:
+                            tModel.placeOneSquare(line, col, currentTool);
+                            break;
+                        case WORKER:
+                            tModel.placeOneSquare(line, col, currentTool);
+                            break;
+                        default:
+                            break;
+                    }
+//                    }
+                }
+            }
+        } else if (e.getButton() == MouseEvent.BUTTON2) {
+            wheelClickIsActive = false;
         }
-    }
-
-    /**
-     * Place the given square at the required position. If the position is
-     * outside the grid, do nothing.
-     *
-     * @param newSquare the future new square added to the grid
-     * @param line
-     * @param col
-     */
-    public void setSquare(Square newSquare, int line, int col) {
-        if (line >= 0 && col >= 0 && line < nbLines && col < nbCols) {
-            this.grid[line][col] = newSquare;
-        }
+        isSelecting = false;
     }
 
     @Override
-    public void selectContent() {
+    public void mouseDragged(MouseEvent e) {
+        super.mouseDragged(e);
 
-        int numLineClick = (int) ((this.yMax - yClick) / this.elemSize);
-        int numColumnClick = (int) ((xClick - this.xMin) / this.elemSize);
-        int numLineRelease = (int) ((this.yMax - yRelease) / this.elemSize);
-        int numColumnRelease = (int) ((xRelease - this.xMin) / this.elemSize);
+        repaint();
+    }
 
-        // Special cases when the click happens outside the grid
-        if (xClick < 0) {
-            numColumnClick--;
-        }
-        if (xRelease < 0) {
-            numColumnRelease--;
-        }
-        if (yClick > nbLines) {
-            numLineClick--;
-        }
-        if (yRelease > nbLines) {
-            numLineRelease--;
-        }
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        super.mouseMoved(e);
+        repaint();
+    }
 
-        int bottomLine = Math.max(numLineClick, numLineRelease);
-        int topLine = Math.min(numLineClick, numLineRelease) + 1;
-        int leftCol = Math.min(numColumnClick, numColumnRelease) + 1;
-        int rightCol = Math.max(numColumnClick, numColumnRelease);
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+    }
 
-        for (int line = topLine; line < bottomLine; line++) {
-            for (int col = leftCol; col < rightCol; col++) {
-                if (line >= topLine && line < bottomLine && col >= leftCol && col < rightCol) {
-                    grid[line][col].setSelected(true);
-                } else {
-                    grid[line][col].setSelected(false);
-                }
-            }
-        }
+    @Override
+    public void receiveCommand(String s) {
+        setTool(s);
     }
 }
