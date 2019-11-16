@@ -11,18 +11,32 @@ import java.awt.Graphics;
  *
  * @author arthurmanoha
  */
-class Square {
+public class Square {
 
-    private double x, y;
+    private double xCenter, yCenter;
     private double size;
 
     private Color color;
 
+    private boolean isSelected;
+
+    private Worker worker;
+
+    /**
+     * Create a square centered at the given (x,y)
+     *
+     * @param x x-coordinate of the center of the square
+     * @param y y-coordinate of the center of the square
+     * @param size size of the square
+     * @param c color of the square
+     */
     public Square(double x, double y, double size, Color c) {
-        this.x = x;
-        this.y = y;
+        this.xCenter = x;
+        this.yCenter = y;
         this.size = size;
         this.color = c;
+        isSelected = false;
+        worker = null;
     }
 
     public Square() {
@@ -30,11 +44,55 @@ class Square {
     }
 
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
-        int xDisplay = (int) (zoom * this.x + x0 - zoom * this.size);
-        int yDisplay = (int) (panelHeight - (zoom * this.y + y0 - zoom * this.size));
+        int xDisplay = (int) (zoom * (this.xCenter - this.size / 2) + x0);
+        int yDisplay = (int) (panelHeight - (zoom * (this.yCenter + this.size / 2) + y0));
         int sizeApp = (int) (size * zoom);
 
         g.setColor(this.color);
         g.fillRect(xDisplay, yDisplay, sizeApp, sizeApp);
+        g.setColor(Color.black);
+        if (isSelected) {
+            g.setColor(Color.yellow);
+        }
+        g.drawRect(xDisplay, yDisplay, sizeApp, sizeApp);
+
+        if (worker != null) {
+            worker.paint(g, panelHeight, x0, y0, zoom);
+        }
+    }
+
+    public double getX() {
+        return this.xCenter;
+    }
+
+    public double getY() {
+        return this.yCenter;
+    }
+
+    public double getXMin() {
+        return this.xCenter - this.size / 2;
+    }
+
+    public double getXMax() {
+        return this.xCenter + this.size / 2;
+    }
+
+    public double getYMin() {
+        return this.yCenter - this.size / 2;
+    }
+
+    public double getYMax() {
+        return this.yCenter + this.size / 2;
+    }
+
+    public void setSelected(boolean newIsSelected) {
+        isSelected = newIsSelected;
+    }
+
+    public void receiveWorker(Worker newGuy) {
+        if (worker == null) {
+            worker = newGuy;
+            worker.setPosition(xCenter, yCenter);
+        }
     }
 }

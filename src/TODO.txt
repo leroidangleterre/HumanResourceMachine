@@ -1,0 +1,25 @@
+TODO:
+
+
+When Terrain receives a event from the mouse (as a controller), it fires an
+event that is received by the model.
+
+When TerrainModel is changed, it fires an event that is received by the
+component, which repaints itself (as a view).
+
+Keyboard events: Detect them and connect them to the appropriate actions.
+
+
+DONE:
+
+
+Mouse events:
+When a click happens on one panel, every mouse movement or mouse release should be redirected to that same panel,
+even when the mouse hovers the other panel.
+
+
+Terrain.setSquare: solve the special case of line/column index over/underflow;
+
+
+Create actual Swing components for the Terrain and the Script, so that Terrain
+is the Swing component (visible and drawn) and TerrainModel is the data.
