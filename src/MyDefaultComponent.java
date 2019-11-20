@@ -170,6 +170,7 @@ public abstract class MyDefaultComponent extends JPanel
     public void mousePressed(MouseEvent e) {
         xClick = e.getX();
         yClick = e.getY();
+//        System.out.println("Compo: click at (" + xClick + ", " + yClick + ");");
         if (e.getButton() == MouseEvent.BUTTON1) {
             leftClickIsActive = true;
         } else if (e.getButton() == MouseEvent.BUTTON2) {
@@ -296,7 +297,7 @@ public abstract class MyDefaultComponent extends JPanel
      * @return true when the point located at (x, y) is inside a selected
      * instruction
      */
-    public abstract boolean pointIsInSelection(double x, double y);
+    public abstract boolean containsPoint(double x, double y);
 
     public abstract void receiveCommand(String s);
 

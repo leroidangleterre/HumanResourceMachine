@@ -21,23 +21,26 @@ public class Instruction extends MyDefaultComponent {
     private int width, height;
 
     // Position in pixels
-    private int x, y;
+    int x, y;
 
     private static int NB_CREATED = 0;
-    private int serial;
     private Color color;
 
     /**
      * Create a new "instruction" component, which will be linked to its model.
      */
     public Instruction() {
+        super();
+
+        zoom = 1;
+
         width = (int) (100 * (1 + Math.random()));
         height = 20;
         x = 0;
         y = 0;
-        serial = NB_CREATED;
+        serialNumber = NB_CREATED;
         NB_CREATED++;
-        switch (serial - 5 * (serial / 5)) {
+        switch (serialNumber - 5 * (serialNumber / 5)) {
             case 0:
                 color = Color.red;
                 break;
@@ -86,7 +89,8 @@ public class Instruction extends MyDefaultComponent {
      * @param panelHeight the height of the drawing area
      * @param x0 x-offset for the origin of the drawing
      * @param y0 y-offset for the origin of the drawing
-     * @param zoom zoom factor
+     * @param zoom zoom factor used to scale things INSIDE the Instruction
+     * component.
      */
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
         g.setColor(color);
@@ -95,6 +99,20 @@ public class Instruction extends MyDefaultComponent {
         int yDisplay = (int) (panelHeight - (y0 + this.y));
 
         g.fillRect(xDisplay, yDisplay, (int) (width * zoom), (int) (height * zoom));
+
+        if (isSelected) {
+//            xDisplay += 50;
+            g.setColor(Color.BLACK);
+            for (int offset = 0; offset < 5; offset++) {
+                g.drawRect(xDisplay + offset, yDisplay + offset,
+                        (int) (width * zoom) - 2 * offset, (int) (height * zoom) - 2 * offset);
+            }
+        }
+
+        g.setColor(Color.black);
+        String text = this.serialNumber + "";
+        g.drawChars(text.toCharArray(), 0, text.length(), xDisplay, yDisplay + g.getFont().getSize());
+
     }
 
     /**
@@ -106,8 +124,35 @@ public class Instruction extends MyDefaultComponent {
      * instruction
      */
     @Override
-    public boolean pointIsInSelection(double x, double y) {
+    public boolean containsPoint(double x, double y) {
 
+        return false;
+    }
+
+    /**
+     * Tell if the instruction spans over the given y-coordinate, regardless of
+     * the x position and width.
+     *
+     * @param yTest
+     * @return
+     */
+    public boolean containsPoint(double yTest) {
+
+//        System.out.println(serialNumber + ": y = " + y + ", h = " + height + ", yTest = " + yTest);
+        return yTest < y && (y - height * zoom) < yTest;
+    }
+
+    /**
+     * Tell if the entire instruction fits between the two given y-coordinates.
+     *
+     * @return
+     */
+    public boolean isContainedBetweenY(double yMin, double yMax) {
+        if (y < yMax) {
+            if (y - height * zoom > yMin) {
+                return true;
+            }
+        }
         return false;
     }
 

@@ -1,5 +1,8 @@
 TODO:
 
+When a group of selected instructions are moved, every time the last non-selected instruction
+has its center overlapped by the moving block, it will be re-ranked to just after the moving block.
+
 
 When Terrain receives a event from the mouse (as a controller), it fires an
 event that is received by the model.

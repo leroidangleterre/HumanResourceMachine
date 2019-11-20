@@ -137,8 +137,23 @@ public class Script extends MyDefaultComponent {
      * instruction
      */
     @Override
-    public boolean pointIsInSelection(double x, double y) {
+    public boolean containsPoint(double x, double y) {
 
+        return false;
+    }
+
+    /**
+     * Tell if a given point is inside a selected instruction.
+     *
+     */
+    public boolean pointIsInSelection(double yTest) {
+        System.out.println("Script: pointIsInSelection");
+        for (Instruction inst : instList) {
+            if (inst.isSelected() && inst.containsPoint(yTest)) {
+                System.out.println("Point is in selection (instruction " + inst.serialNumber + ");");
+                return true;
+            }
+        }
         return false;
     }
 
@@ -167,6 +182,22 @@ public class Script extends MyDefaultComponent {
         }
     }
 
+    // Extract an instruction, and re-insert it at a random position.
+    public void changeOrderOfInstructions() {
+        int rank0 = (int) (Math.random() * this.instList.size());
+        int rank1 = (int) (Math.random() * this.instList.size());
+
+        // Remove instruction at rank0, then insert it at rank1
+        Instruction inst = instList.remove(rank0);
+        instList.add(rank1, inst);
+
+        if (rank0 != rank1) {
+            System.out.println("changed " + rank0 + " to " + rank1);
+        }
+
+        computeSizesAndPositions();
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         eraseAll(g);
@@ -181,13 +212,25 @@ public class Script extends MyDefaultComponent {
      */
     @Override
     public void mousePressed(MouseEvent e) {
+        super.mousePressed(e);
         xClick = e.getX();
         yClick = e.getY();
+        double yClickInScript = (panelHeight - yClick - y0);
         if (e.getButton() == MouseEvent.BUTTON1) {
             leftClickIsActive = true;
-            isSelecting = true;
+            // Click on the selection to start moving that selection;
+            // Click outside the selection to start creating a new selection
+            System.out.println("Script: test for click in selection");
+            if (pointIsInSelection(yClickInScript)) {
+                selectionIsMoving = true;
+                System.out.println("Script: selection is moving");
+            } else {
+                isSelecting = true;
+            }
         } else if (e.getButton() == MouseEvent.BUTTON2) {
             wheelClickIsActive = true;
+            isSelecting = false;
+            selectionIsMoving = false;
         }
     }
 
@@ -198,68 +241,90 @@ public class Script extends MyDefaultComponent {
 
         ScriptModel sModel = ((ScriptModel) model);
 
-        xRelease = e.getX(); // after refacto; may need to be removed
-        yRelease = e.getY();
+        double yClickInScript = (panelHeight - yClick - y0);
+        double yReleaseInScript = (panelHeight - yRelease - y0);
 
-        if (e.getButton() == MouseEvent.BUTTON1) {
-            leftClickIsActive = false;
-        } else if (e.getButton() == MouseEvent.BUTTON2) {
-            wheelClickIsActive = false;
-        }
-
-        double yClickInTerrain = (panelHeight - yClick - y0) / zoom;
-        double yReleaseInTerrain = (panelHeight - yRelease - y0) / zoom;
-
-        double xClickInTerrain = (xClick - x0) / zoom;
-        double xReleaseInTerrain = (xRelease - x0) / zoom;
-
-        int numLineClick = 0;
-        int numColumnClick = 0;
-        int numLineRelease = 0;
-        int numColumnRelease = 0;
-
-        int bottomLine = Math.max(numLineClick, numLineRelease);
-        int topLine = Math.min(numLineClick, numLineRelease);
-        int leftCol = Math.min(numColumnClick, numColumnRelease);
-        int rightCol = Math.max(numColumnClick, numColumnRelease);
+        double yMin = Math.min(yClickInScript, yReleaseInScript);
+        double yMax = Math.max(yClickInScript, yReleaseInScript);
 
         if (currentTool == ScriptTool.SELECTION && isSelecting) {
             sModel.unselectEverything();
         }
-        // Click in a square and release in another one: regular selection by rectangle.
-        for (int line = topLine; line <= bottomLine; line++) {
-            for (int col = leftCol; col <= rightCol; col++) {
-                switch (currentTool) {
-                    case SELECTION:
-                        if (isSelecting) {
+        // Click in an instruction and release in another one: regular selection by rectangle.
+        switch (currentTool) {
+            case SELECTION:
+                // Do the selection action only if the left button was used.
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    if (selectionIsMoving) {
+                        // Stop moving the instructions, snap the coordinates of the components
+                        selectionIsMoving = false;
+
+                    } else {
+                        isSelecting = false;
+                        for (Instruction inst : instList) {
+
+                            // This instruction must be selected if either of these three conditions is met:
+                            // 1) It contains the y-coordinate of the click, or
+                            // 2) It contains the y-coordinate of the release, or
+                            // 3) It is contained between the y-coordinate of the click and that of the release.
+                            if (inst.containsPoint(yMax) || inst.containsPoint(yMin)
+                                    || inst.isContainedBetweenY(yMin, yMax)) {
+                                inst.setSelected(true);
+                            } else {
+                                inst.setSelected(false);
+                            }
                         }
-                        break;
-                    default:
-                        break;
+                    }
                 }
-            }
+                break;
+
+            default:
+                break;
         }
-        isSelecting = false;
     }
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        super.mouseDragged(e);
+        if (selectionIsMoving) {
+            // Move each selected instruction up or down.
+            for (Instruction inst : instList) {
+                if (inst.isSelected()) {
+                    inst.y -= (e.getY() - yMouse); // Y-axis is inverted
+                }
+            }
+            // Detect when one non-selected instruction has to move to the other side of the moving block;
+            // Tell the model to update accordingly.
+            // NB: the Instruction component for the selected instructions must not update its y-coordinate
+            // from the model but only from the mouse movements.
+        } else if (!isSelecting) {
+
+            this.x0 += e.getX() - xMouse;
+            this.y0 -= e.getY() - yMouse; // Y-axis is inverted
+
+        }
+
+        xMouse = e.getX();
+        yMouse = e.getY();
+        repaint();
     }
 
     @Override
-    public void mouseMoved(MouseEvent e) {
+    public void mouseMoved(MouseEvent e
+    ) {
         super.mouseMoved(e);
+        repaint();
     }
 
     @Override
-    public void mouseWheelMoved(double fact, int xMouse, int yMouse) {
+    public void mouseWheelMoved(double fact, int xMouse, int yMouse
+    ) {
         super.mouseWheelMoved(fact, xMouse, yMouse);
         computeSizesAndPositions();
     }
 
     @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
+    public void mouseWheelMoved(MouseWheelEvent e
+    ) {
         super.mouseWheelMoved(e);
         computeSizesAndPositions();
     }
@@ -276,6 +341,7 @@ public class Script extends MyDefaultComponent {
         for (Instruction inst : instList) {
             inst.setPosition(x, y);
             y -= inst.getHeight() * zoom;
+            inst.setZoom(zoom);
         }
     }
 }
