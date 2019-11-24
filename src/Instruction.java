@@ -34,7 +34,7 @@ public class Instruction extends MyDefaultComponent {
 
         zoom = 1;
 
-        width = (int) (100 * (1 + Math.random()));
+        width = (int) (100 + 10 * NB_CREATED);
         height = 20;
         x = 0;
         y = 0;
@@ -164,6 +164,11 @@ public class Instruction extends MyDefaultComponent {
     @Override
     public int getHeight() {
         return height;
+    }
+
+    @Override
+    public int getY() {
+        return y;
     }
 
     @Override

@@ -15,7 +15,9 @@ import java.util.ArrayList;
  */
 public class Script extends MyDefaultComponent {
 
-    double initY0 = 800;
+    double initY0 = 888;
+    double initX0 = 38;
+    double initZoom = 2.853;
 
     public enum ScriptTool {
 
@@ -31,9 +33,9 @@ public class Script extends MyDefaultComponent {
         currentTool = ScriptTool.SELECTION;
         instList = new ArrayList<>();
 
+        x0 = initX0;
         y0 = initY0;
-
-        zoom = 1.0;
+        zoom = initZoom;
     }
 
     /**
@@ -59,6 +61,16 @@ public class Script extends MyDefaultComponent {
      */
     public void addInstruction(Instruction newIns) {
         this.addInstruction(newIns, -1);
+    }
+
+    /**
+     * Remove and return the instruction at the given rank.
+     *
+     * @param rank
+     * @return
+     */
+    public Instruction removeInstruction(int rank) {
+        return instList.remove(rank);
     }
 
     /**
@@ -147,10 +159,8 @@ public class Script extends MyDefaultComponent {
      *
      */
     public boolean pointIsInSelection(double yTest) {
-        System.out.println("Script: pointIsInSelection");
         for (Instruction inst : instList) {
             if (inst.isSelected() && inst.containsPoint(yTest)) {
-                System.out.println("Point is in selection (instruction " + inst.serialNumber + ");");
                 return true;
             }
         }
@@ -177,8 +187,17 @@ public class Script extends MyDefaultComponent {
      */
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
 
+        // First, display all non-selected instructions.
         for (Instruction inst : instList) {
-            inst.paint(g, panelHeight, x0, y0, zoom);
+            if (!inst.isSelected()) {
+                inst.paint(g, panelHeight, x0, y0, zoom);
+            }
+        }
+        // Then, display all selected instructions on top of the rest.
+        for (Instruction inst : instList) {
+            if (inst.isSelected()) {
+                inst.paint(g, panelHeight, x0, y0, zoom);
+            }
         }
     }
 
@@ -187,14 +206,11 @@ public class Script extends MyDefaultComponent {
         int rank0 = (int) (Math.random() * this.instList.size());
         int rank1 = (int) (Math.random() * this.instList.size());
 
-        // Remove instruction at rank0, then insert it at rank1
-        Instruction inst = instList.remove(rank0);
-        instList.add(rank1, inst);
-
         if (rank0 != rank1) {
-            System.out.println("changed " + rank0 + " to " + rank1);
+            // Remove instruction at rank0, then insert it at rank1
+            Instruction inst = instList.remove(rank0);
+            instList.add(rank1, inst);
         }
-
         computeSizesAndPositions();
     }
 
@@ -220,10 +236,8 @@ public class Script extends MyDefaultComponent {
             leftClickIsActive = true;
             // Click on the selection to start moving that selection;
             // Click outside the selection to start creating a new selection
-            System.out.println("Script: test for click in selection");
             if (pointIsInSelection(yClickInScript)) {
                 selectionIsMoving = true;
-                System.out.println("Script: selection is moving");
             } else {
                 isSelecting = true;
             }
@@ -281,6 +295,7 @@ public class Script extends MyDefaultComponent {
             default:
                 break;
         }
+        computeSizesAndPositions();
     }
 
     @Override
@@ -292,10 +307,8 @@ public class Script extends MyDefaultComponent {
                     inst.y -= (e.getY() - yMouse); // Y-axis is inverted
                 }
             }
-            // Detect when one non-selected instruction has to move to the other side of the moving block;
-            // Tell the model to update accordingly.
-            // NB: the Instruction component for the selected instructions must not update its y-coordinate
-            // from the model but only from the mouse movements.
+            detectInstructionOverlap();
+
         } else if (!isSelecting) {
 
             this.x0 += e.getX() - xMouse;
@@ -337,11 +350,89 @@ public class Script extends MyDefaultComponent {
 
         // The instructions will be located in the (x positive, y negative) region,
         // with the first instruction starting at (0,0).
-        int x = 0, y = 0;
+        // Special case for instructions that are being moved: no update of the y-coordinate.
+        int x, y;
+
+        x = 0;
+        y = 0;
         for (Instruction inst : instList) {
-            inst.setPosition(x, y);
+            if (!(selectionIsMoving && inst.isSelected())) {
+                if (y != inst.getY()) {
+                    // A non-selected instruction is being translated.
+                    inst.setPosition(x, y);
+                }
+            }
             y -= inst.getHeight() * zoom;
             inst.setZoom(zoom);
         }
+
+    } // Detect when one non-selected instruction has to move to the other side of the moving block;
+    // Tell the model to update accordingly.
+    // NB: the Instruction component for the selected instructions must not update its y-coordinate
+    // from the model but only from the mouse movements.
+
+    private void detectInstructionOverlap() {
+
+        // Swap any two instructions that are in one order in the list, but in the other order with respect to their y-coordinates.
+        boolean mustLoop;
+
+        do {
+            mustLoop = false;
+            for (int i = 0; i < instList.size(); i++) {
+                Instruction instI = instList.get(i);
+                for (int j = i + 1; j < instList.size(); j++) {
+                    // Test instructions i and j (with j>i)
+                    Instruction instJ = instList.get(j);
+                    if (instJ.getY() > instI.getY()) {
+                        swapInstructions(i, j);
+                        mustLoop = true;
+                    }
+                }
+            }
+        } while (mustLoop);
+
+        repaint();
+    }
+
+    /**
+     * Swap two instructions. If at least one index is incorrect, do nothing.
+     *
+     * @param index0 the index of the first instruction
+     * @param index1 the index of the second instruction
+     */
+    private void swapInstructions(int index0, int index1) {
+        if (index0 == index1) {
+            return;
+        }
+        // Important: the second instruction is removed first, and reinserted first.
+        Instruction second = instList.remove(Math.max(index0, index1));
+        Instruction first = instList.remove(Math.min(index0, index1));
+
+        // Adding formerly-second instruction at first index;
+        instList.add(index0, second);
+        // Adding formerly-first instruction at second index;
+        instList.add(index1, first);
+        computeSizesAndPositions();
+        repaint();
+    }
+
+    /**
+     * Find at which rank the given instruction is located within the script.
+     *
+     * @param inst the instruction we search for
+     * @return -1 if the instruction does not exist in the script, the correct
+     * index otherwise.
+     */
+    private int findIndexOf(Instruction instParam) {
+        int index = 0;
+        for (Instruction inst : instList) {
+            if (instParam.equals(inst)) {
+                // We found the instruction.
+                return index;
+            }
+            index++;
+        }
+        // At this step, no instruction was found.
+        return -1;
     }
 }
