@@ -52,7 +52,7 @@ public class Terrain extends MyDefaultComponent {
     }
 
     @Override
-    public boolean pointIsInSelection(double x, double y) {
+    public boolean containsPoint(double x, double y) {
         double xConv = x0 + x * zoom;
         double yConv = panelHeight - (y0 + y * zoom);
         return ((TerrainModel) model).pointIsInSelection(xConv, yConv);
@@ -108,6 +108,7 @@ public class Terrain extends MyDefaultComponent {
      */
     @Override
     public void mousePressed(MouseEvent e) {
+        super.mousePressed(e);
         xClick = e.getX();
         yClick = e.getY();
         if (e.getButton() == MouseEvent.BUTTON1) {
@@ -190,7 +191,6 @@ public class Terrain extends MyDefaultComponent {
     @Override
     public void mouseDragged(MouseEvent e) {
         super.mouseDragged(e);
-
         repaint();
     }
 

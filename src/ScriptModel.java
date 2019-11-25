@@ -44,6 +44,10 @@ public class ScriptModel extends MyDefaultModel {
 
     }
 
+    public void selectContent(int numInstr) {
+
+    }
+
     /**
      * Add a new instruction at the specified position.
      *
@@ -66,6 +70,10 @@ public class ScriptModel extends MyDefaultModel {
 
     public ArrayList<InstructionModel> getInstructions() {
         return instructions;
+    }
+
+    public int getNbInstructions() {
+        return instructions.size();
     }
 
     public void play() {

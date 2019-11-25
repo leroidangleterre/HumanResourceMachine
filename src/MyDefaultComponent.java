@@ -49,6 +49,7 @@ public abstract class MyDefaultComponent extends JPanel
         isSelecting = false;
 
         this.addKeyListener(new KeyboardListener(this));
+        repaint();
     }
 
     public void eraseAll(Graphics g) {
@@ -109,8 +110,8 @@ public abstract class MyDefaultComponent extends JPanel
     }
 
     public void translate(double dx, double dy) {
-        this.x0 += dx;
-        this.y0 += dy;
+        setX0(x0 + dx);
+        setY0(y0 + dy);
         repaint();
     }
 
@@ -131,7 +132,7 @@ public abstract class MyDefaultComponent extends JPanel
     public void resetView() {
 
         int panelWidth = this.getWidth();
-        int panelHeight = this.getHeight();
+        panelHeight = this.getHeight();
 
         // Displayable dimensions:
         double dispXMax = model.getXMax();
@@ -140,25 +141,25 @@ public abstract class MyDefaultComponent extends JPanel
         double dispYMin = model.getYMin();
 
         zoom = panelWidth / (dispXMax - dispXMin);
-        x0 = 0;
-        y0 = panelHeight / 2 - (dispYMin + dispYMax) * zoom / 2;
+        setX0(0);
+        setY0(panelHeight / 2 - (dispYMin + dispYMax) * zoom / 2);
 
         repaint();
     }
 
     public void swipe(int dx, int dy) {
-        this.x0 += dx;
-        this.y0 += dy;
+        setX0(x0 + dx);
+        setY0(y0 + dy);
         repaint();
     }
 
     public void zoomIn() {
-        this.zoom *= 1.1;
+        setZoom(zoom * 1.1);
         repaint();
     }
 
     public void zoomOut() {
-        this.zoom /= 1.1;
+        setZoom(zoom / 1.1);
         repaint();
     }
 
@@ -224,8 +225,8 @@ public abstract class MyDefaultComponent extends JPanel
         } else if (selectionIsMoving) {
 
         } else {
-            this.x0 += e.getX() - xMouse;
-            this.y0 -= e.getY() - yMouse; // Y-axis is inverted
+            setX0(this.x0 + e.getX() - xMouse);
+            setY0(this.y0 - (e.getY() - yMouse)); // Y-axis is inverted
         }
         xMouse = e.getX();
         yMouse = e.getY();
@@ -237,10 +238,10 @@ public abstract class MyDefaultComponent extends JPanel
 
         panelHeight = (int) this.getSize().getHeight();
 
-        x0 = fact * (x0 - xMouse) + xMouse;
-        y0 = (panelHeight - yMouse) + fact * (y0 - (panelHeight - yMouse));
+        setX0(fact * (x0 - xMouse) + xMouse);
+        setY0((panelHeight - yMouse) + fact * (y0 - (panelHeight - yMouse)));
 
-        this.zoom *= fact;
+        setZoom(zoom * fact);
         repaint();
     }
 
@@ -296,7 +297,7 @@ public abstract class MyDefaultComponent extends JPanel
      * @return true when the point located at (x, y) is inside a selected
      * instruction
      */
-    public abstract boolean pointIsInSelection(double x, double y);
+    public abstract boolean containsPoint(double x, double y);
 
     public abstract void receiveCommand(String s);
 
