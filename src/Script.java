@@ -2,6 +2,7 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -15,9 +16,11 @@ import java.util.ArrayList;
  */
 public class Script extends MyDefaultComponent {
 
+    protected boolean newInstructionBeingCreated;
+
     double initY0 = 888;
     double initX0 = 38;
-    double initZoom = 2.853;
+    double initZoom = 2;
 
     public enum ScriptTool {
 
@@ -36,6 +39,7 @@ public class Script extends MyDefaultComponent {
         x0 = initX0;
         y0 = initY0;
         zoom = initZoom;
+        newInstructionBeingCreated = false;
     }
 
     /**
@@ -74,6 +78,22 @@ public class Script extends MyDefaultComponent {
     }
 
     /**
+     * Remove any selected instruction.
+     *
+     */
+    public void deleteSelectedInstructions() {
+
+        Iterator<Instruction> iter = instList.iterator();
+        while (iter.hasNext()) {
+            if (iter.next().isSelected()) {
+                iter.remove();
+            }
+        }
+
+        computeSizesAndPositions();
+    }
+
+    /**
      * Make each worker advance one step in their own script.
      *
      */
@@ -92,6 +112,9 @@ public class Script extends MyDefaultComponent {
 
     public void unselectEverything() {
         model.unselectEverything();
+        for (Instruction inst : instList) {
+            inst.setSelected(false);
+        }
     }
 
     /**
@@ -101,7 +124,46 @@ public class Script extends MyDefaultComponent {
      */
     @Override
     public void receiveCommand(String text) {
-        setTool(text);
+        Instruction newInst = null;
+        switch (text) {
+            // Valid commands: MOVE, PICKUP, DROP, SELECTION
+            case "MOVE":
+                newInst = new Instruction();
+                break;
+            case "PICKUP":
+                newInst = new Instruction();
+                break;
+            case "DROP":
+                newInst = new Instruction();
+                break;
+            case "DELETEINSTR":
+                deleteSelectedInstructions();
+                break;
+            default:
+                break;
+        }
+        if (newInst != null) {
+
+            // The new instruction is placed at the top of the panel.
+            int apparentY = 0;
+            int newY = (int) ((panelHeight - apparentY - this.y0));
+            int xApparent = 0;
+
+            newInst.setPosition(xApparent, newY);
+            unselectEverything();
+            newInst.setSelected(true);
+            selectionIsMoving = true;
+            newInstructionBeingCreated = true;
+
+            // Insert the instruction at the appropriate position.
+            int newIndex = 0;
+            while (newIndex < instList.size() && instList.get(newIndex).getY() > newInst.getY()) {
+                newIndex++;
+            }
+
+            instList.add(newIndex, newInst);
+        }
+        repaint();
     }
 
     /**
@@ -157,6 +219,9 @@ public class Script extends MyDefaultComponent {
     /**
      * Tell if a given point is inside a selected instruction.
      *
+     * @param yTest the y-coordinate of the tested point
+     * @return true when the point is inside the instruction, regardless of its
+     * x-coordinate
      */
     public boolean pointIsInSelection(double yTest) {
         for (Instruction inst : instList) {
@@ -241,6 +306,7 @@ public class Script extends MyDefaultComponent {
             } else {
                 isSelecting = true;
             }
+            newInstructionBeingCreated = false;
         } else if (e.getButton() == MouseEvent.BUTTON2) {
             wheelClickIsActive = true;
             isSelecting = false;
@@ -298,15 +364,23 @@ public class Script extends MyDefaultComponent {
         computeSizesAndPositions();
     }
 
+    private void moveSelectedInstructions(int dy) {
+        // Move each selected instruction up or down.
+        for (Instruction inst : instList) {
+            if (inst.isSelected()) {
+                inst.y += dy;
+            }
+        }
+        detectInstructionOverlap();
+        repaint();
+    }
+
     @Override
     public void mouseDragged(MouseEvent e) {
         if (selectionIsMoving) {
-            // Move each selected instruction up or down.
-            for (Instruction inst : instList) {
-                if (inst.isSelected()) {
-                    inst.y -= (e.getY() - yMouse); // Y-axis is inverted
-                }
-            }
+
+            moveSelectedInstructions(-(int) (e.getY() - yMouse)); // Y-axis is inverted
+
             detectInstructionOverlap();
 
         } else if (!isSelecting) {
@@ -318,26 +392,37 @@ public class Script extends MyDefaultComponent {
 
         xMouse = e.getX();
         yMouse = e.getY();
+
         repaint();
     }
 
     @Override
-    public void mouseMoved(MouseEvent e
-    ) {
+    public void mouseMoved(MouseEvent e) {
         super.mouseMoved(e);
+        mouseMoved(e.getX(), e.getY());
+    }
+
+    @Override
+    public void mouseMoved(int x, int y) {
+
+        if (selectionIsMoving || newInstructionBeingCreated) {
+
+            moveSelectedInstructions(-(int) (y - yMouse)); // Y-axis is inverted
+
+            detectInstructionOverlap();
+        }
+        super.mouseMoved(x, y);
         repaint();
     }
 
     @Override
-    public void mouseWheelMoved(double fact, int xMouse, int yMouse
-    ) {
+    public void mouseWheelMoved(double fact, int xMouse, int yMouse) {
         super.mouseWheelMoved(fact, xMouse, yMouse);
         computeSizesAndPositions();
     }
 
     @Override
-    public void mouseWheelMoved(MouseWheelEvent e
-    ) {
+    public void mouseWheelMoved(MouseWheelEvent e) {
         super.mouseWheelMoved(e);
         computeSizesAndPositions();
     }
@@ -404,6 +489,7 @@ public class Script extends MyDefaultComponent {
         if (index0 == index1) {
             return;
         }
+
         // Important: the second instruction is removed first, and reinserted first.
         Instruction second = instList.remove(Math.max(index0, index1));
         Instruction first = instList.remove(Math.min(index0, index1));

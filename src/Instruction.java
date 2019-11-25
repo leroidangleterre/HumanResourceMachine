@@ -34,8 +34,8 @@ public class Instruction extends MyDefaultComponent {
 
         zoom = 1;
 
-        width = (int) (100 + 10 * NB_CREATED);
-        height = 20;
+        width = 300;
+        height = 30;
         x = 0;
         y = 0;
         serialNumber = NB_CREATED;
@@ -101,7 +101,6 @@ public class Instruction extends MyDefaultComponent {
         g.fillRect(xDisplay, yDisplay, (int) (width * zoom), (int) (height * zoom));
 
         if (isSelected) {
-//            xDisplay += 50;
             g.setColor(Color.BLACK);
             for (int offset = 0; offset < 5; offset++) {
                 g.drawRect(xDisplay + offset, yDisplay + offset,
@@ -138,7 +137,6 @@ public class Instruction extends MyDefaultComponent {
      */
     public boolean containsPoint(double yTest) {
 
-//        System.out.println(serialNumber + ": y = " + y + ", h = " + height + ", yTest = " + yTest);
         return yTest < y && (y - height * zoom) < yTest;
     }
 
