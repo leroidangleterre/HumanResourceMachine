@@ -14,8 +14,8 @@ public class TerrainModel extends MyDefaultModel {
     // The grid that contains squares (walls, ground, ...) and in which workers evolve.
     protected Square[][] grid;
     // The dimensions of the grid.
-    private int nbCols, nbLines;
-    private double elemSize;
+    private final int nbCols, nbLines;
+    private final double elemSize;
 
     public TerrainModel(int nbLines, int nbCols) {
 

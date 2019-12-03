@@ -1,7 +1,5 @@
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
 
 
 /*
@@ -24,7 +22,7 @@ public class Instruction extends MyDefaultComponent {
     int x, y;
 
     private static int NB_CREATED = 0;
-    private Color color;
+    protected Color color;
 
     /**
      * Create a new "instruction" component, which will be linked to its model.
@@ -40,25 +38,7 @@ public class Instruction extends MyDefaultComponent {
         y = 0;
         serialNumber = NB_CREATED;
         NB_CREATED++;
-        switch (serialNumber - 5 * (serialNumber / 5)) {
-            case 0:
-                color = Color.red;
-                break;
-            case 1:
-                color = Color.blue;
-                break;
-            case 2:
-                color = Color.orange;
-                break;
-            case 3:
-                color = Color.green;
-                break;
-            case 4:
-                color = Color.magenta;
-                break;
-            default:
-                color = Color.gray;
-        }
+        color = Color.gray;
 
         // Model creation
         this.model = new InstructionModel();
@@ -72,12 +52,22 @@ public class Instruction extends MyDefaultComponent {
         return isSelected;
     }
 
-    //* Specify at what position the component will be drawn.
+    /**
+     * Specify at what position the component will be drawn.
+     *
+     * @param newX
+     * @param newY
+     */
     public void setPosition(int newX, int newY) {
         x = newX;
         y = newY;
     }
 
+    /**
+     * Get the model associated with this component
+     *
+     * @return the model
+     */
     public InstructionModel getModel() {
         return (InstructionModel) model;
     }
@@ -115,20 +105,6 @@ public class Instruction extends MyDefaultComponent {
     }
 
     /**
-     * Tell if a given point lies inside a selected component.
-     *
-     * @param x
-     * @param y
-     * @return true when the point located at (x, y) is inside a selected
-     * instruction
-     */
-    @Override
-    public boolean containsPoint(double x, double y) {
-
-        return false;
-    }
-
-    /**
      * Tell if the instruction spans over the given y-coordinate, regardless of
      * the x position and width.
      *
@@ -143,6 +119,8 @@ public class Instruction extends MyDefaultComponent {
     /**
      * Tell if the entire instruction fits between the two given y-coordinates.
      *
+     * @param yMin
+     * @param yMax
      * @return
      */
     public boolean isContainedBetweenY(double yMin, double yMax) {
@@ -167,18 +145,6 @@ public class Instruction extends MyDefaultComponent {
     @Override
     public int getY() {
         return y;
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
     }
 
     @Override

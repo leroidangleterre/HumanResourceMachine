@@ -1,15 +1,17 @@
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import javax.swing.JPanel;
 
-public abstract class MyDefaultComponent extends JPanel
-        implements KeyListener, MouseMotionListener, MouseWheelListener {
+public abstract class MyDefaultComponent extends JPanel implements MouseListener,
+        MouseMotionListener, MouseWheelListener, KeyListener {
 
     protected MyDefaultModel model;
 
@@ -31,14 +33,21 @@ public abstract class MyDefaultComponent extends JPanel
 
     // Mouse information. In PIXELS, not converted !
     protected double xClick, yClick, xRelease, yRelease, xMouse, yMouse;
+    protected double xMousePrevious, yMousePrevious;
     protected double xRightClick, yRightClick;
     protected boolean leftClickIsActive, wheelClickIsActive;
+
+    private static int COMPONENT_WIDTH = 800;
+    private static int COMPONENT_HEIGHT = 700;
 
     public MyDefaultComponent() {
         super();
         this.x0 = 67;
         this.y0 = 69;
         this.zoom = 110.8;
+
+        setPreferredSize(new Dimension(COMPONENT_WIDTH, COMPONENT_HEIGHT));
+        setSize(new Dimension(COMPONENT_WIDTH, COMPONENT_HEIGHT));
 
         this.serialNumber = MyDefaultComponent.NB_GP_CREATED;
         MyDefaultComponent.NB_GP_CREATED++;
@@ -48,7 +57,16 @@ public abstract class MyDefaultComponent extends JPanel
         selectionIsMoving = false;
         isSelecting = false;
 
-        this.addKeyListener(new KeyboardListener(this));
+        this.addKeyListener(this);
+        this.addMouseListener(this);
+        this.addMouseMotionListener(this);
+        this.addMouseWheelListener(this);
+
+        xMouse = 0;
+        yMouse = 0;
+        xMousePrevious = 0;
+        yMousePrevious = 0;
+
         repaint();
     }
 
@@ -168,6 +186,7 @@ public abstract class MyDefaultComponent extends JPanel
      *
      * @param e The event received by the panel
      */
+    @Override
     public void mousePressed(MouseEvent e) {
         xClick = e.getX();
         yClick = e.getY();
@@ -183,6 +202,7 @@ public abstract class MyDefaultComponent extends JPanel
      *
      * @param e The event recceived by the panel
      */
+    @Override
     public void mouseReleased(MouseEvent e) {
         xRelease = e.getX();
         yRelease = e.getY();
@@ -195,21 +215,28 @@ public abstract class MyDefaultComponent extends JPanel
         repaint();
     }
 
-    /**
-     * Action performed when the mouse is moved to the pixel (x, y)
-     *
-     * @param x the x-position of the mouse after the move, in pixel
-     * @param y the y-position of the mouse after the move, in pixel
-     */
-    public void mouseMoved(int x, int y) {
-        xMouse = x;
-        yMouse = y;
-
-        repaint();
+    @Override
+    public void mouseClicked(MouseEvent e) {
     }
 
     @Override
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+    }
+
+    /**
+     * Action performed when the mouse is moved to the pixel (x, y)
+     *
+     * @param e
+     */
+    @Override
     public void mouseMoved(MouseEvent e) {
+        xMousePrevious = xMouse;
+        yMousePrevious = yMouse;
+
         xMouse = e.getX();
         yMouse = e.getY();
     }
@@ -225,23 +252,12 @@ public abstract class MyDefaultComponent extends JPanel
         } else if (selectionIsMoving) {
 
         } else {
-            setX0(this.x0 + e.getX() - xMouse);
-            setY0(this.y0 - (e.getY() - yMouse)); // Y-axis is inverted
+            setX0(x0 + e.getX() - xMouse);
+            setY0(y0 - (e.getY() - yMouse)); // Y-axis is inverted
         }
         xMouse = e.getX();
         yMouse = e.getY();
 
-        repaint();
-    }
-
-    public void mouseWheelMoved(double fact, int xMouse, int yMouse) {
-
-        panelHeight = (int) this.getSize().getHeight();
-
-        setX0(fact * (x0 - xMouse) + xMouse);
-        setY0((panelHeight - yMouse) + fact * (y0 - (panelHeight - yMouse)));
-
-        setZoom(zoom * fact);
         repaint();
     }
 
@@ -255,7 +271,13 @@ public abstract class MyDefaultComponent extends JPanel
             zoomFactor = 1.1;
         }
 
-        mouseWheelMoved(zoomFactor, e.getX(), e.getY());
+        panelHeight = (int) this.getSize().getHeight();
+
+        setX0(zoomFactor * (x0 - xMouse) + xMouse);
+        setY0((panelHeight - yMouse) + zoomFactor * (y0 - (panelHeight - yMouse)));
+
+        setZoom(zoom * zoomFactor);
+        repaint();
     }
 
     @Override
@@ -283,6 +305,7 @@ public abstract class MyDefaultComponent extends JPanel
 
     @Override
     public void keyTyped(KeyEvent e) {
+
     }
 
     @Override
@@ -290,15 +313,9 @@ public abstract class MyDefaultComponent extends JPanel
     }
 
     /**
-     * Tell if a given point lies inside a selected component.
+     * Receive a command.
      *
-     * @param x
-     * @param y
-     * @return true when the point located at (x, y) is inside a selected
-     * instruction
+     * @param text the command
      */
-    public abstract boolean containsPoint(double x, double y);
-
-    public abstract void receiveCommand(String s);
-
+    public abstract void receiveCommand(String text);
 }

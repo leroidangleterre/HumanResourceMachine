@@ -1,6 +1,6 @@
 TODO:
 
-
+Make sure the window and the two components are painted at launch.
 
 When Terrain receives a event from the mouse (as a controller), it fires an
 event that is received by the model.
