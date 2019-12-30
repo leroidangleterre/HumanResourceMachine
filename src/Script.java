@@ -128,7 +128,7 @@ public class Script extends MyDefaultComponent {
         switch (text) {
             // Valid commands: MOVE, PICKUP, DROP, SELECTION
             case "MOVE":
-                newInst = new Instruction();
+                newInst = new MoveInstruction();
                 break;
             case "PICKUP":
                 newInst = new Instruction();
@@ -203,20 +203,6 @@ public class Script extends MyDefaultComponent {
     }
 
     /**
-     * Tell if a given point lies inside a selected component.
-     *
-     * @param x
-     * @param y
-     * @return true when the point located at (x, y) is inside a selected
-     * instruction
-     */
-    @Override
-    public boolean containsPoint(double x, double y) {
-
-        return false;
-    }
-
-    /**
      * Tell if a given point is inside a selected instruction.
      *
      * @param yTest the y-coordinate of the tested point
@@ -230,6 +216,15 @@ public class Script extends MyDefaultComponent {
             }
         }
         return false;
+    }
+
+    private Instruction getInstruction(double y) {
+        for (Instruction inst : instList) {
+            if (inst.containsPoint(y)) {
+                return inst;
+            }
+        }
+        return null;
     }
 
     /**
@@ -297,20 +292,30 @@ public class Script extends MyDefaultComponent {
         xClick = e.getX();
         yClick = e.getY();
         double yClickInScript = (panelHeight - yClick - y0);
-        if (e.getButton() == MouseEvent.BUTTON1) {
-            leftClickIsActive = true;
-            // Click on the selection to start moving that selection;
-            // Click outside the selection to start creating a new selection
-            if (pointIsInSelection(yClickInScript)) {
-                selectionIsMoving = true;
-            } else {
-                isSelecting = true;
-            }
-            newInstructionBeingCreated = false;
-        } else if (e.getButton() == MouseEvent.BUTTON2) {
-            wheelClickIsActive = true;
-            isSelecting = false;
-            selectionIsMoving = false;
+        switch (e.getButton()) {
+            case MouseEvent.BUTTON1:
+                leftClickIsActive = true;
+                // Click on the selection to start moving that selection;
+                // Click outside the selection to start creating a new selection
+                if (pointIsInSelection(yClickInScript)) {
+                    selectionIsMoving = true;
+                } else {
+                    isSelecting = true;
+                }
+                newInstructionBeingCreated = false;
+                break;
+            case MouseEvent.BUTTON2:
+                wheelClickIsActive = true;
+                isSelecting = false;
+                selectionIsMoving = false;
+                break;
+            case MouseEvent.BUTTON3:
+                // Right click shall trigger a specific behavior in the instruction
+                Instruction inst = this.getInstruction(yClickInScript);
+                inst.receiveCommand("RECEIVE_RIGHT_CLICK");
+                break;
+            default:
+                break;
         }
     }
 
@@ -364,6 +369,12 @@ public class Script extends MyDefaultComponent {
         computeSizesAndPositions();
     }
 
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        super.mouseWheelMoved((MouseWheelEvent) e);
+        computeSizesAndPositions();
+    }
+
     private void moveSelectedInstructions(int dy) {
         // Move each selected instruction up or down.
         for (Instruction inst : instList) {
@@ -379,14 +390,14 @@ public class Script extends MyDefaultComponent {
     public void mouseDragged(MouseEvent e) {
         if (selectionIsMoving) {
 
-            moveSelectedInstructions(-(int) (e.getY() - yMouse)); // Y-axis is inverted
+            moveSelectedInstructions(-(int) (e.getY() - yMouse));
 
             detectInstructionOverlap();
 
         } else if (!isSelecting) {
 
             this.x0 += e.getX() - xMouse;
-            this.y0 -= e.getY() - yMouse; // Y-axis is inverted
+            this.y0 -= e.getY() - yMouse;
 
         }
 
@@ -399,32 +410,12 @@ public class Script extends MyDefaultComponent {
     @Override
     public void mouseMoved(MouseEvent e) {
         super.mouseMoved(e);
-        mouseMoved(e.getX(), e.getY());
-    }
-
-    @Override
-    public void mouseMoved(int x, int y) {
 
         if (selectionIsMoving || newInstructionBeingCreated) {
-
-            moveSelectedInstructions(-(int) (y - yMouse)); // Y-axis is inverted
-
+            moveSelectedInstructions(-(int) (e.getY() - yMousePrevious));
             detectInstructionOverlap();
         }
-        super.mouseMoved(x, y);
         repaint();
-    }
-
-    @Override
-    public void mouseWheelMoved(double fact, int xMouse, int yMouse) {
-        super.mouseWheelMoved(fact, xMouse, yMouse);
-        computeSizesAndPositions();
-    }
-
-    @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        super.mouseWheelMoved(e);
-        computeSizesAndPositions();
     }
 
     /**
@@ -441,6 +432,7 @@ public class Script extends MyDefaultComponent {
         x = 0;
         y = 0;
         for (Instruction inst : instList) {
+            inst.setZoom(zoom);
             if (!(selectionIsMoving && inst.isSelected())) {
                 if (y != inst.getY()) {
                     // A non-selected instruction is being translated.
@@ -448,17 +440,20 @@ public class Script extends MyDefaultComponent {
                 }
             }
             y -= inst.getHeight() * zoom;
-            inst.setZoom(zoom);
         }
 
-    } // Detect when one non-selected instruction has to move to the other side of the moving block;
-    // Tell the model to update accordingly.
-    // NB: the Instruction component for the selected instructions must not update its y-coordinate
-    // from the model but only from the mouse movements.
+    }
 
+    /**
+     * Detect when one non-selected instruction has to move to the other side of
+     * the moving block; Tell the model to update accordingly. NB: the
+     * Instruction component for the selected instructions must not update its
+     * y-coordinate from the model but only from the mouse movements.
+     */
     private void detectInstructionOverlap() {
 
-        // Swap any two instructions that are in one order in the list, but in the other order with respect to their y-coordinates.
+        // Swap any two instructions that are in one order in the list,
+        // but in the other order with respect to their y-coordinates.
         boolean mustLoop;
 
         do {

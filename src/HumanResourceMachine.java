@@ -1,5 +1,3 @@
-import javax.swing.JFrame;
-
 /**
  * Main class for the Human Resource Machine game.
  *
@@ -11,25 +9,25 @@ public class HumanResourceMachine {
         int nbLines = 8;
         int nbCols = 12;
 
-        int nbInstructions = 15;
+        int nbInstructions = 12;
 
         Terrain terrain = new Terrain(nbLines, nbCols);
         Script script = new Script();
 
         MyDefaultComponent leftPanel = terrain;
         MyDefaultComponent rightPanel = script;
-        Window w;
-        w = new Window(leftPanel, rightPanel);
+        Window w = new Window(leftPanel, rightPanel);
 
         for (int i = 0; i < nbInstructions; i++) {
-            script.addInstruction(new Instruction());
+            Instruction inst;
+            if (3 * (i / 3) == i) {
+                inst = new MoveInstruction();
+            } else {
+                inst = new Instruction();
+            }
+            script.addInstruction(inst);
         }
 
-        w.resetSplitPosition();
-
-        w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        w.pack();
-        w.setVisible(true);
-        w.repaint();
+        w.revalidate();
     }
 }

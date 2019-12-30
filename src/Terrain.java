@@ -1,6 +1,5 @@
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -49,13 +48,6 @@ public class Terrain extends MyDefaultComponent {
         for (Square s : ((TerrainModel) model).getSquares()) {
             s.paint(g, panelHeight, x0, y0, zoom);
         }
-    }
-
-    @Override
-    public boolean containsPoint(double x, double y) {
-        double xConv = x0 + x * zoom;
-        double yConv = panelHeight - (y0 + y * zoom);
-        return ((TerrainModel) model).pointIsInSelection(xConv, yConv);
     }
 
     /**
@@ -179,7 +171,6 @@ public class Terrain extends MyDefaultComponent {
                         default:
                             break;
                     }
-//                    }
                 }
             }
         } else if (e.getButton() == MouseEvent.BUTTON2) {
@@ -201,11 +192,12 @@ public class Terrain extends MyDefaultComponent {
     }
 
     @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
+    public void receiveCommand(String s) {
+        setTool(s);
     }
 
     @Override
-    public void receiveCommand(String s) {
-        setTool(s);
+    public void mouseClicked(MouseEvent e) {
+        super.mouseClicked(e);
     }
 }
