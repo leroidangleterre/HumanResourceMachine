@@ -13,10 +13,12 @@ import java.awt.Graphics;
  */
 public class Instruction extends MyDefaultComponent {
 
+    private InstructionModel model;
+
     private boolean isSelected;
 
     // Dimensions in pixels
-    private int width, height;
+    protected int width, height;
 
     // Position in pixels
     int x, y;
@@ -31,11 +33,8 @@ public class Instruction extends MyDefaultComponent {
         super();
 
         zoom = 1;
-
-        width = 300;
+        width = 150;
         height = 30;
-        x = 0;
-        y = 0;
         serialNumber = NB_CREATED;
         NB_CREATED++;
         color = Color.gray;
@@ -90,6 +89,8 @@ public class Instruction extends MyDefaultComponent {
 
         g.fillRect(xDisplay, yDisplay, (int) (width * zoom), (int) (height * zoom));
 
+        // If the instruction is selected, we draw a few black rectangles around it.
+        // TODO: replace this with a large-stroke rectangle.
         if (isSelected) {
             g.setColor(Color.BLACK);
             for (int offset = 0; offset < 5; offset++) {
@@ -112,7 +113,6 @@ public class Instruction extends MyDefaultComponent {
      * @return
      */
     public boolean containsPoint(double yTest) {
-
         return yTest < y && (y - height * zoom) < yTest;
     }
 

@@ -9,7 +9,7 @@ public class HumanResourceMachine {
         int nbLines = 8;
         int nbCols = 12;
 
-        int nbInstructions = 4;
+        int nbInstructions = 12;
 
         Terrain terrain = new Terrain(nbLines, nbCols);
         Script script = new Script();
@@ -19,7 +19,15 @@ public class HumanResourceMachine {
         Window w = new Window(leftPanel, rightPanel);
 
         for (int i = 0; i < nbInstructions; i++) {
-            script.addInstruction(new Instruction());
+            Instruction inst;
+            if (3 * (i / 3) == i) {
+                inst = new MoveInstruction();
+            } else {
+                inst = new Instruction();
+            }
+            script.addInstruction(inst);
         }
+
+        w.revalidate();
     }
 }

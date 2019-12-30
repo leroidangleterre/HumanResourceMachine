@@ -218,6 +218,15 @@ public class Script extends MyDefaultComponent {
         return false;
     }
 
+    private Instruction getInstruction(double y) {
+        for (Instruction inst : instList) {
+            if (inst.containsPoint(y)) {
+                return inst;
+            }
+        }
+        return null;
+    }
+
     /**
      * Move the selection. Movement started at (yClick) and is now at (yMouse)
      *
@@ -283,20 +292,30 @@ public class Script extends MyDefaultComponent {
         xClick = e.getX();
         yClick = e.getY();
         double yClickInScript = (panelHeight - yClick - y0);
-        if (e.getButton() == MouseEvent.BUTTON1) {
-            leftClickIsActive = true;
-            // Click on the selection to start moving that selection;
-            // Click outside the selection to start creating a new selection
-            if (pointIsInSelection(yClickInScript)) {
-                selectionIsMoving = true;
-            } else {
-                isSelecting = true;
-            }
-            newInstructionBeingCreated = false;
-        } else if (e.getButton() == MouseEvent.BUTTON2) {
-            wheelClickIsActive = true;
-            isSelecting = false;
-            selectionIsMoving = false;
+        switch (e.getButton()) {
+            case MouseEvent.BUTTON1:
+                leftClickIsActive = true;
+                // Click on the selection to start moving that selection;
+                // Click outside the selection to start creating a new selection
+                if (pointIsInSelection(yClickInScript)) {
+                    selectionIsMoving = true;
+                } else {
+                    isSelecting = true;
+                }
+                newInstructionBeingCreated = false;
+                break;
+            case MouseEvent.BUTTON2:
+                wheelClickIsActive = true;
+                isSelecting = false;
+                selectionIsMoving = false;
+                break;
+            case MouseEvent.BUTTON3:
+                // Right click shall trigger a specific behavior in the instruction
+                Instruction inst = this.getInstruction(yClickInScript);
+                inst.receiveCommand("RECEIVE_RIGHT_CLICK");
+                break;
+            default:
+                break;
         }
     }
 
@@ -413,6 +432,7 @@ public class Script extends MyDefaultComponent {
         x = 0;
         y = 0;
         for (Instruction inst : instList) {
+            inst.setZoom(zoom);
             if (!(selectionIsMoving && inst.isSelected())) {
                 if (y != inst.getY()) {
                     // A non-selected instruction is being translated.
@@ -420,7 +440,6 @@ public class Script extends MyDefaultComponent {
                 }
             }
             y -= inst.getHeight() * zoom;
-            inst.setZoom(zoom);
         }
 
     }
@@ -496,12 +515,5 @@ public class Script extends MyDefaultComponent {
         }
         // At this step, no instruction was found.
         return -1;
-    }
-
-    private void printSelectedInstructions() {
-        for (Instruction ins : instList) {
-            System.out.println("Instruction " + ins.serialNumber + ", "
-                    + (ins.isSelected() ? "is selected" : "is not selected"));
-        }
     }
 }
