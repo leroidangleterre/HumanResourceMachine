@@ -1,5 +1,3 @@
-import java.awt.Graphics;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import javax.swing.Timer;
 
@@ -12,16 +10,22 @@ import javax.swing.Timer;
  *
  * @author arthurmanoha
  */
-public class ScriptModel extends MyDefaultModel {
+public class ScriptModel extends MyDefaultModel implements Observable {
 
     protected Timer timer;
     protected boolean isRunning;
     protected int date;
 
     private ArrayList<InstructionModel> instructions;
+    private ArrayList<Worker> workers;
+
+    private ArrayList<Observer> observersList;
 
     public ScriptModel() {
         instructions = new ArrayList<>();
+        observersList = new ArrayList<>();
+        workers = new ArrayList<>();
+        date = 0;
     }
 
     /**
@@ -40,6 +44,7 @@ public class ScriptModel extends MyDefaultModel {
      * Mark the UIs as selected or not.
      *
      */
+    @Override
     public void selectContent() {
 
     }
@@ -82,5 +87,107 @@ public class ScriptModel extends MyDefaultModel {
 
     public void pause() {
         this.timer.stop();
+    }
+
+    /**
+     * Execute one instruction for each Worker, then move each worker to the
+     * next instruction. NB: Only execute the instructions for the worker that
+     * have the same date.
+     */
+    public void step() {
+
+        // Each worker must execute their current instruction.
+        for (Worker w : workers) {
+            // Find the correct instruction
+            int currentAddress = w.getCurrentAddress();
+            if (currentAddress >= this.length()) {
+                System.out.println("Worker " + w + " has finished working.");
+            } else {
+                InstructionModel inst = this.instructions.get(currentAddress);
+                inst.execute(date, w);
+            }
+        }
+
+        // Replace the workers in the correct instructions for display.
+        for (InstructionModel inst : instructions) {
+            inst.removeAllWorkers();
+        }
+        for (Worker w : workers) {
+            int index = w.getCurrentAddress();
+            try {
+                InstructionModel inst = instructions.get(index);
+                if (inst != null) {
+                    inst.addWorker(w);
+                }
+            } catch (IndexOutOfBoundsException e) {
+
+            }
+        }
+
+        date++;
+
+        Notification n = new Notification("ScriptRepaint", null);
+        notifyObservers(n);
+    }
+
+    // As an Observable, we notify Observers (the Terrain) when this Script changes.
+    @Override
+    public void addObserver(Observer obs) {
+        if (!observersList.contains(obs)) {
+            observersList.add(obs);
+        }
+    }
+
+    @Override
+    public void removeObserver(Observer obs) {
+        observersList.remove(obs);
+    }
+
+    @Override
+    public void notifyObservers(Notification n) {
+        for (Observer observer : observersList) {
+            observer.update(n);
+        }
+    }
+
+    /**
+     * Add a new worker that will be obeying the instructions.
+     *
+     * @param w The newly added worker
+     */
+    protected void addWorker(Worker w) {
+        w.setDate(this.date);
+        w.setCurrentAddress(0);
+        workers.add(w);
+        instructions.get(0).addWorker(w);
+    }
+
+    /**
+     * Extract the list of workers.
+     *
+     * @return the list of workers
+     */
+    public ArrayList<Worker> getWorkers() {
+        return workers;
+    }
+
+    /**
+     * Swap two instructions. If at least one index is incorrect, do nothing.
+     *
+     * @param index0 the index of the first instruction
+     * @param index1 the index of the second instruction
+     */
+    protected void swapInstructions(int index0, int index1) {
+        if (index0 == index1) {
+            return;
+        }
+        // Important: the second instruction is removed first, and reinserted first.
+        InstructionModel second = instructions.remove(Math.max(index0, index1));
+        InstructionModel first = instructions.remove(Math.min(index0, index1));
+
+        // Adding formerly-second instruction at first index;
+        instructions.add(index0, second);
+        // Adding formerly-first instruction at second index;
+        instructions.add(index1, first);
     }
 }

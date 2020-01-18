@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -14,12 +15,12 @@ import java.util.Iterator;
  *
  * @author arthurmanoha
  */
-public class Script extends MyDefaultComponent {
+public class Script extends MyDefaultComponent implements Observer {
 
     protected boolean newInstructionBeingCreated;
 
-    double initY0 = 888;
-    double initX0 = 38;
+    double initX0 = 235;
+    double initY0 = 800;
     double initZoom = 2;
 
     public enum ScriptTool {
@@ -49,6 +50,7 @@ public class Script extends MyDefaultComponent {
      * @param rank if -1, add at the end.
      */
     public void addInstruction(Instruction newIns, int rank) {
+
         if (rank == -1) {
             rank = instList.size();
         }
@@ -98,7 +100,7 @@ public class Script extends MyDefaultComponent {
      *
      */
     public void step() {
-
+        ((ScriptModel) model).step();
     }
 
     /**
@@ -160,10 +162,25 @@ public class Script extends MyDefaultComponent {
             while (newIndex < instList.size() && instList.get(newIndex).getY() > newInst.getY()) {
                 newIndex++;
             }
-
-            instList.add(newIndex, newInst);
+            addInstruction(newInst, newIndex);
         }
         repaint();
+    }
+
+    // As an Observer, we receive info from Observable objects (the Terrain);
+    @Override
+    public void update(Notification n) {
+        switch (n.getName()) {
+            case "newWorker":
+                ((ScriptModel) model).addWorker((Worker) n.getObject());
+                repaint();
+                break;
+            case "ScriptRepaint":
+                repaint();
+                break;
+            default:
+                break;
+        }
     }
 
     /**
@@ -259,6 +276,46 @@ public class Script extends MyDefaultComponent {
                 inst.paint(g, panelHeight, x0, y0, zoom);
             }
         }
+
+        paintWorkers(g, panelHeight, x0, y0, zoom);
+    }
+
+    /**
+     * Display a blip for each worker about to execute each instruction.
+     *
+     * @param g
+     * @param panelHeight
+     * @param x0
+     * @param y0
+     * @param zoom
+     */
+    private void paintWorkers(Graphics g, int panelHeight, double x0, double y0, double zoom) {
+
+        // Each blip is as tall as an instruction.
+        int height = instList.get(0).getHeight();
+        int blipSize = (int) (height * zoom * 0.9);
+
+        int xDisplay;
+        int yDisplay;
+
+        int instrIndex = 0;
+
+        for (Instruction inst : instList) {
+            xDisplay = (int) (x0 - blipSize);
+            yDisplay = (int) (panelHeight - (y0 + inst.getY()));
+
+            for (Worker w : ((ScriptModel) model).getWorkers()) {
+                if (w.getCurrentAddress() == instrIndex) {
+                    g.setColor(Color.red);
+                    g.fillOval(xDisplay, yDisplay, blipSize, blipSize);
+                    g.setColor(Color.black);
+                    String text = w.getSerial() + "";
+                    g.drawChars(text.toCharArray(), 0, text.length(), xDisplay + blipSize / 2, yDisplay + g.getFont().getSize());
+                    xDisplay -= blipSize + 1;// Next blip is displayed to the left of the one we just drew.
+                }
+            }
+            instrIndex++;
+        }
     }
 
     // Extract an instruction, and re-insert it at a random position.
@@ -312,7 +369,9 @@ public class Script extends MyDefaultComponent {
             case MouseEvent.BUTTON3:
                 // Right click shall trigger a specific behavior in the instruction
                 Instruction inst = this.getInstruction(yClickInScript);
-                inst.receiveCommand("RECEIVE_RIGHT_CLICK");
+                if (inst != null) {
+                    inst.receiveCommand("RECEIVE_RIGHT_CLICK");
+                }
                 break;
             default:
                 break;
@@ -395,10 +454,8 @@ public class Script extends MyDefaultComponent {
             detectInstructionOverlap();
 
         } else if (!isSelecting) {
-
-            this.x0 += e.getX() - xMouse;
-            this.y0 -= e.getY() - yMouse;
-
+            this.setX0(x0 + (e.getX() - xMouse));
+            this.setY0(y0 - (e.getY() - yMouse));
         }
 
         xMouse = e.getX();
@@ -481,9 +538,12 @@ public class Script extends MyDefaultComponent {
      * @param index1 the index of the second instruction
      */
     private void swapInstructions(int index0, int index1) {
+
         if (index0 == index1) {
             return;
         }
+
+        ((ScriptModel) model).swapInstructions(index0, index1);
 
         // Important: the second instruction is removed first, and reinserted first.
         Instruction second = instList.remove(Math.max(index0, index1));

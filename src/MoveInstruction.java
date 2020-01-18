@@ -10,18 +10,22 @@ import java.awt.event.MouseEvent;
  */
 public class MoveInstruction extends Instruction {
 
-    private final Direction direction;
+    private final Compass compass;
     // Between 0.0 (the direction is a point) and 1.0 (the direction takes the whole height of the instruction)
     private double directionRelativeSize = 0.9;
 
     public MoveInstruction() {
         super();
+
+        model = new MoveInstructionModel();
+
         color = Color.BLUE.brighter();
 
-        direction = new Direction();
+        compass = new Compass();
+        compass.setDirection(((MoveInstructionModel) model).getCardinalPoint());
 
         int directionSize = (int) (directionRelativeSize * this.height);
-        direction.setSize(directionSize, directionSize);
+        compass.setSize(directionSize, directionSize);
     }
 
     /**
@@ -58,10 +62,10 @@ public class MoveInstruction extends Instruction {
 
         int yDir = (int) (yDisplay + 0.5 * (height - height * directionRelativeSize) * zoom);
 
-        direction.setPos(xDir, yDir);
-        direction.setSize((int) (height * zoom * directionRelativeSize), (int) (height * zoom * directionRelativeSize));
+        compass.setPos(xDir, yDir);
+        compass.setSize((int) (height * zoom * directionRelativeSize), (int) (height * zoom * directionRelativeSize));
 
-        direction.paint(g, panelHeight, x0, y0, zoom);
+        compass.paint(g, panelHeight, x0, y0, zoom);
     }
 
     /**
@@ -81,7 +85,8 @@ public class MoveInstruction extends Instruction {
     }
 
     private void toggleDirection() {
-        direction.toggle();
+        ((MoveInstructionModel) model).toggleDirection();
+        compass.setDirection(((MoveInstructionModel) model).getCardinalPoint());
         repaint();
     }
 
@@ -93,7 +98,7 @@ public class MoveInstruction extends Instruction {
     @Override
     public void receiveCommand(String s) {
         if (s.equals("RECEIVE_RIGHT_CLICK")) {
-            direction.toggle();
+            this.toggleDirection();
         }
     }
 }

@@ -13,7 +13,7 @@ import java.awt.Graphics;
  */
 public class Instruction extends MyDefaultComponent {
 
-    private InstructionModel model;
+    protected InstructionModel model;
 
     private boolean isSelected;
 
@@ -67,6 +67,7 @@ public class Instruction extends MyDefaultComponent {
      *
      * @return the model
      */
+    @Override
     public InstructionModel getModel() {
         return (InstructionModel) model;
     }
@@ -99,10 +100,12 @@ public class Instruction extends MyDefaultComponent {
             }
         }
 
-        g.setColor(Color.black);
+        g.setColor(Color.orange);
         String text = this.serialNumber + "";
+        if (model.getNbWorkers() != 0) {
+            text += " - " + model.getNbWorkers() + " workers.";
+        }
         g.drawChars(text.toCharArray(), 0, text.length(), xDisplay, yDisplay + g.getFont().getSize());
-
     }
 
     /**

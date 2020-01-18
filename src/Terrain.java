@@ -10,7 +10,7 @@ import java.awt.event.MouseEvent;
  *
  * @author arthurmanoha
  */
-public class Terrain extends MyDefaultComponent {
+public class Terrain extends MyDefaultComponent implements Observer {
 
     protected TerrainTool currentTool;
 
@@ -199,5 +199,17 @@ public class Terrain extends MyDefaultComponent {
     @Override
     public void mouseClicked(MouseEvent e) {
         super.mouseClicked(e);
+    }
+
+    // As an Observer, we receive info from Observable objects (the Terrain);
+    @Override
+    public void update(Notification n) {
+        switch (n.getName()) {
+            case "TerrainRepaint":
+                repaint();
+                break;
+            default:
+                break;
+        }
     }
 }

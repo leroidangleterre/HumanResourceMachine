@@ -9,13 +9,14 @@ import java.util.ArrayList;
  *
  * @author arthurmanoha
  */
-public class TerrainModel extends MyDefaultModel {
+public class TerrainModel extends MyDefaultModel implements Observer, Observable {
 
     // The grid that contains squares (walls, ground, ...) and in which workers evolve.
     protected Square[][] grid;
     // The dimensions of the grid.
     private final int nbCols, nbLines;
     private final double elemSize;
+    private ArrayList<Observer> observersList;
 
     public TerrainModel(int nbLines, int nbCols) {
 
@@ -33,6 +34,8 @@ public class TerrainModel extends MyDefaultModel {
         this.xMax = this.getSquare(0, this.nbCols - 1).getXMax();
         this.yMin = this.getSquare(this.nbLines - 1, 0).getYMin();
         this.yMax = this.getSquare(0, 0).getYMax();
+
+        observersList = new ArrayList<>();
     }
 
     @Override
@@ -162,7 +165,7 @@ public class TerrainModel extends MyDefaultModel {
                 // Do not create a new square.
                 newSquare = getSquare(line, col);
                 if (newSquare != null) {
-                    newSquare.receiveWorker(new Worker());
+                    this.addNewWorker(newSquare);
                 }
                 break;
             case GROUND:
@@ -233,9 +236,76 @@ public class TerrainModel extends MyDefaultModel {
 
         for (int line = topLine; line <= bottomLine; line++) {
             for (int col = leftCol; col <= rightCol; col++) {
-                getSquare(line, col).receiveWorker(new Worker());
+                addNewWorker(getSquare(line, col));
             }
         }
+    }
+
+    private void addNewWorker(Square square) {
+
+        Worker newWorker = new Worker();
+        square.receiveWorker(newWorker);
+
+        newWorker.addObserver(this);
+
+        Notification n = new Notification("newWorker", newWorker);
+        notifyObservers(n);
+
+    }
+
+    private Square findWorker(Worker w) {
+        for (Square s : getSquares()) {
+            if (s.containsWorker(w)) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Move the given worker from its current position to its required position.
+     * If the required position already contains a worker, the two workers are
+     * swapped.
+     *
+     * @param w the worker that includes its own movement heading.
+     */
+    private void moveWorker(Worker w) {
+
+        Square startPoint = findWorker(w);
+        Square endPoint;
+
+        int startLine = this.findLine(startPoint);
+        int startCol = this.findColumn(startPoint);
+
+        // Find the arrival square.
+        int dLine = 0;
+        int dCol = 0;
+        switch (w.getDirection()) {
+            case NORTH:
+                dLine--;
+                break;
+            case SOUTH:
+                dLine++;
+                break;
+            case EAST:
+                dCol++;
+                break;
+            case WEST:
+                dCol--;
+                break;
+            default:
+                break;
+        }
+        int endLine = startLine + dLine;
+        int endCol = startCol + dCol;
+        endPoint = this.getSquare(endLine, endCol);
+        if (endPoint != null && !endPoint.containsWorker()) {
+            startPoint.removeWorker();
+            endPoint.receiveWorker(w);
+        }
+
+        Notification n = new Notification("TerrainRepaint", null);
+        notifyObservers(n);
     }
 
     /**
@@ -283,5 +353,78 @@ public class TerrainModel extends MyDefaultModel {
 
     public void moveSelection(double x, double y) {
 
+    }
+
+    /* As an observer, we get notified when the script is changed. */
+    @Override
+    public void update(Notification notif) {
+
+        switch (notif.getName()) {
+            case "ScriptStep":
+                break;
+            case "WorkerMove":
+                this.moveWorker((Worker) notif.getObject());
+                break;
+            default:
+                break;
+        }
+
+    }
+
+    /* As an observable object, we notify the listeners when the TerrainModel changes. */
+    @Override
+    public void addObserver(Observer newObserver) {
+        this.observersList.add(newObserver);
+    }
+
+    @Override
+    public void removeObserver(Observer obs) {
+        this.observersList.remove(obs);
+    }
+
+    @Override
+    public void notifyObservers(Notification notif) {
+        for (Observer obs : observersList) {
+            obs.update(notif);
+        }
+    }
+
+    /**
+     * Find in which line a given square is.
+     *
+     * @param s the required square
+     * @return the line number if the square is in the Terrain, -1 if it is not.
+     */
+    private int findLine(Square s) {
+        int numLine = -1;
+        for (int line = 0; line < nbLines; line++) {
+            for (int col = 0; col < nbCols; col++) {
+                if (this.grid[line][col].equals(s)) {
+                    // Found the square at this line.
+                    numLine = line;
+                }
+            }
+        }
+        return numLine;
+    }
+
+    /**
+     * Find in which column a given square is.
+     *
+     * @param s the required square
+     * @return the column number if the square is in the Terrain, -1 if it is
+     * not.
+     */
+    private int findColumn(Square s) {
+        int numColumn = -1;
+        for (int line = 0; line < nbLines; line++) {
+            for (int col = 0; col < nbCols; col++) {
+                if (this.grid[line][col].equals(s)) {
+                    // Found the square at this line.
+                    numColumn = col;
+                }
+            }
+        }
+        return numColumn;
     }
 }

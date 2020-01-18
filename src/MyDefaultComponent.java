@@ -70,6 +70,15 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
         repaint();
     }
 
+    /**
+     * Get the model associated with this component
+     *
+     * @return the model.
+     */
+    public MyDefaultModel getModel() {
+        return model;
+    }
+
     public void eraseAll(Graphics g) {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0,
@@ -250,7 +259,6 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
     public void mouseDragged(MouseEvent e) {
         if (isSelecting) {
         } else if (selectionIsMoving) {
-
         } else {
             setX0(x0 + e.getX() - xMouse);
             setY0(y0 - (e.getY() - yMouse)); // Y-axis is inverted

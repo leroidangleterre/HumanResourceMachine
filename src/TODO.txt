@@ -1,6 +1,5 @@
 TODO:
 
-
 When Terrain receives a event from the mouse (as a controller), it fires an
 event that is received by the model.
 
@@ -31,3 +30,8 @@ is the Swing component (visible and drawn) and TerrainModel is the data.
 
 When a group of selected instructions are moved, every time the last non-selected instruction
 has its center overlapped by the moving block, it will be re-ranked to just after the moving block.
+
+Change the way the instructions are sorted and displayed
+
+Each worker has a script address that is incremented by a subclass of InstructionModel, which tells the worker what to do.
+A "move" of "pickup" instruction will sent the worker to the next instruction, but a "goto" will sent them to a specific address.

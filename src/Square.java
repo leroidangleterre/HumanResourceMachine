@@ -95,4 +95,24 @@ public class Square {
             worker.setPosition(xCenter, yCenter);
         }
     }
+
+    public Worker removeWorker() {
+        Worker result = this.worker;
+        this.worker = null;
+        return result;
+    }
+
+    /**
+     * Check if the required worker is in the current Square.
+     *
+     * @param wantedGuy
+     * @return true if wantedGuy is here, false otherwise.
+     */
+    public boolean containsWorker(Worker wantedGuy) {
+        return (this.worker == wantedGuy);
+    }
+
+    public boolean containsWorker() {
+        return (this.worker != null);
+    }
 }

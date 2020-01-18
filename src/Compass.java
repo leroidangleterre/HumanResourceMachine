@@ -7,7 +7,7 @@ import java.awt.Graphics;
  *
  * @author arthurmanoha
  */
-public class Direction {
+public class Compass {
 
     private static int NB_DIR_CREATED = 0;
     private int serial;
@@ -20,16 +20,13 @@ public class Direction {
     // Position in pixels
     private int x, y;
 
-    private enum CardinalPoint {
-
-        NORTH, SOUTH, EAST, WEST
-    };
     private CardinalPoint currentDirection;
 
-    public Direction() {
+    public Compass() {
         serial = NB_DIR_CREATED;
         NB_DIR_CREATED++;
         currentDirection = CardinalPoint.NORTH;
+        setRandomDirection();
 
         color = Color.orange;
     }
@@ -52,8 +49,10 @@ public class Direction {
         int yDisplay = this.y;
 
         g.fillRect(xDisplay, yDisplay, (int) (width), (int) (height));
-        int arrowSize = width / 2;
-        paintArrow(g, xDisplay + width / 2, yDisplay + width / 2, arrowSize, currentDirection);
+        if (currentDirection != null) {
+            int arrowSize = width / 2;
+            paintArrow(g, xDisplay + width / 2, yDisplay + width / 2, arrowSize, currentDirection);
+        }
     }
 
     /**
@@ -102,6 +101,14 @@ public class Direction {
         g.fillPolygon(xPoints, yPoints, 3);
     }
 
+    public void setDirection(CardinalPoint newDirection) {
+        this.currentDirection = newDirection;
+    }
+
+    public CardinalPoint getCurrentDirection() {
+        return currentDirection;
+    }
+
     /**
      * Take the next possible value, in the order N -> E -> S -> W
      *
@@ -122,6 +129,17 @@ public class Direction {
                 break;
             default:
             // No change
+        }
+    }
+
+    /**
+     * Choose a direction at random.
+     *
+     */
+    private void setRandomDirection() {
+        int rand = (int) (Math.random() * 4);
+        for (int i = 0; i < rand; i++) {
+            toggle();
         }
     }
 

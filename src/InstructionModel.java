@@ -15,8 +15,16 @@ public class InstructionModel extends MyDefaultModel {
     // A GOTO instruction has a target instruction
     ArrayList<InstructionModel> subInstructions;
 
+    private ArrayList<Worker> workersList;
+    private static int NB_INSTRUCTION_MODELS_CREATED = 0;
+    private int serial;
+
     public InstructionModel() {
         subInstructions = new ArrayList<>();
+
+        workersList = new ArrayList<>();
+        serial = NB_INSTRUCTION_MODELS_CREATED;
+        NB_INSTRUCTION_MODELS_CREATED++;
     }
 
     @Override
@@ -35,4 +43,47 @@ public class InstructionModel extends MyDefaultModel {
         return false;
     }
 
+    /**
+     * Add a new worker who will execute this instruction when next step occurs.
+     *
+     * @param newWorker
+     */
+    public void addWorker(Worker newWorker) {
+        workersList.add(newWorker);
+    }
+
+    /**
+     * Get all the workers currently about to execute this instruction.
+     *
+     * @return the list of workers
+     */
+    public ArrayList<Worker> getWorkers() {
+        return workersList;
+    }
+
+    public void removeAllWorkers() {
+        workersList.clear();
+    }
+
+    /**
+     * Get how many workers are currently about to execute this instruction.
+     */
+    public int getNbWorkers() {
+        return workersList.size();
+    }
+
+    public int getSerial() {
+        return serial;
+    }
+
+    /**
+     * Execute the instruction. This method must be overriden by the subclasses
+     * AND called by the overriding methods. NB: each instruction model must set
+     * the new address for the worker.
+     */
+    public void execute(int date, Worker w) {
+        if (w.getDate() == date) {
+            w.setDate(w.getDate() + 1);
+        }
+    }
 }
