@@ -9,7 +9,7 @@ public class HumanResourceMachine {
         int nbLines = 8;
         int nbCols = 12;
 
-        int nbInstructions = 5;
+        int nbInstructions = 7;
 
         Terrain terrain = new Terrain(nbLines, nbCols);
         Script script = new Script();
@@ -28,9 +28,23 @@ public class HumanResourceMachine {
 
         for (int i = 0; i < nbInstructions; i++) {
             Instruction inst;
-            inst = new MoveInstruction();
+            if (i == 2) {
+                inst = new PickupInstruction(CardinalPoint.SOUTH);
+            } else if (i == 5) {
+                inst = new DropInstruction();
+            } else {
+                if (i < 2) {
+                    inst = new MoveInstruction(CardinalPoint.SOUTH);
+                } else {
+                    inst = new MoveInstruction(CardinalPoint.EAST);
+                }
+            }
             script.addInstruction(inst);
         }
+
+        int line = 0;
+        int col = 1;
+        ((TerrainModel) (terrain.getModel())).addNewWorker(line, col);
 
         w.revalidate();
     }

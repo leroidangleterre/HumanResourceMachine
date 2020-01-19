@@ -9,5 +9,9 @@
  */
 public enum CardinalPoint {
 
-    NORTH, SOUTH, EAST, WEST
+    NORTH,
+    SOUTH,
+    EAST,
+    WEST,
+    CENTER
 };

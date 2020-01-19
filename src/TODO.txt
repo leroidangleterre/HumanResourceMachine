@@ -1,11 +1,5 @@
 TODO:
 
-When Terrain receives a event from the mouse (as a controller), it fires an
-event that is received by the model.
-
-When TerrainModel is changed, it fires an event that is received by the
-component, which repaints itself (as a view).
-
 Keyboard events: Detect them and connect them to the appropriate actions.
 
 
@@ -35,3 +29,5 @@ Change the way the instructions are sorted and displayed
 
 Each worker has a script address that is incremented by a subclass of InstructionModel, which tells the worker what to do.
 A "move" of "pickup" instruction will sent the worker to the next instruction, but a "goto" will sent them to a specific address.
+
+Implemented Pickup and Drop instructions.

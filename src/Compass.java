@@ -85,20 +85,24 @@ public class Compass {
             default:
                 angle = 0;
         }
-        double cosA = Math.cos(angle);
-        double sinA = Math.sin(angle);
-        xTop = (int) (size * cosA);
-        yTop = (int) (size * sinA);
-        xLeft = (int) (size * cosA / 2 - size * sinA / 4);
-        yLeft = (int) (size * sinA / 2 - size * cosA / 4);
-        xRight = (int) (size * cosA / 2 + size * sinA / 4);
-        yRight = (int) (size * sinA / 2 + size * cosA / 4);
-
-        int xPoints[] = {xTop + xCenter, xLeft + xCenter, xRight + xCenter};
-        int yPoints[] = {yTop + yCenter, yLeft + yCenter, yRight + yCenter};
-
         g.setColor(Color.red);
-        g.fillPolygon(xPoints, yPoints, 3);
+        if (cardinal == CardinalPoint.CENTER) {
+            g.fillOval(xCenter - size / 4, yCenter - size / 4, size / 2, size / 2);
+        } else {
+            double cosA = Math.cos(angle);
+            double sinA = Math.sin(angle);
+            xTop = (int) (size * cosA);
+            yTop = (int) (size * sinA);
+            xLeft = (int) (size * cosA / 2 - size * sinA / 4);
+            yLeft = (int) (size * sinA / 2 - size * cosA / 4);
+            xRight = (int) (size * cosA / 2 + size * sinA / 4);
+            yRight = (int) (size * sinA / 2 + size * cosA / 4);
+
+            int xPoints[] = {xTop + xCenter, xLeft + xCenter, xRight + xCenter};
+            int yPoints[] = {yTop + yCenter, yLeft + yCenter, yRight + yCenter};
+
+            g.fillPolygon(xPoints, yPoints, 3);
+        }
     }
 
     public void setDirection(CardinalPoint newDirection) {
@@ -110,10 +114,11 @@ public class Compass {
     }
 
     /**
-     * Take the next possible value, in the order N -> E -> S -> W
+     * Take the next possible value, in the order N -> E -> S -> W -> C
      *
      */
     public void toggle() {
+        System.out.println("Commpass toggle from " + currentDirection);
         switch (currentDirection) {
             case NORTH:
                 currentDirection = CardinalPoint.EAST;
@@ -125,11 +130,15 @@ public class Compass {
                 currentDirection = CardinalPoint.WEST;
                 break;
             case WEST:
+                currentDirection = CardinalPoint.CENTER;
+                break;
+            case CENTER:
                 currentDirection = CardinalPoint.NORTH;
                 break;
             default:
             // No change
         }
+        System.out.println("    to " + currentDirection);
     }
 
     /**

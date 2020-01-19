@@ -5,11 +5,6 @@ import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 /**
  * This is the set of instructions that each worker will execute.
  *
@@ -128,15 +123,14 @@ public class Script extends MyDefaultComponent implements Observer {
     public void receiveCommand(String text) {
         Instruction newInst = null;
         switch (text) {
-            // Valid commands: MOVE, PICKUP, DROP, SELECTION
             case "MOVE":
                 newInst = new MoveInstruction();
                 break;
             case "PICKUP":
-                newInst = new Instruction();
+                newInst = new PickupInstruction();
                 break;
             case "DROP":
-                newInst = new Instruction();
+                newInst = new DropInstruction();
                 break;
             case "DELETEINSTR":
                 deleteSelectedInstructions();

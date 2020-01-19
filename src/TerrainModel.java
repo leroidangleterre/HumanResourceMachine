@@ -28,6 +28,9 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             grid[i] = new Square[nbCols];
             for (int j = 0; j < nbCols; j++) {
                 grid[i][j] = new Ground((j + 0.5) * elemSize, (nbLines - 0.5 - i) * elemSize, elemSize);
+                if (i == 3 && j == 1) {
+                    grid[i][j].createDataCube(10 * i + j);
+                }
             }
         }
         this.xMin = this.getSquare(0, 0).getXMin();
@@ -241,7 +244,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         }
     }
 
-    private void addNewWorker(Square square) {
+    public void addNewWorker(Square square) {
 
         Worker newWorker = new Worker();
         square.receiveWorker(newWorker);
@@ -250,7 +253,11 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
 
         Notification n = new Notification("newWorker", newWorker);
         notifyObservers(n);
+    }
 
+    public void addNewWorker(int line, int col) {
+        Square s = this.getSquare(line, col);
+        addNewWorker(s);
     }
 
     private Square findWorker(Worker w) {
@@ -305,6 +312,69 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         }
 
         Notification n = new Notification("TerrainRepaint", null);
+        notifyObservers(n);
+    }
+
+    /**
+     * The worker picks up the data block in the selected direction.
+     *
+     * @param w the worker that includes its own movement heading.
+     */
+    private void pickup(Worker w) {
+
+        Square workerSquare = findWorker(w);
+        Square pickupPoint;
+
+        int startLine = this.findLine(workerSquare);
+        int startCol = this.findColumn(workerSquare);
+
+        // Find the arrival square.
+        int dLine = 0;
+        int dCol = 0;
+        switch (w.getDirection()) {
+            case NORTH:
+                dLine--;
+                break;
+            case SOUTH:
+                dLine++;
+                break;
+            case EAST:
+                dCol++;
+                break;
+            case WEST:
+                dCol--;
+                break;
+            default:
+                break;
+        }
+        int pickupLine = startLine + dLine;
+        int pickupColumn = startCol + dCol;
+
+        pickupPoint = getSquare(pickupLine, pickupColumn);
+        if (pickupPoint.containsDataCube() && !w.hasDataCube()) {
+            DataCube cube = pickupPoint.removeDataCube();
+            w.setDataCube(cube);
+        }
+        Notification n = new Notification("TerrainRepaint", null);
+        notifyObservers(n);
+    }
+
+    /**
+     * The worker drops the data block at its current position, only if the
+     * square does not already hold a datab block.
+     *
+     * @param w the worker that includes its own movement heading.
+     */
+    private void drop(Worker w) {
+
+        Square workerSquare = findWorker(w);
+
+        if (!(workerSquare.containsDataCube())) {
+            // Actually drop the cube
+            workerSquare.addDataCube(w.removeDataCube());
+        }
+        Notification n = new Notification("TerrainRepaint", null);
+
         notifyObservers(n);
     }
 
@@ -364,6 +434,12 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
                 break;
             case "WorkerMove":
                 this.moveWorker((Worker) notif.getObject());
+                break;
+            case "WorkerPickup":
+                this.pickup((Worker) notif.getObject());
+                break;
+            case "WorkerDrop":
+                this.drop((Worker) notif.getObject());
                 break;
             default:
                 break;
@@ -426,5 +502,20 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             }
         }
         return numColumn;
+    }
+
+    /**
+     * Count how many cubes are either in squares or carried by workers.
+     *
+     * @return the number of cubes.
+     */
+    public int getNbCubes() {
+        int count = 0;
+        for (Square[] tab : grid) {
+            for (Square s : tab) {
+                count += s.getNbCubes();
+            }
+        }
+        return count;
     }
 }

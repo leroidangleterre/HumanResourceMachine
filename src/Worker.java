@@ -27,6 +27,9 @@ public class Worker implements Observable {
     // The index of the instruction about to be executed by the Worker
     private int currentAddress;
 
+    // A worker may carry a data cube.
+    private DataCube dataCube;
+
     /**
      * The date of the last time this worker executed an instruction.
      *
@@ -45,6 +48,9 @@ public class Worker implements Observable {
     public void setPosition(double xParam, double yParam) {
         x = xParam;
         y = yParam;
+        if (dataCube != null) {
+            dataCube.setPosition(this.x, this.y);
+        }
     }
 
     public void setDate(int newDate) {
@@ -71,9 +77,17 @@ public class Worker implements Observable {
         g.setColor(Color.gray);
         g.fillOval(xDisplay, yDisplay, apparentDiameter, apparentDiameter);
 
-        String text = "<" + serial + ">";
+        String text;
+        if (dataCube == null) {
+            text = "<no cube>";
+        } else {
+            text = "<cube " + dataCube.getValue() + ">";
+        }
         g.setColor(Color.black);
         g.drawString(text, xDisplay + apparentDiameter / 2, yDisplay + apparentDiameter / 2);
+        if (this.hasDataCube()) {
+            dataCube.paint(g, panelHeight, x0, y0, zoom);
+        }
     }
 
     public int getSerial() {
@@ -120,5 +134,55 @@ public class Worker implements Observable {
         currentHeading = cardinalPoint;
         Notification notif = new Notification("WorkerMove", this);
         notifyObservers(notif);
+    }
+
+    public void pickup(CardinalPoint direction) {
+        currentHeading = direction;
+        Notification notif = new Notification("WorkerPickup", this);
+        notifyObservers(notif);
+    }
+
+    public void drop() {
+        Notification notif = new Notification("WorkerDrop", this);
+        notifyObservers(notif);
+    }
+
+    /**
+     * Test if the worker is carrying a cube.
+     *
+     * @return true when the worker has a cube, false otherwise.
+     */
+    public boolean hasDataCube() {
+        return (this.dataCube != null);
+    }
+
+    /**
+     * Receive a data cube and keep it until further notice.
+     *
+     * @param newCube the new cube
+     */
+    public void setDataCube(DataCube newCube) {
+        if (dataCube == null) {
+            dataCube = newCube;
+            dataCube.setPosition(this.x, this.y);
+        }
+    }
+
+    public DataCube removeDataCube() {
+        if (dataCube == null) {
+            return null;
+        } else {
+            DataCube cube = this.dataCube;
+            this.dataCube = null;
+            return cube;
+        }
+    }
+
+    public int getNbCubes() {
+        if (dataCube == null) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
 }
