@@ -31,3 +31,7 @@ Each worker has a script address that is incremented by a subclass of Instructio
 A "move" of "pickup" instruction will sent the worker to the next instruction, but a "goto" will sent them to a specific address.
 
 Implemented Pickup and Drop instructions.
+
+Fixed instruction deletion in Script and ScriptModel.
+
+Painted an arrow between a Jump instruction and its target (the instruction it jumps to).

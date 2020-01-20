@@ -52,6 +52,14 @@ public class Script extends MyDefaultComponent implements Observer {
         ((ScriptModel) model).addInstruction(newIns.getModel(), rank);
         this.instList.add(rank, newIns);
 
+        if (newIns instanceof JumpInstruction) {
+            // Create the target instruction, aligned on the right
+            NoInstruction jumpTarget = new NoInstruction();
+            int targetAddress = rank + 1;
+            this.addInstruction(jumpTarget, targetAddress);
+            ((JumpInstruction) newIns).setTargetInstruction(jumpTarget, targetAddress);
+        }
+
         computeSizesAndPositions();
     }
 
@@ -81,10 +89,13 @@ public class Script extends MyDefaultComponent implements Observer {
     public void deleteSelectedInstructions() {
 
         Iterator<Instruction> iter = instList.iterator();
+        int rank = 0;
         while (iter.hasNext()) {
             if (iter.next().isSelected()) {
                 iter.remove();
+                ((ScriptModel) model).deleteInstruction(rank);
             }
+            rank++;
         }
 
         computeSizesAndPositions();
@@ -131,6 +142,9 @@ public class Script extends MyDefaultComponent implements Observer {
                 break;
             case "DROP":
                 newInst = new DropInstruction();
+                break;
+            case "JUMP":
+                newInst = new JumpInstruction();
                 break;
             case "DELETEINSTR":
                 deleteSelectedInstructions();
@@ -432,7 +446,7 @@ public class Script extends MyDefaultComponent implements Observer {
         // Move each selected instruction up or down.
         for (Instruction inst : instList) {
             if (inst.isSelected()) {
-                inst.y += dy;
+                inst.setY(inst.getY() + dy);
             }
         }
         detectInstructionOverlap();
@@ -478,16 +492,24 @@ public class Script extends MyDefaultComponent implements Observer {
         // The instructions will be located in the (x positive, y negative) region,
         // with the first instruction starting at (0,0).
         // Special case for instructions that are being moved: no update of the y-coordinate.
-        int x, y;
-
-        x = 0;
-        y = 0;
+        int y = 0;
         for (Instruction inst : instList) {
             inst.setZoom(zoom);
             if (!(selectionIsMoving && inst.isSelected())) {
                 if (y != inst.getY()) {
                     // A non-selected instruction is being translated.
-                    inst.setPosition(x, y);
+                    inst.setY(y);
+                }
+            }
+
+            // Update the target rank of the Jump instructions in case their target has moved.
+            if (inst instanceof JumpInstruction) {
+                Instruction target = ((JumpInstruction) inst).getTargetInstruction();
+                if (target != null) {
+                    int targetRank = this.findIndexOf(target);
+                    ((JumpInstruction) inst).setTargetInstruction(target, targetRank);
+                    // Set the target to be displayed aligned to the right
+                    target.setX((int) (zoom * target.getWidth()));
                 }
             }
             y -= inst.getHeight() * zoom;
@@ -547,6 +569,9 @@ public class Script extends MyDefaultComponent implements Observer {
         instList.add(index0, second);
         // Adding formerly-first instruction at second index;
         instList.add(index1, first);
+
+        // Jump -> NoOp link: everytime one of the swapped instructions (or both) is a NoInstr,
+        // we must update the address of each JumpInstruction.
         computeSizesAndPositions();
         repaint();
     }

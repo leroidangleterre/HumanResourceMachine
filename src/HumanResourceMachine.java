@@ -9,8 +9,6 @@ public class HumanResourceMachine {
         int nbLines = 8;
         int nbCols = 12;
 
-        int nbInstructions = 7;
-
         Terrain terrain = new Terrain(nbLines, nbCols);
         Script script = new Script();
 
@@ -26,21 +24,13 @@ public class HumanResourceMachine {
         MyDefaultComponent rightPanel = script;
         Window w = new Window(leftPanel, rightPanel);
 
-        for (int i = 0; i < nbInstructions; i++) {
-            Instruction inst;
-            if (i == 2) {
-                inst = new PickupInstruction(CardinalPoint.SOUTH);
-            } else if (i == 5) {
-                inst = new DropInstruction();
-            } else {
-                if (i < 2) {
-                    inst = new MoveInstruction(CardinalPoint.SOUTH);
-                } else {
-                    inst = new MoveInstruction(CardinalPoint.EAST);
-                }
-            }
-            script.addInstruction(inst);
-        }
+        script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
+        script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
+        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
+        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
+        script.addInstruction(new MoveInstruction(CardinalPoint.NORTH));
+        script.addInstruction(new MoveInstruction(CardinalPoint.NORTH));
+        script.addInstruction(new JumpInstruction());
 
         int line = 0;
         int col = 1;

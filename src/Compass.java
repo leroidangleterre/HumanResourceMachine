@@ -118,7 +118,6 @@ public class Compass {
      *
      */
     public void toggle() {
-        System.out.println("Commpass toggle from " + currentDirection);
         switch (currentDirection) {
             case NORTH:
                 currentDirection = CardinalPoint.EAST;
@@ -138,7 +137,6 @@ public class Compass {
             default:
             // No change
         }
-        System.out.println("    to " + currentDirection);
     }
 
     /**

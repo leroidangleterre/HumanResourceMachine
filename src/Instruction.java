@@ -21,7 +21,7 @@ public class Instruction extends MyDefaultComponent {
     protected int width, height;
 
     // Position in pixels
-    int x, y;
+    protected int x, y;
 
     private static int NB_CREATED = 0;
     protected Color color;
@@ -85,7 +85,7 @@ public class Instruction extends MyDefaultComponent {
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
         g.setColor(color);
 
-        int xDisplay = (int) x0;
+        int xDisplay = (int) x0 + this.x;
         int yDisplay = (int) (panelHeight - (y0 + this.y));
 
         g.fillRect(xDisplay, yDisplay, (int) (width * zoom), (int) (height * zoom));
@@ -143,6 +143,14 @@ public class Instruction extends MyDefaultComponent {
     @Override
     public int getHeight() {
         return height;
+    }
+
+    protected void setX(int newX) {
+        this.x = newX;
+    }
+
+    protected void setY(int newY) {
+        this.y = newY;
     }
 
     @Override

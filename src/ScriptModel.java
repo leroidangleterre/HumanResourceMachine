@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Iterator;
 import javax.swing.Timer;
 
 /*
@@ -64,6 +65,14 @@ public class ScriptModel extends MyDefaultModel implements Observable {
             rank = instructions.size();
         }
         this.instructions.add(rank, newIns);
+    }
+
+    /**
+     * Remove any selected instruction.
+     *
+     */
+    public void deleteInstruction(int rank) {
+        instructions.remove(rank);
     }
 
     public int size() {

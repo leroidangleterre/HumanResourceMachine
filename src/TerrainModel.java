@@ -28,7 +28,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             grid[i] = new Square[nbCols];
             for (int j = 0; j < nbCols; j++) {
                 grid[i][j] = new Ground((j + 0.5) * elemSize, (nbLines - 0.5 - i) * elemSize, elemSize);
-                if (i == 3 && j == 1) {
+                if (j == 0) {
                     grid[i][j].createDataCube(10 * i + j);
                 }
             }
@@ -351,7 +351,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         int pickupColumn = startCol + dCol;
 
         pickupPoint = getSquare(pickupLine, pickupColumn);
-        if (pickupPoint.containsDataCube() && !w.hasDataCube()) {
+        if (pickupPoint != null && pickupPoint.containsDataCube() && !w.hasDataCube()) {
             DataCube cube = pickupPoint.removeDataCube();
             w.setDataCube(cube);
         }
