@@ -145,12 +145,23 @@ public class Instruction extends MyDefaultComponent {
         return height;
     }
 
+    /**
+     * Set the horizontal position of the component. Instructions that contain a
+     * sub-component, such as MoveInstruction, must offset that inner component.
+     *
+     * @param newX
+     */
     protected void setX(int newX) {
         this.x = newX;
     }
 
     protected void setY(int newY) {
         this.y = newY;
+    }
+
+    @Override
+    public int getX() {
+        return x;
     }
 
     @Override

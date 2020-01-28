@@ -18,6 +18,8 @@ public class Script extends MyDefaultComponent implements Observer {
     double initY0 = 800;
     double initZoom = 2;
 
+    private final int indentationWidth = 25;
+
     public enum ScriptTool {
 
         MOVE, PICKUP, DROP, SELECTION
@@ -55,9 +57,29 @@ public class Script extends MyDefaultComponent implements Observer {
         if (newIns instanceof JumpInstruction) {
             // Create the target instruction, aligned on the right
             NoInstruction jumpTarget = new NoInstruction();
+            jumpTarget.setText("Jump Target");
             int targetAddress = rank + 1;
             this.addInstruction(jumpTarget, targetAddress);
             ((JumpInstruction) newIns).setTargetInstruction(jumpTarget, targetAddress);
+            jumpTarget.setSelected(true);
+        }
+
+        if (newIns instanceof IfInstruction) {
+            // Create the Else and the Endif instructions, aligned on the left
+            NoInstruction elseTarget = new NoInstruction();
+            elseTarget.setText("ELSE");
+            int elseAddress = rank + 1;
+            this.addInstruction(elseTarget, elseAddress);
+            ((IfInstruction) newIns).setElseInstruction(elseTarget, elseAddress);
+            NoInstruction endTarget = new NoInstruction();
+            endTarget.setText("END");
+            int endAddress = rank + 2;
+            this.addInstruction(endTarget, endAddress);
+            ((IfInstruction) newIns).setEndInstruction(endTarget, endAddress);
+            elseTarget.setSelected(true);
+            endTarget.setSelected(true);
+
+            ((IfInstruction) newIns).setIndentationWidth(indentationWidth);
         }
 
         computeSizesAndPositions();
@@ -88,14 +110,13 @@ public class Script extends MyDefaultComponent implements Observer {
      */
     public void deleteSelectedInstructions() {
 
-        Iterator<Instruction> iter = instList.iterator();
-        int rank = 0;
-        while (iter.hasNext()) {
-            if (iter.next().isSelected()) {
-                iter.remove();
+        // TODO Delete the targets of Jump and If instructions
+        for (int rank = instList.size() - 1; rank >= 0; rank--) {
+            Instruction inst = instList.get(rank);
+            if (inst.isSelected()) {
+                instList.remove(rank);
                 ((ScriptModel) model).deleteInstruction(rank);
             }
-            rank++;
         }
 
         computeSizesAndPositions();
@@ -145,6 +166,10 @@ public class Script extends MyDefaultComponent implements Observer {
                 break;
             case "JUMP":
                 newInst = new JumpInstruction();
+                break;
+            case "IF":
+                System.out.println("Script creates an IfInstruction");
+                newInst = new IfInstruction();
                 break;
             case "DELETEINSTR":
                 deleteSelectedInstructions();
@@ -300,7 +325,12 @@ public class Script extends MyDefaultComponent implements Observer {
     private void paintWorkers(Graphics g, int panelHeight, double x0, double y0, double zoom) {
 
         // Each blip is as tall as an instruction.
-        int height = instList.get(0).getHeight();
+        int height;
+        if (instList.isEmpty()) {
+            height = 0;
+        } else {
+            height = instList.get(0).getHeight();
+        }
         int blipSize = (int) (height * zoom * 0.9);
 
         int xDisplay;
@@ -310,8 +340,11 @@ public class Script extends MyDefaultComponent implements Observer {
 
         for (Instruction inst : instList) {
             xDisplay = (int) (x0 - blipSize);
-            yDisplay = (int) (panelHeight - (y0 + inst.getY()));
-
+            if (inst != null) {
+                yDisplay = (int) (panelHeight - (y0 + inst.getY()));
+            } else {
+                yDisplay = (int) (panelHeight - y0);
+            }
             for (Worker w : ((ScriptModel) model).getWorkers()) {
                 if (w.getCurrentAddress() == instrIndex) {
                     g.setColor(Color.red);
@@ -493,6 +526,9 @@ public class Script extends MyDefaultComponent implements Observer {
         // with the first instruction starting at (0,0).
         // Special case for instructions that are being moved: no update of the y-coordinate.
         int y = 0;
+        int x = 0;
+        int dx = (int) (indentationWidth * zoom);
+
         for (Instruction inst : instList) {
             inst.setZoom(zoom);
             if (!(selectionIsMoving && inst.isSelected())) {
@@ -508,13 +544,28 @@ public class Script extends MyDefaultComponent implements Observer {
                 if (target != null) {
                     int targetRank = this.findIndexOf(target);
                     ((JumpInstruction) inst).setTargetInstruction(target, targetRank);
-                    // Set the target to be displayed aligned to the right
-                    target.setX((int) (zoom * target.getWidth()));
                 }
             }
+
+            // Everything inside an if construct is shifted to the right.
+            inst.setX(x);
+
+            if (inst instanceof IfInstruction) {
+                x += dx;
+            }
+            if (inst instanceof NoInstruction && ((NoInstruction) inst).getText().equals("ELSE")) {
+                // The ELSE must be one level to the left.
+                inst.setX(inst.getX() - dx);
+            }
+            if (inst instanceof NoInstruction && ((NoInstruction) inst).getText().equals("END")) {
+                // The ELSE must be one level to the left.
+                x -= dx;
+                inst.setX(x);
+                // Next instruction at same indent.
+            }
+
             y -= inst.getHeight() * zoom;
         }
-
     }
 
     /**
@@ -553,7 +604,7 @@ public class Script extends MyDefaultComponent implements Observer {
      * @param index0 the index of the first instruction
      * @param index1 the index of the second instruction
      */
-    private void swapInstructions(int index0, int index1) {
+    public void swapInstructions(int index0, int index1) {
 
         if (index0 == index1) {
             return;

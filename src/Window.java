@@ -71,7 +71,7 @@ public class Window extends JFrame {
         buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new GridLayout(1, 10));
 
-        String buttonNames[] = {"Selection", "Hole", "Ground", "Input", "Worker", "Move", "Pickup", "Drop", "Jump", "DeleteInstr"};
+        String buttonNames[] = {"Selection", "Hole", "Ground", "Input", "Worker", "Move", "Pickup", "Drop", "Jump", "If", "DeleteInstr"};
         int rank = 0;
         for (String text : buttonNames) {
             JButton newButton = new JButton(text);

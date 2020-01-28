@@ -59,7 +59,7 @@ public class PickupInstruction extends Instruction {
         super.paint(g, panelHeight, x0, y0, zoom);
 
         int margin = 0;
-        int xDisplay = (int) x0 + margin;
+        int xDisplay = (int) x0 + this.x + margin;
         int yDisplay = (int) (panelHeight - (y0 + this.y)) + margin;
 
         // Paint the direction on the right-hand side of the instruction

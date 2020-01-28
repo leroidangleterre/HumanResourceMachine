@@ -70,6 +70,7 @@ public class ScriptModel extends MyDefaultModel implements Observable {
     /**
      * Remove any selected instruction.
      *
+     * @param rank The rank of the instruction that will be removed.
      */
     public void deleteInstruction(int rank) {
         instructions.remove(rank);

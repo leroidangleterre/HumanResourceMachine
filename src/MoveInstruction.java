@@ -62,9 +62,8 @@ public class MoveInstruction extends Instruction {
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
         super.paint(g, panelHeight, x0, y0, zoom);
 
-        int margin = 0;
-        int xDisplay = (int) x0 + margin;
-        int yDisplay = (int) (panelHeight - (y0 + this.y)) + margin;
+        int xDisplay = (int) x0 + this.x;
+        int yDisplay = (int) (panelHeight - (y0 + this.y));
 
         // Paint the direction on the right-hand side of the instruction
         int xDir = (int) (xDisplay + (width - 0.5 * (height + height * directionRelativeSize)) * zoom);
