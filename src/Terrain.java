@@ -196,7 +196,7 @@ public class Terrain extends MyDefaultComponent implements Observer {
         super.mouseClicked(e);
     }
 
-    // As an Observer, we receive info from Observable objects (the Terrain);
+    // As an Observer, we receive info from Observable objects;
     @Override
     public void update(Notification n) {
         switch (n.getName()) {

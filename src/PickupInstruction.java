@@ -67,6 +67,10 @@ public class PickupInstruction extends Instruction {
 
         int yDir = (int) (yDisplay + 0.5 * (height - height * compassRelativeSize) * zoom);
 
+        String text = "Pickup";
+        setFont(g);
+        g.drawChars(text.toCharArray(), 0, text.length(), xDisplay - g.getFontMetrics().stringWidth(text), yDisplay + g.getFont().getSize());
+
         compass.setPos(xDir, yDir);
         compass.setSize((int) (height * zoom * compassRelativeSize), (int) (height * zoom * compassRelativeSize));
 

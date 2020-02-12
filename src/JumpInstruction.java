@@ -16,6 +16,7 @@ public class JumpInstruction extends Instruction {
         super();
 
         model = new JumpInstructionModel();
+        model.setText("Jump");
         target = null;
         color = new Color(102, 0, 153);
     }
@@ -45,12 +46,15 @@ public class JumpInstruction extends Instruction {
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
         super.paint(g, panelHeight, x0, y0, zoom);
 
-        int xDisplay = (int) x0 + this.width;
+        int xDisplay = (int) x0;
         int yDisplay = (int) (panelHeight - (y0 + this.y));
 
         g.setColor(Color.orange);
-        String text = "Jump to " + ((JumpInstructionModel) this.model).getTargetAddress();
-        g.drawChars(text.toCharArray(), 0, text.length(), xDisplay - g.getFontMetrics().stringWidth(text), yDisplay + g.getFont().getSize());
+        setFont(g);
+        String text = model.getText();
+        g.drawChars(text.toCharArray(), 0, text.length(),
+                (int) (xDisplay + this.width * zoom - g.getFontMetrics().stringWidth(text)),
+                yDisplay + g.getFont().getSize());
 
         paintLinkToTarget(g, panelHeight, x0, y0, zoom);
     }
@@ -145,5 +149,13 @@ public class JumpInstruction extends Instruction {
 
     public Instruction getTargetInstruction() {
         return target;
+    }
+
+    public void setText(String newText) {
+        ((JumpInstructionModel) model).setText(newText);
+    }
+
+    public String getText() {
+        return ((JumpInstructionModel) model).getText();
     }
 }

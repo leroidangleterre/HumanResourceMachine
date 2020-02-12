@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 
 
@@ -23,6 +24,7 @@ public class Instruction extends MyDefaultComponent {
     // Position in pixels
     protected int x, y;
 
+//    protected String text;
     private static int NB_CREATED = 0;
     protected Color color;
 
@@ -41,6 +43,7 @@ public class Instruction extends MyDefaultComponent {
 
         // Model creation
         this.model = new InstructionModel();
+//        text = "Instruction";
     }
 
     public void setSelected(boolean newIsSelected) {
@@ -99,13 +102,6 @@ public class Instruction extends MyDefaultComponent {
                         (int) (width * zoom) - 2 * offset, (int) (height * zoom) - 2 * offset);
             }
         }
-
-        g.setColor(Color.orange);
-        String text = this.serialNumber + "";
-        if (model.getNbWorkers() != 0) {
-            text += " - " + model.getNbWorkers() + " workers.";
-        }
-        g.drawChars(text.toCharArray(), 0, text.length(), xDisplay, yDisplay + g.getFont().getSize());
     }
 
     /**

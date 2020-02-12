@@ -35,4 +35,5 @@ public class JumpInstructionModel extends InstructionModel {
     public int getTargetAddress() {
         return targetAddress;
     }
+
 }

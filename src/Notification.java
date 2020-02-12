@@ -11,10 +11,22 @@ public class Notification {
 
     private String name;
     private Object content;
+    private String options;
 
-    public Notification(String nameParam, Object contentParam) {
+    public Notification(String nameParam, Object contentParam, String optionsParam) {
         name = nameParam;
         content = contentParam;
+        options = optionsParam;
+    }
+
+    public Notification(String nameParam, Object contentParam) {
+        this(nameParam, contentParam, "");
+    }
+
+    public Notification(InstructionModel inst) {
+        this.name = inst.getName();
+        this.options = inst.getOptions();
+        System.out.println("    new Notification { name = " + this.name + ", options = " + this.options + " };");
     }
 
     public String getName() {
@@ -23,5 +35,13 @@ public class Notification {
 
     public Object getObject() {
         return content;
+    }
+
+    public String getOptions() {
+        return options;
+    }
+
+    public void setWorker(Worker newWorker) {
+        this.content = newWorker;
     }
 }

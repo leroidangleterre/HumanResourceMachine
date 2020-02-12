@@ -5,7 +5,7 @@ import java.awt.Graphics;
  *
  * @author arthurmanoha
  */
-public class DataCube {
+public class DataCube implements Comparable {
 
     /**
      * The worker's current position (its center).
@@ -61,5 +61,31 @@ public class DataCube {
     public void setPosition(double newX, double newY) {
         x = newX;
         y = newY;
+    }
+
+    @Override
+    public boolean isLessThan(Comparable other) {
+        if (other instanceof DataCube) {
+            return this.value <= ((DataCube) other).value;
+        } else if (other instanceof IntegerValue) {
+            return this.value <= ((IntegerValue) other).getValue();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isEqualTo(Comparable other) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean isMoreThan(Comparable other) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean isDifferentThan(Comparable other) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

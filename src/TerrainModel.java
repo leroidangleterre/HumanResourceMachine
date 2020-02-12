@@ -18,6 +18,8 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     private final double elemSize;
     private ArrayList<Observer> observersList;
 
+    private ArrayList<Notification> notifList;
+
     public TerrainModel(int nbLines, int nbCols) {
 
         this.nbLines = nbLines;
@@ -39,6 +41,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         this.yMax = this.getSquare(0, 0).getYMax();
 
         observersList = new ArrayList<>();
+        notifList = new ArrayList<>();
     }
 
     @Override
@@ -276,7 +279,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
      *
      * @param w the worker that includes its own movement heading.
      */
-    private void moveWorker(Worker w) {
+    private void moveWorker(Worker w, String direction) {
 
         Square startPoint = findWorker(w);
         Square endPoint;
@@ -287,17 +290,17 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         // Find the arrival square.
         int dLine = 0;
         int dCol = 0;
-        switch (w.getDirection()) {
-            case NORTH:
+        switch (direction) {
+            case "N":
                 dLine--;
                 break;
-            case SOUTH:
+            case "S":
                 dLine++;
                 break;
-            case EAST:
+            case "E":
                 dCol++;
                 break;
-            case WEST:
+            case "W":
                 dCol--;
                 break;
             default:
@@ -429,22 +432,54 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     @Override
     public void update(Notification notif) {
 
+//        System.out.println("TerrainModel received notification: <" + notif.getName() + "> with options <" + notif.getOptions() + ">");
         switch (notif.getName()) {
-            case "ScriptStep":
+            case "InstructionMove":
+                System.out.println("terrain moving " + notif.getObject() + " " + notif.getOptions());
+                notifList.add(notif);
                 break;
-            case "WorkerMove":
-                this.moveWorker((Worker) notif.getObject());
-                break;
-            case "WorkerPickup":
-                this.pickup((Worker) notif.getObject());
-                break;
-            case "WorkerDrop":
-                this.drop((Worker) notif.getObject());
+            case "TerrainApplyInstructions":
+                System.out.println("terrain must now apply the instructions");
+                applyNotifications();
                 break;
             default:
                 break;
         }
 
+//        switch (notif.getName()) {
+//            case "ScriptStep":
+//                break;
+//            case "WorkerMove":
+//                this.moveWorker((Worker) notif.getObject());
+//                break;
+//            case "WorkerPickup":
+//                this.pickup((Worker) notif.getObject());
+//                break;
+//            case "WorkerDrop":
+//                this.drop((Worker) notif.getObject());
+//                break;
+//            case "IfEvaluation":
+//                this.evaluateIf((Worker) notif.getObject(), notif.getOptions());
+//            default:
+//                break;
+//        }
+    }
+
+    private void applyNotifications() {
+
+        System.out.println("Terrain.applyNotifications()");
+        for (Notification n : notifList) {
+            switch (n.getName()) {
+                case "InstructionMove":
+                    System.out.println("    Moving worker");
+                    this.moveWorker((Worker) n.getObject(), n.getOptions());
+                default:
+                    System.out.println("    Other notification: " + n.getName());
+                    break;
+            }
+        }
+
+        notifList.clear();
     }
 
     /* As an observable object, we notify the listeners when the TerrainModel changes. */
@@ -517,5 +552,9 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             }
         }
         return count;
+    }
+
+    public void evaluateIf(Worker w, String conditions) {
+        System.out.println("TerrainModel.evaluateIf(" + conditions + ");");
     }
 }

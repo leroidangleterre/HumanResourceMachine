@@ -61,8 +61,63 @@ public class MoveInstructionModel extends InstructionModel {
     public void execute(int date, Worker w) {
 
         // Mark this worker as trying to move in that direction.
-        w.moveInDirection(this.getCardinalPoint());
-        w.setCurrentAddress(w.getCurrentAddress() + 1); // go to the next instruction
+        //
+        // This shall be done by the Terrain.
+        //        w.moveInDirection(this.getCardinalPoint());
+//        w.setCurrentAddress(w.getCurrentAddress() + 1); // go to the next instruction
+        String directionString;
+        switch (this.currentDirection) {
+            case CENTER:
+                directionString = "C";
+                break;
+            case NORTH:
+                directionString = "N";
+                break;
+            case EAST:
+                directionString = "E";
+                break;
+            case SOUTH:
+                directionString = "S";
+                break;
+            case WEST:
+                directionString = "W";
+                break;
+            default:
+                directionString = "-";
+                break;
+        }
+        Notification notif = new Notification("InstructionMove", w, directionString);
+        notifyObservers(notif);
+
         super.execute(date, w);
+    }
+
+    public String getName() {
+        return "InstructionMove";
+    }
+
+    public String getOptions() {
+        String option = "";
+        switch (this.currentDirection) {
+            case CENTER:
+                option = "C";
+                break;
+            case NORTH:
+                option = "N";
+                break;
+            case SOUTH:
+                option = "S";
+                break;
+            case EAST:
+                option = "E";
+                break;
+            case WEST:
+                option = "W";
+                break;
+            default:
+                option = "_";
+                break;
+        }
+        return option;
     }
 }

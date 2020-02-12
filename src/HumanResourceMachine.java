@@ -24,15 +24,15 @@ public class HumanResourceMachine {
         MyDefaultComponent rightPanel = script;
         Window w = new Window(leftPanel, rightPanel);
 
+//        script.addInstruction(new JumpInstruction());
+        script.addInstruction(new IfInstruction());
         script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
         script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
         script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
         script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
         script.addInstruction(new MoveInstruction(CardinalPoint.NORTH));
         script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
-        script.addInstruction(new JumpInstruction());
-        script.swapInstructions(1, 7);
-        script.addInstruction(new IfInstruction());
+//        script.swapInstructions(6, 7);
         script.unselectEverything();
 
         int line = 0;

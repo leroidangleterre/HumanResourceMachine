@@ -1,5 +1,8 @@
 TODO:
 
+Change the event handling chain: a mouse event detected by the Script shall be transmitted to an instruction through its
+"mousePressed(MouseEvent)" method. The method "receiveCommand" probably should be removed.
+
 Keyboard events: Detect them and connect them to the appropriate actions.
 
 Prevent the three instructions in an "If Else Endif" construct to swap. Their order must be maintained.

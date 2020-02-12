@@ -14,7 +14,7 @@ class BooleanTest {
     /**
      * The kind of test: equal, not equal, inferior to, ...
      */
-    private BooleanOperator operator;
+    private BooleanButton operator;
 
     /**
      * The type that we hope to find in the direction given by compass, or an
@@ -24,7 +24,7 @@ class BooleanTest {
 
     public BooleanTest() {
         this.compass = new Compass();
-        this.operator = new BooleanOperator();
+        this.operator = new BooleanButton();
         this.testedObject = null;
     }
 }

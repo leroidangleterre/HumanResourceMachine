@@ -3,7 +3,6 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * This is the set of instructions that each worker will execute.
@@ -66,8 +65,8 @@ public class Script extends MyDefaultComponent implements Observer {
 
         if (newIns instanceof IfInstruction) {
             // Create the Else and the Endif instructions, aligned on the left
-            NoInstruction elseTarget = new NoInstruction();
-            elseTarget.setText("ELSE");
+            JumpInstruction elseTarget = new JumpInstruction();
+            elseTarget.setText("Else");
             int elseAddress = rank + 1;
             this.addInstruction(elseTarget, elseAddress);
             ((IfInstruction) newIns).setElseInstruction(elseTarget, elseAddress);
@@ -78,6 +77,7 @@ public class Script extends MyDefaultComponent implements Observer {
             ((IfInstruction) newIns).setEndInstruction(endTarget, endAddress);
             elseTarget.setSelected(true);
             endTarget.setSelected(true);
+            elseTarget.setTargetInstruction(endTarget, endAddress);
 
             ((IfInstruction) newIns).setIndentationWidth(indentationWidth);
         }
@@ -411,7 +411,12 @@ public class Script extends MyDefaultComponent implements Observer {
                 // Right click shall trigger a specific behavior in the instruction
                 Instruction inst = this.getInstruction(yClickInScript);
                 if (inst != null) {
+                    // TODO: should not be done that way.
                     inst.receiveCommand("RECEIVE_RIGHT_CLICK");
+                }
+                if (inst instanceof IfInstruction) {
+                    // TODO: should be done that way for all kinds of instructions
+                    inst.mousePressed(e);
                 }
                 break;
             default:

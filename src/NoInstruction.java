@@ -45,12 +45,13 @@ public class NoInstruction extends Instruction {
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
         super.paint(g, panelHeight, x0, y0, zoom);
 
-        int xDisplay = (int) x0 + this.x + 10;
-        int yDisplay = (int) (panelHeight - (y0 + this.y)) + 10;
-
-        String text = ((NoInstructionModel) model).getText();
-        g.setColor(Color.black);
-        g.drawChars(text.toCharArray(), 0, text.length(), xDisplay, yDisplay + g.getFont().getSize());
+//        int xDisplay = (int) x0 + this.x + 10;
+//        int yDisplay = (int) (panelHeight - (y0 + this.y)) + 10;
+//
+//        String text = ((NoInstructionModel) model).getText();
+//        g.setColor(Color.black);
+//        setFont(g);
+//        g.drawChars(text.toCharArray(), 0, text.length(), xDisplay, yDisplay + g.getFont().getSize());
     }
 
     /**

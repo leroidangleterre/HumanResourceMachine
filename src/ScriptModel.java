@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Iterator;
 import javax.swing.Timer;
 
 /*
@@ -21,12 +20,14 @@ public class ScriptModel extends MyDefaultModel implements Observable {
     private ArrayList<Worker> workers;
 
     private ArrayList<Observer> observersList;
+    private TerrainModel terrainModel; // The terrain is an observer of ScriptModel, it must also be an observer of each instructionModel.
 
     public ScriptModel() {
         instructions = new ArrayList<>();
         observersList = new ArrayList<>();
         workers = new ArrayList<>();
         date = 0;
+        terrainModel = null;
     }
 
     /**
@@ -64,6 +65,7 @@ public class ScriptModel extends MyDefaultModel implements Observable {
         if (rank == -1) {
             rank = instructions.size();
         }
+        newIns.addObserver(terrainModel);
         this.instructions.add(rank, newIns);
     }
 
@@ -114,7 +116,9 @@ public class ScriptModel extends MyDefaultModel implements Observable {
                 System.out.println("Worker " + w + " has finished working.");
             } else {
                 InstructionModel inst = this.instructions.get(currentAddress);
-                inst.execute(date, w);
+                Notification notif = new Notification(inst);
+                notif.setWorker(w);
+                notifyObservers(notif);
             }
         }
 
@@ -136,7 +140,7 @@ public class ScriptModel extends MyDefaultModel implements Observable {
 
         date++;
 
-        Notification n = new Notification("ScriptRepaint", null);
+        Notification n = new Notification("TerrainApplyInstructions", null);
         notifyObservers(n);
     }
 
@@ -145,6 +149,10 @@ public class ScriptModel extends MyDefaultModel implements Observable {
     public void addObserver(Observer obs) {
         if (!observersList.contains(obs)) {
             observersList.add(obs);
+
+            if (obs instanceof TerrainModel) {
+                terrainModel = (TerrainModel) obs;
+            }
         }
     }
 

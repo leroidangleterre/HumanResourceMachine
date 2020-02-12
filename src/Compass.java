@@ -107,6 +107,7 @@ public class Compass {
 
     public void setDirection(CardinalPoint newDirection) {
         this.currentDirection = newDirection;
+//        System.out.println("Compass setting direction to " + this.currentDirection);
     }
 
     public CardinalPoint getCurrentDirection() {
