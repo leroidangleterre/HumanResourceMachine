@@ -1,14 +1,17 @@
 TODO:
 
-
-When Terrain receives a event from the mouse (as a controller), it fires an
-event that is received by the model.
-
-When TerrainModel is changed, it fires an event that is received by the
-component, which repaints itself (as a view).
+Change the event handling chain: a mouse event detected by the Script shall be transmitted to an instruction through its
+"mousePressed(MouseEvent)" method. The method "receiveCommand" probably should be removed.
 
 Keyboard events: Detect them and connect them to the appropriate actions.
 
+Prevent the three instructions in an "If Else Endif" construct to swap. Their order must be maintained.
+
+Delete the targets of Jump and If instructions when the Jump or the If is deleted.
+
+Moving an instruction containing sub-instructions, such as If, shall translate all the instructions between If and the corresponding End.
+
+When a composite instruction is created (Jump or If), the targets shall appear immediately at the bottom of the main instruction, not at the address zero.
 
 DONE:
 
@@ -31,3 +34,19 @@ is the Swing component (visible and drawn) and TerrainModel is the data.
 
 When a group of selected instructions are moved, every time the last non-selected instruction
 has its center overlapped by the moving block, it will be re-ranked to just after the moving block.
+
+Change the way the instructions are sorted and displayed
+
+Each worker has a script address that is incremented by a subclass of InstructionModel, which tells the worker what to do.
+A "move" of "pickup" instruction will send the worker to the next instruction, but a "Jump" (equivalent of "goto") will sent them to a specific address.
+
+Implemented Pickup and Drop instructions.
+
+Fixed instruction deletion in Script and ScriptModel.
+
+Painted an arrow between a Jump instruction and its target (the instruction it jumps to).
+
+Added "center" direction to the compass. Available to pickup the block in the current square, or for the move instruction.
+
+If instruction: display with an indentation everything inside the "if" part and the "else" part.
+The x-position of the instructions shall be computed in "Script.computeSizesAndPositions()".

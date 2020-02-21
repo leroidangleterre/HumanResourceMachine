@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -40,6 +41,10 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
     private static int COMPONENT_WIDTH = 800;
     private static int COMPONENT_HEIGHT = 700;
 
+    private double textRelativeSize = 0.7;
+    private String fontName = "Arial";
+    private int fontStyle = 0;
+
     public MyDefaultComponent() {
         super();
         this.x0 = 67;
@@ -68,6 +73,15 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
         yMousePrevious = 0;
 
         repaint();
+    }
+
+    /**
+     * Get the model associated with this component
+     *
+     * @return the model.
+     */
+    public MyDefaultModel getModel() {
+        return model;
     }
 
     public void eraseAll(Graphics g) {
@@ -250,7 +264,6 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
     public void mouseDragged(MouseEvent e) {
         if (isSelecting) {
         } else if (selectionIsMoving) {
-
         } else {
             setX0(x0 + e.getX() - xMouse);
             setY0(y0 - (e.getY() - yMouse)); // Y-axis is inverted
@@ -318,4 +331,9 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
      * @param text the command
      */
     public abstract void receiveCommand(String text);
+
+    public void setFont(Graphics g) {
+        int fontSize = (int) (getHeight() * zoom * textRelativeSize);
+        g.setFont(new Font(fontName, fontStyle, fontSize));
+    }
 }

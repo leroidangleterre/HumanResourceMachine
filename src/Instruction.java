@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 
 
@@ -13,7 +14,7 @@ import java.awt.Graphics;
  */
 public class Instruction extends MyDefaultComponent {
 
-    private InstructionModel model;
+    protected InstructionModel model;
 
     private boolean isSelected;
 
@@ -21,8 +22,9 @@ public class Instruction extends MyDefaultComponent {
     protected int width, height;
 
     // Position in pixels
-    int x, y;
+    protected int x, y;
 
+//    protected String text;
     private static int NB_CREATED = 0;
     protected Color color;
 
@@ -41,6 +43,7 @@ public class Instruction extends MyDefaultComponent {
 
         // Model creation
         this.model = new InstructionModel();
+//        text = "Instruction";
     }
 
     public void setSelected(boolean newIsSelected) {
@@ -67,6 +70,7 @@ public class Instruction extends MyDefaultComponent {
      *
      * @return the model
      */
+    @Override
     public InstructionModel getModel() {
         return (InstructionModel) model;
     }
@@ -84,7 +88,7 @@ public class Instruction extends MyDefaultComponent {
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
         g.setColor(color);
 
-        int xDisplay = (int) x0;
+        int xDisplay = (int) x0 + this.x;
         int yDisplay = (int) (panelHeight - (y0 + this.y));
 
         g.fillRect(xDisplay, yDisplay, (int) (width * zoom), (int) (height * zoom));
@@ -98,11 +102,6 @@ public class Instruction extends MyDefaultComponent {
                         (int) (width * zoom) - 2 * offset, (int) (height * zoom) - 2 * offset);
             }
         }
-
-        g.setColor(Color.black);
-        String text = this.serialNumber + "";
-        g.drawChars(text.toCharArray(), 0, text.length(), xDisplay, yDisplay + g.getFont().getSize());
-
     }
 
     /**
@@ -140,6 +139,25 @@ public class Instruction extends MyDefaultComponent {
     @Override
     public int getHeight() {
         return height;
+    }
+
+    /**
+     * Set the horizontal position of the component. Instructions that contain a
+     * sub-component, such as MoveInstruction, must offset that inner component.
+     *
+     * @param newX
+     */
+    protected void setX(int newX) {
+        this.x = newX;
+    }
+
+    protected void setY(int newY) {
+        this.y = newY;
+    }
+
+    @Override
+    public int getX() {
+        return x;
     }
 
     @Override

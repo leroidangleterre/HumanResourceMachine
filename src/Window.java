@@ -1,5 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,6 +18,7 @@ public class Window extends JFrame {
     private static final double SPLIT_PANE_HALF = 0.5;
 
     private JPanel buttonsPanel;
+    private JPanel controlPanel;
 
     public Window() {
         super();
@@ -26,11 +28,10 @@ public class Window extends JFrame {
 
         this.setLayout(new BorderLayout());
 
-        buttonsPanel = new JPanel();
-        buttonsPanel.setLayout(new GridLayout(1, 10));
         prepareButtonsPanel();
 
-        this.add(buttonsPanel, BorderLayout.NORTH);
+        prepareControlPanel();
+
         this.pack();
 
         resetSizes();
@@ -67,7 +68,10 @@ public class Window extends JFrame {
      */
     private void prepareButtonsPanel() {
 
-        String buttonNames[] = {"Selection", "Hole", "Ground", "Input", "Worker", "Move", "Pickup", "Drop", "DeleteInstr"};
+        buttonsPanel = new JPanel();
+        buttonsPanel.setLayout(new GridLayout(1, 10));
+
+        String buttonNames[] = {"Selection", "Hole", "Ground", "Input", "Worker", "Move", "Pickup", "Drop", "Jump", "If", "DeleteInstr"};
         int rank = 0;
         for (String text : buttonNames) {
             JButton newButton = new JButton(text);
@@ -82,5 +86,29 @@ public class Window extends JFrame {
             buttonsPanel.add(newButton, rank);
             rank++;
         }
+        this.add(buttonsPanel, BorderLayout.NORTH);
+    }
+
+    /**
+     * Create the control buttons and place them on the control panel.
+     *
+     */
+    private void prepareControlPanel() {
+        controlPanel = new JPanel();
+        controlPanel.setLayout(new GridBagLayout());
+
+        JButton stepButton = new JButton("Step");
+        stepButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ScriptModel model = (ScriptModel) ((Script) (split.getRightComponent())).getModel();
+                model.step();
+            }
+        });
+
+        controlPanel.add(stepButton);
+
+        this.add(controlPanel, BorderLayout.SOUTH);
     }
 }

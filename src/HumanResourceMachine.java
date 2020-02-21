@@ -9,24 +9,35 @@ public class HumanResourceMachine {
         int nbLines = 8;
         int nbCols = 12;
 
-        int nbInstructions = 12;
-
         Terrain terrain = new Terrain(nbLines, nbCols);
         Script script = new Script();
+
+        ((TerrainModel) (terrain.getModel())).addObserver(script);
+
+        ((ScriptModel) (script.getModel())).addObserver((Observer) (terrain.getModel()));
+
+        ((ScriptModel) (script.getModel())).addObserver(script);
+
+        ((TerrainModel) (terrain.getModel())).addObserver(terrain);
 
         MyDefaultComponent leftPanel = terrain;
         MyDefaultComponent rightPanel = script;
         Window w = new Window(leftPanel, rightPanel);
 
-        for (int i = 0; i < nbInstructions; i++) {
-            Instruction inst;
-            if (3 * (i / 3) == i) {
-                inst = new MoveInstruction();
-            } else {
-                inst = new Instruction();
-            }
-            script.addInstruction(inst);
-        }
+//        script.addInstruction(new JumpInstruction());
+        script.addInstruction(new IfInstruction());
+        script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
+        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
+        script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
+        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
+        script.addInstruction(new MoveInstruction(CardinalPoint.NORTH));
+        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
+//        script.swapInstructions(6, 7);
+        script.unselectEverything();
+
+        int line = 0;
+        int col = 1;
+        ((TerrainModel) (terrain.getModel())).addNewWorker(line, col);
 
         w.revalidate();
     }

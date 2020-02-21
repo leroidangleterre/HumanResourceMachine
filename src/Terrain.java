@@ -1,16 +1,11 @@
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 /**
  *
  * @author arthurmanoha
  */
-public class Terrain extends MyDefaultComponent {
+public class Terrain extends MyDefaultComponent implements Observer {
 
     protected TerrainTool currentTool;
 
@@ -199,5 +194,26 @@ public class Terrain extends MyDefaultComponent {
     @Override
     public void mouseClicked(MouseEvent e) {
         super.mouseClicked(e);
+    }
+
+    // As an Observer, we receive info from Observable objects;
+    @Override
+    public void update(Notification n) {
+        switch (n.getName()) {
+            case "TerrainRepaint":
+                repaint();
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Count how many cubes are either in squares or carried by workers.
+     *
+     * @return the number of cubes.
+     */
+    public int getNbCubes() {
+        return ((TerrainModel) model).getNbCubes();
     }
 }
