@@ -17,6 +17,7 @@ public class Notification {
         name = nameParam;
         content = contentParam;
         options = optionsParam;
+        System.out.println("    created Notification " + name + " options <" + optionsParam + ">");
     }
 
     public Notification(String nameParam, Object contentParam) {

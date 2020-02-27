@@ -8,10 +8,10 @@ import java.awt.Graphics;
  */
 public class Square {
 
-    private double xCenter, yCenter;
-    private double size;
+    protected double xCenter, yCenter;
+    protected double size;
 
-    private Color color;
+    protected Color color;
 
     private boolean isSelected;
 
@@ -123,6 +123,20 @@ public class Square {
         return (this.worker != null);
     }
 
+    /**
+     * Return the worker contained in this square if it has the right ID.
+     *
+     * @param id the requested worker ID.
+     * @return the worker
+     */
+    public Worker getWorker(int id) {
+        if (this.worker != null && this.worker.getSerial() == id) {
+            return this.worker;
+        } else {
+            return null;
+        }
+    }
+
     public boolean containsDataCube() {
         return (this.dataCube != null);
     }
@@ -162,6 +176,20 @@ public class Square {
      */
     public DataCube getDataCube() {
         return this.dataCube;
+    }
+
+    /**
+     * Return the ID of the worker if there is one in this square, -1 if no
+     * worker is there.
+     *
+     * @return
+     */
+    public int getWorkerId() {
+        if (this.worker == null) {
+            return -1;
+        } else {
+            return this.worker.getSerial();
+        }
     }
 
     public int getNbCubes() {

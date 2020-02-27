@@ -13,6 +13,7 @@ public class PickupInstruction extends Instruction {
     private final Compass compass;
     // Between 0.0 (the direction is a point) and 1.0 (the direction takes the whole height of the instruction)
     private double compassRelativeSize = 0.9;
+    private double textRelativeX = 0.01;
 
     public PickupInstruction() {
         super();
@@ -62,14 +63,16 @@ public class PickupInstruction extends Instruction {
         int xDisplay = (int) x0 + this.x + margin;
         int yDisplay = (int) (panelHeight - (y0 + this.y)) + margin;
 
-        // Paint the direction on the right-hand side of the instruction
         int xDir = (int) (xDisplay + (width - 0.5 * (height + height * compassRelativeSize)) * zoom);
 
         int yDir = (int) (yDisplay + 0.5 * (height - height * compassRelativeSize) * zoom);
 
         String text = "Pickup";
+        g.setColor(Color.orange);
         setFont(g);
-        g.drawChars(text.toCharArray(), 0, text.length(), xDisplay - g.getFontMetrics().stringWidth(text), yDisplay + g.getFont().getSize());
+        int xText = (int) (xDisplay + textRelativeX * this.width * zoom);
+        g.drawChars(text.toCharArray(), 0, text.length(),
+                xText, yDisplay + g.getFont().getSize());
 
         compass.setPos(xDir, yDir);
         compass.setSize((int) (height * zoom * compassRelativeSize), (int) (height * zoom * compassRelativeSize));

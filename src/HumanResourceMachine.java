@@ -24,21 +24,28 @@ public class HumanResourceMachine {
         MyDefaultComponent rightPanel = script;
         Window w = new Window(leftPanel, rightPanel);
 
-//        script.addInstruction(new JumpInstruction());
         script.addInstruction(new IfInstruction());
+        script.addInstruction(new PickupInstruction(CardinalPoint.WEST));
+        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
+        script.addInstruction(new DropInstruction());
+        script.addInstruction(new MoveInstruction(CardinalPoint.WEST));
         script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
+
+        script.printInstructionsAsText();
+
         script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
-        script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
         script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
-        script.addInstruction(new MoveInstruction(CardinalPoint.NORTH));
         script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
-//        script.swapInstructions(6, 7);
+
+        script.printInstructionsAsText();
+
         script.unselectEverything();
 
         int line = 0;
         int col = 1;
         ((TerrainModel) (terrain.getModel())).addNewWorker(line, col);
 
+        w.invalidate();
         w.revalidate();
     }
 }

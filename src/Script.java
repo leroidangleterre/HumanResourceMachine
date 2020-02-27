@@ -70,10 +70,11 @@ public class Script extends MyDefaultComponent implements Observer {
             int elseAddress = rank + 1;
             this.addInstruction(elseTarget, elseAddress);
             ((IfInstruction) newIns).setElseInstruction(elseTarget, elseAddress);
-            NoInstruction endTarget = new NoInstruction();
+//            NoInstruction endTarget = new NoInstruction();
+            NoInstruction endTarget = (NoInstruction) elseTarget.getTargetInstruction();
             endTarget.setText("END");
             int endAddress = rank + 2;
-            this.addInstruction(endTarget, endAddress);
+//            this.addInstruction(endTarget, endAddress);
             ((IfInstruction) newIns).setEndInstruction(endTarget, endAddress);
             elseTarget.setSelected(true);
             endTarget.setSelected(true);
@@ -144,6 +145,8 @@ public class Script extends MyDefaultComponent implements Observer {
         for (Instruction inst : instList) {
             inst.setSelected(false);
         }
+
+        printInstructionsAsText();
     }
 
     /**
@@ -552,6 +555,18 @@ public class Script extends MyDefaultComponent implements Observer {
                 }
             }
 
+            // Update the target ranks of the IF instructions in case these targets have moved.
+            if (inst instanceof IfInstruction) {
+                Instruction elseTarget = ((IfInstruction) inst).getElseInstruction();
+                Instruction endTarget = ((IfInstruction) inst).getEndInstruction();
+
+                int newElseRank = this.findIndexOf(elseTarget);
+                int newEndRank = this.findIndexOf(endTarget);
+
+                ((IfInstruction) inst).setElseInstruction(elseTarget, newElseRank);
+                ((IfInstruction) inst).setEndInstruction(endTarget, newEndRank);
+            }
+
             // Everything inside an if construct is shifted to the right.
             inst.setX(x);
 
@@ -614,22 +629,45 @@ public class Script extends MyDefaultComponent implements Observer {
         if (index0 == index1) {
             return;
         }
-
+        System.out.println("Script swapping instructions " + index0 + ", " + index1);
         ((ScriptModel) model).swapInstructions(index0, index1);
 
         // Important: the second instruction is removed first, and reinserted first.
-        Instruction second = instList.remove(Math.max(index0, index1));
-        Instruction first = instList.remove(Math.min(index0, index1));
+        int indexFirst = Math.min(index0, index1);
+        int indexSecond = Math.max(index0, index1);
+//        System.out.println("indexFirst = " + indexFirst + ", indexSecond = " + indexSecond);
+        Instruction second = instList.remove(indexSecond);
+        Instruction first = instList.remove(indexFirst);
 
         // Adding formerly-second instruction at first index;
-        instList.add(index0, second);
+        instList.add(indexFirst, second);
         // Adding formerly-first instruction at second index;
-        instList.add(index1, first);
+        instList.add(indexSecond, first);
 
         // Jump -> NoOp link: everytime one of the swapped instructions (or both) is a NoInstr,
         // we must update the address of each JumpInstruction.
         computeSizesAndPositions();
         repaint();
+    }
+
+    /**
+     * Move an instruction from an initial rank to a new rank.
+     *
+     * @param indexStart
+     * @param indexEnd
+     */
+    public void moveInstruction(int indexStart, int indexEnd) {
+        int dx;
+        if (indexStart < indexEnd) {
+            dx = 1;
+        } else {
+            dx = -1;
+        }
+
+        while (indexStart != indexEnd) {
+            swapInstructions(indexStart, indexStart + dx);
+            indexStart += dx;
+        }
     }
 
     /**
@@ -641,6 +679,9 @@ public class Script extends MyDefaultComponent implements Observer {
      */
     private int findIndexOf(Instruction instParam) {
         int index = 0;
+        if (instParam == null) {
+            return -1;
+        }
         for (Instruction inst : instList) {
             if (instParam.equals(inst)) {
                 // We found the instruction.
@@ -650,5 +691,18 @@ public class Script extends MyDefaultComponent implements Observer {
         }
         // At this step, no instruction was found.
         return -1;
+    }
+
+    public void printInstructionsAsText() {
+        int index = 0;
+        for (Instruction inst : instList) {
+            System.out.print(index + " <" + inst.getClass());
+            if (inst instanceof IfInstruction) {
+                System.out.print("else at " + ((IfInstructionModel) ((IfInstruction) inst).getModel()).getElseAddress());
+                System.out.print("end at " + ((IfInstructionModel) ((IfInstruction) inst).getModel()).getEndAddress());
+            }
+            System.out.println(">");
+            index++;
+        }
     }
 }

@@ -15,6 +15,9 @@ When a composite instruction is created (Jump or If), the targets shall appear i
 
 DONE:
 
+The IfInstruction sends a notification to the terrain which replies with details regarding a given square.
+The If evaluates the condition and branches the Worker to the appropriate instruction.
+
 Paint the Direction inside the MoveInstruction.
 The Direction is painted with four possible small arrows, each pointing in a given heading (N, S, E or W);
 A right-click on a MoveInstruction shall toggle the direction.

@@ -31,6 +31,11 @@ public class MyChoiceBox extends MyDefaultComponent {
         setInstructionModel(inst);
     }
 
+    public MyChoiceBox(String text, InstructionModel inst) {
+        this(0, inst);
+        model.setValue(text);
+    }
+
     private void setInstructionModel(InstructionModel newModel) {
         this.model.setInstructionModel(newModel);
     }
@@ -78,5 +83,13 @@ public class MyChoiceBox extends MyDefaultComponent {
     public void toggle() {
         model.toggle();
         repaint();
+    }
+
+    public void setValue(String newVal) {
+        this.model.setValue(newVal);
+    }
+
+    public String getValue() {
+        return model.getValue();
     }
 }

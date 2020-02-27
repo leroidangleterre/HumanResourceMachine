@@ -50,6 +50,10 @@ public class DataCube implements Comparable {
         return value;
     }
 
+    public void setValue(int newValue) {
+        this.value = newValue;
+    }
+
     public double getX() {
         return x;
     }

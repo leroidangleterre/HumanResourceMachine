@@ -56,12 +56,14 @@ public class IfInstruction extends Instruction {
         color = new Color(255, 140, 0);
         indentationWidth = 0;
 
+        ((IfInstructionModel) model).setDirection(CardinalPoint.WEST);
         compass = new Compass();
-//        System.out.println("IfInstruction setting compass to " + (((IfInstructionModel) model).getCardinalPoint()));
         compass.setDirection(((IfInstructionModel) model).getCardinalPoint());
 
         boolButton = new BooleanButton(((IfInstructionModel) model).getCurrentBoolean());
-        choiceBox = new MyChoiceBox(0, model);
+        choiceBox = new MyChoiceBox(
+                ((IfInstructionModel) model).getChoiceValue(),
+                model);
     }
 
     /**
@@ -175,6 +177,7 @@ public class IfInstruction extends Instruction {
             System.out.println("click choice box");
             choiceBox.toggle();
             // TODO set the choice value of the model.
+            ((IfInstructionModel) model).setChoiceValue(choiceBox.getValue());
             repaint();
         }
     }
@@ -190,10 +193,18 @@ public class IfInstruction extends Instruction {
         }
     }
 
+    /**
+     * Set an ELSE instruction, located at a given address.
+     *
+     * @param newTarget
+     * @param address
+     */
     public void setElseInstruction(Instruction newTarget, int address) {
-        elseInstruction = newTarget;
-        ((IfInstructionModel) model).setElseAddress(address);
-        elseInstruction.color = this.color;
+        if (newTarget != null) {
+            elseInstruction = newTarget;
+            ((IfInstructionModel) model).setElseAddress(address + 1);
+            elseInstruction.color = this.color;
+        }
     }
 
     public Instruction getElseInstruction() {
@@ -201,9 +212,11 @@ public class IfInstruction extends Instruction {
     }
 
     public void setEndInstruction(Instruction newTarget, int address) {
-        endInstruction = newTarget;
-        ((IfInstructionModel) model).setEndAddress(address);
-        endInstruction.color = this.color;
+        if (newTarget != null) {
+            endInstruction = newTarget;
+            ((IfInstructionModel) model).setEndAddress(address + 1);
+            endInstruction.color = this.color;
+        }
     }
 
     public Instruction getEndInstruction() {

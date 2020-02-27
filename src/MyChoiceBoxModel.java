@@ -63,8 +63,27 @@ public class MyChoiceBoxModel {
         }
     }
 
+    public void setValue(String s) {
+//        System.out.println("MyChoiceBoxModel.setValue(" + s + ");");
+        try {
+            this.intValue = Integer.parseInt(s);
+            // Conversion went OK, value is a number.
+            this.isNumber = true;
+//            System.out.println("        is a number:" + this.intValue);
+        } catch (NumberFormatException e) {
+            // Value is an actual String.
+            this.isNumber = false;
+            this.textValue = s;
+//            System.out.println("        is NOT a number:" + this.textValue);
+        }
+    }
+
     public String getValue() {
-        return this.textValue;
+        if (this.isNumber) {
+            return "" + this.intValue;
+        } else {
+            return this.textValue;
+        }
     }
 
     public int getIntValue() {

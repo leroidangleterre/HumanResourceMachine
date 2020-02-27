@@ -66,6 +66,9 @@ public class ScriptModel extends MyDefaultModel implements Observable {
             rank = instructions.size();
         }
         newIns.addObserver(terrainModel);
+        if (newIns instanceof IfInstructionModel) {
+            terrainModel.addObserver((IfInstructionModel) newIns);
+        }
         this.instructions.add(rank, newIns);
     }
 
@@ -142,6 +145,8 @@ public class ScriptModel extends MyDefaultModel implements Observable {
 
         Notification n = new Notification("TerrainApplyInstructions", null);
         notifyObservers(n);
+        n = new Notification("ScriptRepaint", null);
+        notifyObservers(n);
     }
 
     // As an Observable, we notify Observers (the Terrain) when this Script changes.
@@ -199,13 +204,59 @@ public class ScriptModel extends MyDefaultModel implements Observable {
         if (index0 == index1) {
             return;
         }
+
+//        System.out.println("ScriptModel is swapping instructions " + index0 + ", " + index1);
         // Important: the second instruction is removed first, and reinserted first.
-        InstructionModel second = instructions.remove(Math.max(index0, index1));
-        InstructionModel first = instructions.remove(Math.min(index0, index1));
+        int indexFirst = Math.min(index0, index1);
+        int indexSecond = Math.max(index0, index1);
+
+        InstructionModel second = instructions.remove(indexSecond);
+        InstructionModel first = instructions.remove(indexFirst);
 
         // Adding formerly-second instruction at first index;
-        instructions.add(index0, second);
+        instructions.add(indexFirst, second);
         // Adding formerly-first instruction at second index;
-        instructions.add(index1, first);
+        instructions.add(indexSecond, first);
+
+        this.updateInstructionTargets(index0, index1);
+    }
+
+    /**
+     * When an instruction swap involves an IF or a JUMP target, the parent
+     * instruction (the IF or the JUMP) must update their target address.
+     *
+     * @param index0
+     * @param index1
+     */
+    private void updateInstructionTargets(int index0, int index1) {
+        // Find any IF or JUMP that leads to any of the two indexes;
+        // Tell those that the target has changed.
+        for (InstructionModel inst : instructions) {
+            if (inst instanceof JumpInstructionModel) {
+                JumpInstructionModel jumpInst = (JumpInstructionModel) inst;
+                int targetAddress = jumpInst.getTargetAddress();
+                if (targetAddress == index0) {
+                    jumpInst.setTargetAddress(index1);
+                } else if (targetAddress == index1) {
+                    jumpInst.setTargetAddress(index0);
+                }
+            } else if (inst instanceof IfInstructionModel) {
+                IfInstructionModel ifInst = (IfInstructionModel) inst;
+
+                // Change the ELSE address if necessary
+                if (ifInst.getElseAddress() == index0) {
+                    ifInst.setElseAddress(index1);
+                } else if (ifInst.getElseAddress() == index1) {
+                    ifInst.setElseAddress(index0);
+                }
+
+                // Change the END address if necessary
+                if (ifInst.getEndAddress() == index0) {
+                    ifInst.setEndAddress(index1);
+                } else if (ifInst.getEndAddress() == index1) {
+                    ifInst.setEndAddress(index0);
+                }
+            }
+        }
     }
 }
