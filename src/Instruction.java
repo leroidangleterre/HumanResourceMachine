@@ -167,4 +167,14 @@ public class Instruction extends MyDefaultComponent {
     @Override
     public void receiveCommand(String s) {
     }
+
+    /**
+     * Method used to write the instruction in the save file.
+     *
+     * @return a string representing the instruction.
+     */
+    @Override
+    public String toString() {
+        return model.toString();
+    }
 }

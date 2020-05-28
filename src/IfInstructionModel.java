@@ -8,6 +8,7 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
 
     // The direction in which we look for the object we want to test
     private CardinalPoint currentDirection;
+    // The boolean we use to compare the direction and the expected value
     private BooleanConstant currentBoolean;
     private String textValue;
     private boolean isNumber;
@@ -26,8 +27,6 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
     private InstructionModel elseTarget;
     private InstructionModel endTarget;
 
-    private ArrayList<Observer> observersList;
-
     public IfInstructionModel() {
         super();
         elseAddress = 0;
@@ -37,7 +36,7 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
         observersList = new ArrayList<>();
         currentDirection = CardinalPoint.WEST;
         currentBoolean = BooleanConstant.LOWER_THAN;
-        choiceValue = "3";
+        choiceValue = "15";
     }
 
     public CardinalPoint getCardinalPoint() {
@@ -47,23 +46,23 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
     public void toggleDirection() {
 
         switch (currentDirection) {
-            case NORTH:
-                currentDirection = CardinalPoint.EAST;
-                break;
-            case EAST:
-                currentDirection = CardinalPoint.SOUTH;
-                break;
-            case SOUTH:
-                currentDirection = CardinalPoint.WEST;
-                break;
-            case WEST:
-                currentDirection = CardinalPoint.CENTER;
-                break;
-            case CENTER:
-                currentDirection = CardinalPoint.NORTH;
-                break;
-            default:
-                break;
+        case NORTH:
+            currentDirection = CardinalPoint.EAST;
+            break;
+        case EAST:
+            currentDirection = CardinalPoint.SOUTH;
+            break;
+        case SOUTH:
+            currentDirection = CardinalPoint.WEST;
+            break;
+        case WEST:
+            currentDirection = CardinalPoint.CENTER;
+            break;
+        case CENTER:
+            currentDirection = CardinalPoint.NORTH;
+            break;
+        default:
+            break;
         }
     }
 
@@ -81,11 +80,10 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
 
     public void setChoiceValue(String newChoiceVal) {
         this.choiceValue = newChoiceVal;
+        System.out.println("IfInstructionModel.setChoiceValue(" + choiceValue + ");");
     }
 
     public String getChoiceValue() {
-//        System.out.println("IfInstructionModel.getChoiceValue(): result is "
-//                + this.choiceValue);
         return this.choiceValue;
     }
 
@@ -102,7 +100,6 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
         // Analyse the three sub-components: the direction, the operator, and the choice box,
         // and choose between going to the "then" or to the "else" block.
 
-        System.out.println("IfInstructionModel.execute(): 42");
         String optionalText = "42" + w.getSerial() + "-" + w.getDirection();
 
         Notification n = new Notification(this.getName(), w, optionalText);
@@ -117,7 +114,6 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
 
     public void setElseAddress(int newAddress) {
         if (newAddress != elseAddress) {
-            System.out.println("IfInstructionModel: setting 'else' target from " + elseAddress + " to " + newAddress);
             elseAddress = newAddress;
         }
     }
@@ -132,7 +128,6 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
 
     public void setEndAddress(int newAddress) {
         if (newAddress != endAddress) {
-            System.out.println("IfInstructionModel: setting 'end' target from " + endAddress + " to " + newAddress);
             endAddress = newAddress;
         }
     }
@@ -156,7 +151,9 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
 
     @Override
     public void notifyObservers(Notification n) {
+        int i = 0;
         for (Observer observer : observersList) {
+            System.out.println("IfInstructionModel updating observer n°" + i);
             observer.update(n);
         }
     }
@@ -177,44 +174,44 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
         // Example of instruction: if Square north is holds a datacube, then goto 5, else goto 8.
         // res = "_N_==_DataCube_5_8";
         switch (this.currentDirection) {
-            case CENTER:
-                res += "C_";
-                break;
-            case NORTH:
-                res += "N_";
-                break;
-            case SOUTH:
-                res += "S_";
-                break;
-            case EAST:
-                res += "E_";
-                break;
-            case WEST:
-                res += "W_";
-                break;
-            default:
-                break;
+        case CENTER:
+            res += "C_";
+            break;
+        case NORTH:
+            res += "N_";
+            break;
+        case SOUTH:
+            res += "S_";
+            break;
+        case EAST:
+            res += "E_";
+            break;
+        case WEST:
+            res += "W_";
+            break;
+        default:
+            break;
         }
 
         switch (this.currentBoolean) {
-            case EQUAL:
-                res += "==";
-                break;
-            case NOT_EQUAL:
-                res += "!=";
-                break;
-            case GREATER_THAN:
-                res += ">=";
-                break;
-            case LOWER_THAN:
-                res += "<=";
-                break;
-            case STRICTLY_GREATER_THAN:
-                res += ">";
-                break;
-            case STRICTLY_LOWER_THAN:
-                res += "<";
-                break;
+        case EQUAL:
+            res += "==";
+            break;
+        case NOT_EQUAL:
+            res += "!=";
+            break;
+        case GREATER_THAN:
+            res += ">=";
+            break;
+        case LOWER_THAN:
+            res += "<=";
+            break;
+        case STRICTLY_GREATER_THAN:
+            res += ">";
+            break;
+        case STRICTLY_LOWER_THAN:
+            res += "<";
+            break;
         }
 
         // add the expected type or value
@@ -227,15 +224,10 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
 
     @Override
     public void update(Notification n) {
+        Worker w = (Worker) n.getObject();
         if (n.getName().equals("IfReply")) {
-            System.out.println("If received a notification: <" + n.getName() + ", " + n.getOptions() + ">");
             // The terrain sent information about the target square.
             String tab[] = n.getOptions().split(" ");
-
-            for (String s : tab) {
-                System.out.print("<" + s + ">");
-            }
-            System.out.println("");
 
             String squareType = tab[1];
             int workerSerial = Integer.parseInt(tab[2]);
@@ -247,16 +239,11 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
                 // Goto the THEN part.
                 // Send a notification to the Worker,
                 // saying that worker <workerSerial> must go to instruction <address>
-                options = workerSerial + " +1"; // Next instruction.
+                w.setCurrentAddress(w.getCurrentAddress() + 1);
             } else {
                 // Goto the ELSE part.
-                options = workerSerial + " " + elseAddress;
-                System.out.println("ELSE address: " + elseAddress + ", END: " + endAddress);
+                w.setCurrentAddress(elseAddress);
             }
-            System.out.println("    options = " + options);
-            Notification branchNotif = new Notification("workerToAddress", null, options);
-            System.out.println("Notification was created, options are <" + branchNotif.getOptions() + ">");
-            notifyObservers(branchNotif);
         }
     }
 
@@ -280,37 +267,46 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
             int dataCubeVal = Integer.parseInt(dataCubeStringVal);
             // Compare expectedValue with dataCubeVal.
             switch (this.currentBoolean) {
-                case EQUAL:
-                    result = dataCubeVal == expectedValue;
-                    break;
-                case GREATER_THAN:
-                    result = dataCubeVal >= expectedValue;
-                    break;
-                case LOWER_THAN:
-                    System.out.println("        makeChoice:");
-                    System.out.println("        expected value = " + expectedValue + ", dataCube val = " + dataCubeVal);
-                    result = dataCubeVal <= expectedValue;
-                    System.out.println("        result = " + result);
-                    break;
-                case NOT_EQUAL:
-                    result = dataCubeVal != expectedValue;
-                    break;
-                case STRICTLY_GREATER_THAN:
-                    result = dataCubeVal > expectedValue;
-                    break;
-                case STRICTLY_LOWER_THAN:
-                    result = dataCubeVal < expectedValue;
-                    break;
-                default:
-                    result = true;
-                    break;
+            case EQUAL:
+                result = dataCubeVal == expectedValue;
+                break;
+            case GREATER_THAN:
+                result = dataCubeVal >= expectedValue;
+                break;
+            case LOWER_THAN:
+                result = dataCubeVal <= expectedValue;
+                break;
+            case NOT_EQUAL:
+                result = dataCubeVal != expectedValue;
+                break;
+            case STRICTLY_GREATER_THAN:
+                result = dataCubeVal > expectedValue;
+                break;
+            case STRICTLY_LOWER_THAN:
+                result = dataCubeVal < expectedValue;
+                break;
+            default:
+                result = true;
+                break;
             }
 
         } catch (NumberFormatException ex) {
             // Expected value is a String, not a number.
             result = true;
         }
-        System.out.println("Choice made for worker " + workerSerial + ": " + result);
+        System.out.println("If makes choice: " + result);
         return result;
+    }
+
+    @Override
+    public Notification createNotification() {
+        // Worker is set via the ScriptModel.
+        Notification n = new Notification(this);
+        return n;
+    }
+
+    @Override
+    public String toString() {
+        return getName() + " " + currentDirection + " " + currentBoolean + " " + choiceValue + " " + elseAddress + " " + endAddress;
     }
 }

@@ -1,3 +1,4 @@
+
 /**
  *
  * @author arthurmanoha
@@ -11,6 +12,11 @@ public class JumpInstructionModel extends InstructionModel {
         super();
         targetAddress = 0;
         target = null;
+    }
+
+    @Override
+    public String getName() {
+        return "JumpInstruction";
     }
 
     /**
@@ -36,4 +42,17 @@ public class JumpInstructionModel extends InstructionModel {
         return targetAddress;
     }
 
+    @Override
+    public Notification createNotification() {
+//        System.out.println("JUMP create notification");
+        Notification n = new Notification(this.getName(), null, this.targetAddress + "");
+        return n;
+    }
+
+    @Override
+    public String toString() {
+        String text = getText() + " " + targetAddress;
+        System.out.println("JumpInstruction.toString(): " + text);
+        return text;
+    }
 }

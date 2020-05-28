@@ -70,20 +70,20 @@ public class Compass {
         int yTop, yLeft, yRight;
         double angle;
         switch (cardinal) {
-            case EAST:
-                angle = 0;
-                break;
-            case NORTH:
-                angle = -Math.PI / 2;
-                break;
-            case WEST:
-                angle = Math.PI;
-                break;
-            case SOUTH:
-                angle = Math.PI / 2;
-                break;
-            default:
-                angle = 0;
+        case EAST:
+            angle = 0;
+            break;
+        case NORTH:
+            angle = -Math.PI / 2;
+            break;
+        case WEST:
+            angle = Math.PI;
+            break;
+        case SOUTH:
+            angle = Math.PI / 2;
+            break;
+        default:
+            angle = 0;
         }
         g.setColor(Color.red);
         if (cardinal == CardinalPoint.CENTER) {
@@ -107,7 +107,6 @@ public class Compass {
 
     public void setDirection(CardinalPoint newDirection) {
         this.currentDirection = newDirection;
-//        System.out.println("Compass setting direction to " + this.currentDirection);
     }
 
     public CardinalPoint getCurrentDirection() {
@@ -120,23 +119,23 @@ public class Compass {
      */
     public void toggle() {
         switch (currentDirection) {
-            case NORTH:
-                currentDirection = CardinalPoint.EAST;
-                break;
-            case EAST:
-                currentDirection = CardinalPoint.SOUTH;
-                break;
-            case SOUTH:
-                currentDirection = CardinalPoint.WEST;
-                break;
-            case WEST:
-                currentDirection = CardinalPoint.CENTER;
-                break;
-            case CENTER:
-                currentDirection = CardinalPoint.NORTH;
-                break;
-            default:
-            // No change
+        case NORTH:
+            currentDirection = CardinalPoint.EAST;
+            break;
+        case EAST:
+            currentDirection = CardinalPoint.SOUTH;
+            break;
+        case SOUTH:
+            currentDirection = CardinalPoint.WEST;
+            break;
+        case WEST:
+            currentDirection = CardinalPoint.CENTER;
+            break;
+        case CENTER:
+            currentDirection = CardinalPoint.NORTH;
+            break;
+        default:
+        // No change
         }
     }
 

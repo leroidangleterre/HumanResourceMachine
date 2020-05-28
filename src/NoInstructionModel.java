@@ -28,4 +28,20 @@ public class NoInstructionModel extends InstructionModel {
     public String getText() {
         return text;
     }
+
+    /**
+     * This method must be redefined by any subclass.
+     *
+     * @return the name of the instruction
+     */
+    public String getName() {
+        return "NoOperation";
+    }
+
+    @Override
+    public Notification createNotification() {
+        System.out.println("NOOP create notification");
+        Notification n = new Notification(this.getName(), null, "");
+        return n;
+    }
 }

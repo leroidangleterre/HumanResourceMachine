@@ -73,6 +73,24 @@ public class ScriptModel extends MyDefaultModel implements Observable {
     }
 
     /**
+     * Place a new instruction at a given position, replacing whatever
+     * instruction is already at that position.
+     *
+     * @param newIns
+     * @param rank
+     */
+    public void setInstruction(InstructionModel newIns, int rank) {
+        if (rank == -1) {
+            rank = instructions.size();
+        }
+        newIns.addObserver(terrainModel);
+        if (newIns instanceof IfInstructionModel) {
+            terrainModel.addObserver((IfInstructionModel) newIns);
+        }
+        this.instructions.set(rank, newIns);
+    }
+
+    /**
      * Remove any selected instruction.
      *
      * @param rank The rank of the instruction that will be removed.
@@ -119,7 +137,7 @@ public class ScriptModel extends MyDefaultModel implements Observable {
                 System.out.println("Worker " + w + " has finished working.");
             } else {
                 InstructionModel inst = this.instructions.get(currentAddress);
-                Notification notif = new Notification(inst);
+                Notification notif = inst.createNotification();
                 notif.setWorker(w);
                 notifyObservers(notif);
             }
@@ -205,7 +223,6 @@ public class ScriptModel extends MyDefaultModel implements Observable {
             return;
         }
 
-//        System.out.println("ScriptModel is swapping instructions " + index0 + ", " + index1);
         // Important: the second instruction is removed first, and reinserted first.
         int indexFirst = Math.min(index0, index1);
         int indexSecond = Math.max(index0, index1);
@@ -258,5 +275,9 @@ public class ScriptModel extends MyDefaultModel implements Observable {
                 }
             }
         }
+    }
+
+    public void clear() {
+        instructions.clear();
     }
 }

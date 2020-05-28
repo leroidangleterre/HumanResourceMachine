@@ -68,4 +68,9 @@ public class DropInstruction extends Instruction {
     public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
     }
+
+    @Override
+    public String toString() {
+        return model.toString();
+    }
 }

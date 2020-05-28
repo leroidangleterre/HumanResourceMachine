@@ -28,19 +28,23 @@ public class HumanResourceMachine {
         script.addInstruction(new PickupInstruction(CardinalPoint.WEST));
         script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
         script.addInstruction(new DropInstruction());
-        script.addInstruction(new MoveInstruction(CardinalPoint.WEST));
         script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
 
-        script.printInstructionsAsText();
+        script.moveInstruction(3, 1);
+        script.moveInstruction(4, 3);
 
-        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
-        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
-        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
-
-        script.printInstructionsAsText();
-
+        JumpInstruction newInst = new JumpInstruction();
+        script.addInstruction(newInst);
+        int jumpRank = script.findIndexOf(newInst.getTargetInstruction());
+        script.moveInstruction(jumpRank, 0);
         script.unselectEverything();
 
+//        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
+//        script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
+//        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
+//        script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
+//        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
+//        script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
         int line = 0;
         int col = 1;
         ((TerrainModel) (terrain.getModel())).addNewWorker(line, col);

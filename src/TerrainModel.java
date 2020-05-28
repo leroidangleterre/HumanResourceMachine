@@ -1,10 +1,5 @@
 import java.util.ArrayList;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 /**
  *
  * @author arthurmanoha
@@ -20,6 +15,8 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
 
     private ArrayList<Notification> notifList;
 
+    int nbCallsUpdate;
+
     public TerrainModel(int nbLines, int nbCols) {
 
         this.nbLines = nbLines;
@@ -30,18 +27,19 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             grid[i] = new Square[nbCols];
             for (int j = 0; j < nbCols; j++) {
                 grid[i][j] = new Ground((j + 0.5) * elemSize, (nbLines - 0.5 - i) * elemSize, elemSize);
-                if (j == 0) {
-                    if (i >= 0) {
-                        grid[i][j].createDataCube(i + 13);
-                    }
-                }
             }
         }
 
-        this.setSquare(new Hole(), 0, 2);
-        this.setSquare(new Wall(), 1, 1);
+        for (int i = 0; i < nbLines; i++) {
+            grid[i][0].createDataCube(i);
+        }
+
+        this.setSquare(new Wall(), 0, 2);
+        this.setSquare(new Wall(), 1, 2);
+        this.setSquare(new Wall(), 3, 2);
+        this.setSquare(new Wall(), 5, 2);
+
         Square s = this.getSquare(0, 0);
-//        s.createDataCube(1337);
 
         this.xMin = this.getSquare(0, 0).getXMin();
         this.xMax = this.getSquare(0, this.nbCols - 1).getXMax();
@@ -50,6 +48,8 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
 
         observersList = new ArrayList<>();
         notifList = new ArrayList<>();
+
+        nbCallsUpdate = 0;
     }
 
     @Override
@@ -99,7 +99,6 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         try {
             return grid[numLine][numCol];
         } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println("Error retrieving square at line " + numLine + ", col " + numCol);
             return null;
         }
     }
@@ -160,34 +159,34 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     public void placeOneSquare(int line, int col, TerrainTool tool) {
         Square newSquare;
         switch (tool) {
-            case HOLE:
-                newSquare = new Hole((col + 0.5) * elemSize,
-                        (nbLines - 0.5 - line) * elemSize, elemSize);
-                break;
-            case WALL:
-                newSquare = new Wall((col + 0.5) * elemSize,
-                        (nbLines - 0.5 - line) * elemSize, elemSize);
-                break;
-            case INPUT:
-                newSquare = new Input((col + 0.5) * elemSize,
-                        (nbLines - 0.5 - line) * elemSize, elemSize);
-                break;
-            case OUTPUT:
-                newSquare = new Output((col + 0.5) * elemSize,
-                        (nbLines - 0.5 - line) * elemSize, elemSize);
-                break;
-            case WORKER:
-                // Do not create a new square.
-                newSquare = getSquare(line, col);
-                if (newSquare != null) {
-                    this.addNewWorker(newSquare);
-                }
-                break;
-            case GROUND:
-            default: // Default is ground.
-                newSquare = new Ground((col + 0.5) * elemSize,
-                        (nbLines - 0.5 - line) * elemSize, elemSize);
-                break;
+        case HOLE:
+            newSquare = new Hole((col + 0.5) * elemSize,
+                    (nbLines - 0.5 - line) * elemSize, elemSize);
+            break;
+        case WALL:
+            newSquare = new Wall((col + 0.5) * elemSize,
+                    (nbLines - 0.5 - line) * elemSize, elemSize);
+            break;
+        case INPUT:
+            newSquare = new Input((col + 0.5) * elemSize,
+                    (nbLines - 0.5 - line) * elemSize, elemSize);
+            break;
+        case OUTPUT:
+            newSquare = new Output((col + 0.5) * elemSize,
+                    (nbLines - 0.5 - line) * elemSize, elemSize);
+            break;
+        case WORKER:
+            // Do not create a new square.
+            newSquare = getSquare(line, col);
+            if (newSquare != null) {
+                this.addNewWorker(newSquare);
+            }
+            break;
+        case GROUND:
+        default: // Default is ground.
+            newSquare = new Ground((col + 0.5) * elemSize,
+                    (nbLines - 0.5 - line) * elemSize, elemSize);
+            break;
         }
         setSquare(newSquare, line, col);
     }
@@ -316,20 +315,20 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         int dLine = 0;
         int dCol = 0;
         switch (direction) {
-            case "N":
-                dLine--;
-                break;
-            case "S":
-                dLine++;
-                break;
-            case "E":
-                dCol++;
-                break;
-            case "W":
-                dCol--;
-                break;
-            default:
-                break;
+        case "N":
+            dLine--;
+            break;
+        case "S":
+            dLine++;
+            break;
+        case "E":
+            dCol++;
+            break;
+        case "W":
+            dCol--;
+            break;
+        default:
+            break;
         }
         int endLine = startLine + dLine;
         int endCol = startCol + dCol;
@@ -339,6 +338,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             endPoint.receiveWorker(w);
         }
 
+        w.setCurrentAddress(w.getCurrentAddress() + 1);
         Notification n = new Notification("TerrainRepaint", null);
         notifyObservers(n);
     }
@@ -348,7 +348,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
      *
      * @param w the worker that includes its own movement heading.
      */
-    private void pickup(Worker w) {
+    private void pickup(Worker w, String direction) {
 
         Square workerSquare = findWorker(w);
         Square pickupPoint;
@@ -359,21 +359,21 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         // Find the arrival square.
         int dLine = 0;
         int dCol = 0;
-        switch (w.getDirection()) {
-            case NORTH:
-                dLine--;
-                break;
-            case SOUTH:
-                dLine++;
-                break;
-            case EAST:
-                dCol++;
-                break;
-            case WEST:
-                dCol--;
-                break;
-            default:
-                break;
+        switch (direction) {
+        case "NORTH":
+            dLine--;
+            break;
+        case "SOUTH":
+            dLine++;
+            break;
+        case "EAST":
+            dCol++;
+            break;
+        case "WEST":
+            dCol--;
+            break;
+        default:
+            break;
         }
         int pickupLine = startLine + dLine;
         int pickupColumn = startCol + dCol;
@@ -383,6 +383,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             DataCube cube = pickupPoint.removeDataCube();
             w.setDataCube(cube);
         }
+        w.setCurrentAddress(w.getCurrentAddress() + 1);
         Notification n = new Notification("TerrainRepaint", null);
         notifyObservers(n);
     }
@@ -394,6 +395,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
      * @param w the worker that includes its own movement heading.
      */
     private void drop(Worker w) {
+        System.out.println("            Dropping");
 
         Square workerSquare = findWorker(w);
 
@@ -401,8 +403,10 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             // Actually drop the cube
             workerSquare.addDataCube(w.removeDataCube());
         }
-        Notification n = new Notification("TerrainRepaint", null);
 
+        w.setCurrentAddress(w.getCurrentAddress() + 1);
+
+        Notification n = new Notification("TerrainRepaint", null);
         notifyObservers(n);
     }
 
@@ -460,122 +464,111 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     @Override
     public void update(Notification notif) {
 
-        System.out.println("TerrainModel received notification: <" + notif.getName() + "> with options <" + notif.getOptions() + ">");
+        nbCallsUpdate++;
+
+        Worker currentWorker;
+        int newAddress;
+
         switch (notif.getName()) {
-            case "WorkerMove":
-//                this.moveWorker((Worker) notif.getObject());
-                break;
-            case "WorkerPickup":
-                this.pickup((Worker) notif.getObject());
-                break;
-            case "WorkerDrop":
-                this.drop((Worker) notif.getObject());
-                break;
-            case "InstructionMove":
-                System.out.println("terrain moving " + notif.getObject() + " " + notif.getOptions());
-                notifList.add(notif);
-                break;
-            case "TerrainApplyInstructions":
-                System.out.println("terrain must now apply the instructions");
-                applyNotifications();
-                break;
-            case "InstructionIf":
-                System.out.println("Terrain received request for an If evaluation.");
-                System.out.println("\t" + notif.getObject() + ", " + notif.getOptions());
-                System.out.println("Terrain replying.");
+        case "WorkerMove": // TODO replace this with MoveInstruction.getName();
+            String direction = notif.getOptions();
+            this.moveWorker((Worker) notif.getObject(), direction);
+            break;
+        case "WorkerPickup":
+            this.pickup((Worker) notif.getObject(), notif.getOptions());
+            break;
+        case "WorkerDrop":
+            this.drop((Worker) notif.getObject());
+            break;
+        case "InstructionMove":
+            notifList.add(notif);
+            break;
+        case "TerrainApplyInstructions":
+            applyNotifications();
+            break;
+        case "JumpInstruction":
+            currentWorker = (Worker) notif.getObject();
+            newAddress = Integer.parseInt(notif.getOptions());
+            currentWorker.setCurrentAddress(newAddress);
+            break;
+        case "NoOperation":
+            currentWorker = (Worker) notif.getObject();
+            newAddress = currentWorker.getCurrentAddress() + 1;
+            currentWorker.setCurrentAddress(newAddress);
+            break;
+        case "InstructionIf":
 
-                Worker currentWorker = (Worker) notif.getObject();
-                Square s = findWorker(currentWorker);
-                int col = findColumn(s);
-                int line = findLine(s);
-                String options = notif.getOptions();
-                int targetCol = -1;
-                int targetLine = -1;
-                switch (options.charAt(0)) {
-                    case 'N':
-                        targetCol = col;
-                        targetLine = line - 1;
-                        break;
-                    case 'S':
-                        targetCol = col;
-                        targetLine = line + 1;
-                        break;
-                    case 'E':
-                        targetCol = col + 1;
-                        targetLine = line;
-                        break;
-                    case 'W':
-                        targetCol = col - 1;
-                        targetLine = line;
-                        break;
-                    case 'C':
-                        targetCol = col;
-                        targetLine = line;
-                        break;
-                    default:
-                        break;
-                }
-                Square targetSquare = this.getSquare(targetLine, targetCol);
-                String replyOptions;
-                if (targetSquare == null) {
-                    replyOptions = "out";
-                } else {
-                    replyOptions = targetSquare.getClass().toString() + " " + currentWorker.getSerial();
-                    if (targetSquare.containsDataCube()) {
-                        replyOptions += " " + targetSquare.getDataCube().getValue();
-                    } else {
-                        replyOptions += " _";
-                    }
-                    if (targetSquare.containsWorker()) {
-                        replyOptions += " " + targetSquare.getWorkerId();
-                    } else {
-                        replyOptions += " -1";
-                    }
-                }
-                Notification reply = new Notification("IfReply", null, replyOptions);
-                this.notifyObservers(reply);
+            currentWorker = (Worker) notif.getObject();
+            Square s = findWorker(currentWorker);
+            int col = findColumn(s);
+            int line = findLine(s);
+            String options = notif.getOptions();
+            int targetCol = -1;
+            int targetLine = -1;
+            switch (options.charAt(0)) {
+            case 'N':
+                targetCol = col;
+                targetLine = line - 1;
                 break;
-
-            case "workerToAddress":
-                System.out.println("BRANCHING: " + notif.getOptions());
-
-                branchWorker(notif);
+            case 'S':
+                targetCol = col;
+                targetLine = line + 1;
+                break;
+            case 'E':
+                targetCol = col + 1;
+                targetLine = line;
+                break;
+            case 'W':
+                targetCol = col - 1;
+                targetLine = line;
+                break;
+            case 'C':
+                targetCol = col;
+                targetLine = line;
                 break;
             default:
-                System.out.println("Terrain received: " + notif.getName());
                 break;
-        }
+            }
+            Square targetSquare = this.getSquare(targetLine, targetCol);
+            String replyOptions;
+            if (targetSquare == null) {
+                replyOptions = "out";
+            } else {
+                replyOptions = targetSquare.getClass().toString() + " " + currentWorker.getSerial();
+                if (targetSquare.containsDataCube()) {
+                    replyOptions += " " + targetSquare.getDataCube().getValue();
+                } else {
+                    replyOptions += " _";
+                }
+                if (targetSquare.containsWorker()) {
+                    replyOptions += " " + targetSquare.getWorkerId();
+                } else {
+                    replyOptions += " -1";
+                }
+            }
+            Notification reply = new Notification("IfReply", currentWorker, replyOptions);
+            this.notifyObservers(reply);
+            break;
 
-//        switch (notif.getName()) {
-//            case "ScriptStep":
-//                break;
-//            case "WorkerMove":
-//                this.moveWorker((Worker) notif.getObject());
-//                break;
-//            case "WorkerPickup":
-//                this.pickup((Worker) notif.getObject());
-//                break;
-//            case "WorkerDrop":
-//                this.drop((Worker) notif.getObject());
-//                break;
-//            case "IfEvaluation":
-//                this.evaluateIf((Worker) notif.getObject(), notif.getOptions());
-//            default:
-//                break;
-//        }
+        case "workerToAddress":
+
+            branchWorker(notif);
+            break;
+        default:
+            System.out.println("Terrain received default instruction: " + notif.getName());
+            break;
+        }
     }
 
     private void applyNotifications() {
 
-        System.out.println("Terrain.applyNotifications()");
         for (Notification n : notifList) {
             switch (n.getName()) {
-                case "InstructionMove":
-                    System.out.println("    Moving worker");
-                    this.moveWorker((Worker) n.getObject(), n.getOptions());
-                default:
-                    System.out.println("    Other notification: " + n.getName());
-                    break;
+            case "InstructionMove":
+                this.moveWorker((Worker) n.getObject(), n.getOptions());
+            default:
+                System.out.println("    Terrain.applyNotification: other notification: " + n.getName());
+                break;
             }
         }
 
@@ -655,7 +648,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     }
 
     public void evaluateIf(Worker w, String conditions) {
-        System.out.println("TerrainModel.evaluateIf(" + conditions + ");");
+//        System.out.println("TerrainModel.evaluateIf(" + conditions + ");");
     }
 
     private void branchWorker(Notification notif) {
@@ -675,6 +668,17 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             w.setCurrentAddress(newAddress);
         }
 
-        System.out.println("Branching worker " + w + " to address " + newAddress);
+    }
+
+    /**
+     * Replace all the worker at the first instruction od the script
+     * so that they are ready to start working again
+     */
+    public void resetWorkers() {
+        for (Square[] list : grid) {
+            for (Square s : list) {
+                s.resetWorker();
+            }
+        }
     }
 }

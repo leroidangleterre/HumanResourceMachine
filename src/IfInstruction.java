@@ -101,12 +101,15 @@ public class IfInstruction extends Instruction {
         // Draw a vertical line between this IfInstruction and the two NoInstructions (ELSE and END).
         if (endInstruction != null) {
             g.setColor(this.color);
-            int yEnd = this.endInstruction.getY();
-            int yEndDisplay = (int) (panelHeight - (y0 + yEnd));
-            g.fillRect(xDisplay, yDisplay, (int) (indentationWidth * zoom), (yEndDisplay - yDisplay));
+        } else {
             g.setColor(Color.blue);
-            g.drawRect(xDisplay, yDisplay, (int) (indentationWidth * zoom), (yEndDisplay - yDisplay));
+            System.out.println("Error If: the 'endInstruction' is null");
         }
+        int yEnd = this.endInstruction.getY();
+        int yEndDisplay = (int) (panelHeight - (y0 + yEnd));
+        g.fillRect(xDisplay, yDisplay, (int) (indentationWidth * zoom), (yEndDisplay - yDisplay));
+        g.setColor(Color.green);
+        g.drawRect(xDisplay, yDisplay, (int) (indentationWidth * zoom), (yEndDisplay - yDisplay));
 
         super.paint(g, panelHeight, x0, y0, zoom);
 
@@ -159,8 +162,6 @@ public class IfInstruction extends Instruction {
         xClick = e.getX();
         yClick = e.getY();
 
-        System.out.println("bool: " + xBool + ", " + (xBool + boolApparentWidth));
-
         // Test for a click on the compass
         if (xClick >= xCompass && xClick <= xCompass + compassApparentSize) {
             compass.toggle();
@@ -168,13 +169,11 @@ public class IfInstruction extends Instruction {
             repaint();
         } else if (xClick >= xBool && xClick <= xBool + boolApparentWidth) {
             // Act on the boolean
-            System.out.println("click BOOLEAN");
             boolButton.toggle();
             ((IfInstructionModel) model).setCurrentBoolean(boolButton.getValue());
             repaint();
         } else if (xClick >= xChoiceBox && xClick <= xChoiceBox + choiceBoxApparentWidth) {
             // Act on the choice box.
-            System.out.println("click choice box");
             choiceBox.toggle();
             // TODO set the choice value of the model.
             ((IfInstructionModel) model).setChoiceValue(choiceBox.getValue());
@@ -202,24 +201,41 @@ public class IfInstruction extends Instruction {
     public void setElseInstruction(Instruction newTarget, int address) {
         if (newTarget != null) {
             elseInstruction = newTarget;
-            ((IfInstructionModel) model).setElseAddress(address + 1);
             elseInstruction.color = this.color;
         }
+        ((IfInstructionModel) model).setElseAddress(address);
+        this.computeText();
     }
 
     public Instruction getElseInstruction() {
         return elseInstruction;
     }
 
+    public int getElseAddress() {
+        return ((IfInstructionModel) model).getElseAddress();
+    }
+
     public void setEndInstruction(Instruction newTarget, int address) {
         if (newTarget != null) {
             endInstruction = newTarget;
-            ((IfInstructionModel) model).setEndAddress(address + 1);
             endInstruction.color = this.color;
         }
+        ((IfInstructionModel) model).setEndAddress(address);
+        this.computeText();
+    }
+
+    public int getEndAddress() {
+        return ((IfInstructionModel) model).getEndAddress();
     }
 
     public Instruction getEndInstruction() {
         return endInstruction;
+    }
+
+    private void computeText() {
+
+        String newText = "IF goto next, else goto " + getElseAddress() + ", end goto " + getEndAddress();
+
+        model.setText(newText);
     }
 }

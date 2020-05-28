@@ -1,3 +1,4 @@
+
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 
@@ -62,29 +63,29 @@ public class Terrain extends MyDefaultComponent implements Observer {
      */
     public void setTool(String s) {
         switch (s) {
-            case "SELECTION":
-                this.setTool(TerrainTool.SELECTION);
-                break;
-            case "GROUND":
-                this.setTool(TerrainTool.GROUND);
-                break;
-            case "HOLE":
-                this.setTool(TerrainTool.HOLE);
-                break;
-            case "INPUT":
-                this.setTool(TerrainTool.INPUT);
-                break;
-            case "OUTPUT":
-                this.setTool(TerrainTool.OUTPUT);
-                break;
-            case "WALL":
-                this.setTool(TerrainTool.WALL);
-                break;
-            case "WORKER":
-                this.setTool(TerrainTool.WORKER);
-                break;
-            default:
-            // Keep the current tool unchanged.
+        case "SELECTION":
+            this.setTool(TerrainTool.SELECTION);
+            break;
+        case "GROUND":
+            this.setTool(TerrainTool.GROUND);
+            break;
+        case "HOLE":
+            this.setTool(TerrainTool.HOLE);
+            break;
+        case "INPUT":
+            this.setTool(TerrainTool.INPUT);
+            break;
+        case "OUTPUT":
+            this.setTool(TerrainTool.OUTPUT);
+            break;
+        case "WALL":
+            this.setTool(TerrainTool.WALL);
+            break;
+        case "WORKER":
+            this.setTool(TerrainTool.WORKER);
+            break;
+        default:
+        // Keep the current tool unchanged.
         }
     }
 
@@ -148,23 +149,23 @@ public class Terrain extends MyDefaultComponent implements Observer {
             for (int line = topLine; line <= bottomLine; line++) {
                 for (int col = leftCol; col <= rightCol; col++) {
                     switch (currentTool) {
-                        case SELECTION:
-                            if (isSelecting) {
-                                tModel.setSelected(line, col);
-                            }
-                            break;
-                        case HOLE:
-                        case GROUND:
-                        case INPUT:
-                        case OUTPUT:
-                        case WALL:
-                            tModel.placeOneSquare(line, col, currentTool);
-                            break;
-                        case WORKER:
-                            tModel.placeOneSquare(line, col, currentTool);
-                            break;
-                        default:
-                            break;
+                    case SELECTION:
+                        if (isSelecting) {
+                            tModel.setSelected(line, col);
+                        }
+                        break;
+                    case HOLE:
+                    case GROUND:
+                    case INPUT:
+                    case OUTPUT:
+                    case WALL:
+                        tModel.placeOneSquare(line, col, currentTool);
+                        break;
+                    case WORKER:
+                        tModel.placeOneSquare(line, col, currentTool);
+                        break;
+                    default:
+                        break;
                     }
                 }
             }
@@ -200,11 +201,11 @@ public class Terrain extends MyDefaultComponent implements Observer {
     @Override
     public void update(Notification n) {
         switch (n.getName()) {
-            case "TerrainRepaint":
-                repaint();
-                break;
-            default:
-                break;
+        case "TerrainRepaint":
+            repaint();
+            break;
+        default:
+            break;
         }
     }
 
@@ -215,5 +216,13 @@ public class Terrain extends MyDefaultComponent implements Observer {
      */
     public int getNbCubes() {
         return ((TerrainModel) model).getNbCubes();
+    }
+
+    /**
+     * Replace all the worker at the first instruction od the script
+     * so that they are ready to start working again
+     */
+    public void resetWorkers() {
+        ((TerrainModel) model).resetWorkers();
     }
 }

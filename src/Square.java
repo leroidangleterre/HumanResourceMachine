@@ -1,3 +1,4 @@
+
 import java.awt.Color;
 import java.awt.Graphics;
 
@@ -204,5 +205,15 @@ public class Square {
             count += worker.getNbCubes();
         }
         return count;
+    }
+
+    /**
+     * Replace the worker (if there is one) at the beginning of its script.
+     *
+     */
+    void resetWorker() {
+        if (worker != null) {
+            worker.setCurrentAddress(0);
+        }
     }
 }
