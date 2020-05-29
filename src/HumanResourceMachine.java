@@ -6,7 +6,7 @@ public class HumanResourceMachine {
 
     public static void main(String args[]) {
 
-        int nbLines = 8;
+        int nbLines = 80;
         int nbCols = 12;
 
         Terrain terrain = new Terrain(nbLines, nbCols);

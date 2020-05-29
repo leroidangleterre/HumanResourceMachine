@@ -44,6 +44,6 @@ public class Notification {
 
     public void setWorker(Worker newWorker) {
         this.content = newWorker;
-        System.out.println("        Notification " + name + " created for worker " + newWorker.getSerial());
+//        System.out.println("        Notification " + name + " created for worker " + newWorker.getSerial());
     }
 }

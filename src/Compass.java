@@ -153,4 +153,8 @@ public class Compass {
     public int getSerial() {
         return serial;
     }
+
+    int getWidth(double zoom) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

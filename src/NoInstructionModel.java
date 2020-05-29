@@ -40,7 +40,6 @@ public class NoInstructionModel extends InstructionModel {
 
     @Override
     public Notification createNotification() {
-        System.out.println("NOOP create notification");
         Notification n = new Notification(this.getName(), null, "");
         return n;
     }

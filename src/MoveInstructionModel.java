@@ -63,7 +63,7 @@ public class MoveInstructionModel extends InstructionModel {
 
     @Override
     public Notification createNotification() {
-        System.out.println("Movecreate notification");
+//        System.out.println("Movecreate notification");
         Notification n = new Notification(this.getName(), null, this.getOptions());
         return n;
     }

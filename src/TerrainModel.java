@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  *
@@ -31,14 +32,14 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         }
 
         for (int i = 0; i < nbLines; i++) {
-            grid[i][0].createDataCube(i);
+            int val = new Random().nextInt(4);
+            grid[i][0].createDataCube(val);
         }
 
-        this.setSquare(new Wall(), 0, 2);
-        this.setSquare(new Wall(), 1, 2);
-        this.setSquare(new Wall(), 3, 2);
-        this.setSquare(new Wall(), 5, 2);
-
+//        this.setSquare(new Wall(), 0, 2);
+//        this.setSquare(new Wall(), 1, 2);
+//        this.setSquare(new Wall(), 3, 2);
+//        this.setSquare(new Wall(), 5, 2);
         Square s = this.getSquare(0, 0);
 
         this.xMin = this.getSquare(0, 0).getXMin();
@@ -497,7 +498,8 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             currentWorker.setCurrentAddress(newAddress);
             break;
         case "InstructionIf":
-
+            System.out.println("\nTerrain receives If notification with options " + notif.getOptions());
+            System.out.println("" + notif);
             currentWorker = (Worker) notif.getObject();
             Square s = findWorker(currentWorker);
             int col = findColumn(s);
@@ -547,6 +549,8 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
                 }
             }
             Notification reply = new Notification("IfReply", currentWorker, replyOptions);
+            System.out.println("Terrain sends back a notification \"IfReply\" with options <" + replyOptions + ">");
+            System.out.println("Options are: square class; current worker's serial; value of cube or '_'; other worker id or -1");
             this.notifyObservers(reply);
             break;
 

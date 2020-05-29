@@ -15,7 +15,7 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
     private int intValue;
 
     // What we expect the tested element to be (or not to be, depending on the equality sign).
-    private String choiceValue;
+    private MyChoiceBoxModel choiceBoxModel;
 
     // We send a notification to the terrain, which replies via another notification;
     // we then evaluate the condition.
@@ -36,11 +36,16 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
         observersList = new ArrayList<>();
         currentDirection = CardinalPoint.WEST;
         currentBoolean = BooleanConstant.LOWER_THAN;
-        choiceValue = "15";
+        choiceBoxModel = null;
+        textValue = "If ";
     }
 
     public CardinalPoint getCardinalPoint() {
         return this.currentDirection;
+    }
+
+    public String getText() {
+        return this.textValue;
     }
 
     public void toggleDirection() {
@@ -76,15 +81,6 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
 
     public void setCurrentBoolean(BooleanConstant newBool) {
         this.currentBoolean = newBool;
-    }
-
-    public void setChoiceValue(String newChoiceVal) {
-        this.choiceValue = newChoiceVal;
-        System.out.println("IfInstructionModel.setChoiceValue(" + choiceValue + ");");
-    }
-
-    public String getChoiceValue() {
-        return this.choiceValue;
     }
 
     /**
@@ -234,6 +230,12 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
             String datacubeValue = tab[3];
             int observedWorkerId = Integer.parseInt(tab[4]);
 
+            System.out.println("\n\nIf instruction receives reply:");
+            System.out.println("square type: " + squareType);
+            System.out.println("current worker: " + workerSerial);
+            System.out.println("dataCube: " + datacubeValue);
+            System.out.println("observed worker: " + observedWorkerId);
+
             String options;
             if (makeChoice(squareType, workerSerial, datacubeValue, observedWorkerId)) {
                 // Goto the THEN part.
@@ -252,50 +254,55 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
      *
      * @param squareType
      * @param workerSerial
-     * @param dataCubeStringVal may be "_" if no cube exists; is a number String
-     * otherwise.
+     * @param dataCubeStringVal may be "_" if no cube exists; is a String
+     * representing a number otherwise.
      * @param observedWorkerSerial
      * @return true when the condition is true and we branch to the THEN part,
      * false otherwise and we branch to the ELSE part.
      */
     private boolean makeChoice(String squareType, int workerSerial, String dataCubeStringVal, int observedWorkerSerial) {
 
-        int expectedValue;
-        boolean result;
-        try {
-            expectedValue = Integer.parseInt(choiceValue);
-            int dataCubeVal = Integer.parseInt(dataCubeStringVal);
-            // Compare expectedValue with dataCubeVal.
-            switch (this.currentBoolean) {
-            case EQUAL:
-                result = dataCubeVal == expectedValue;
-                break;
-            case GREATER_THAN:
-                result = dataCubeVal >= expectedValue;
-                break;
-            case LOWER_THAN:
-                result = dataCubeVal <= expectedValue;
-                break;
-            case NOT_EQUAL:
-                result = dataCubeVal != expectedValue;
-                break;
-            case STRICTLY_GREATER_THAN:
-                result = dataCubeVal > expectedValue;
-                break;
-            case STRICTLY_LOWER_THAN:
-                result = dataCubeVal < expectedValue;
-                break;
-            default:
-                result = true;
-                break;
-            }
+        boolean result = false;
 
-        } catch (NumberFormatException ex) {
-            // Expected value is a String, not a number.
-            result = true;
+        if (choiceBoxModel.isNumber()) {
+            try {
+                int expectedValue = choiceBoxModel.getIntValue();
+                int dataCubeVal = Integer.parseInt(dataCubeStringVal);
+                // Compare expectedValue with dataCubeVal.
+                switch (this.currentBoolean) {
+                case EQUAL:
+                    result = dataCubeVal == expectedValue;
+                    break;
+                case GREATER_THAN:
+                    result = dataCubeVal >= expectedValue;
+                    break;
+                case LOWER_THAN:
+                    result = dataCubeVal <= expectedValue;
+                    break;
+                case NOT_EQUAL:
+                    result = dataCubeVal != expectedValue;
+                    break;
+                case STRICTLY_GREATER_THAN:
+                    result = dataCubeVal > expectedValue;
+                    break;
+                case STRICTLY_LOWER_THAN:
+                    result = dataCubeVal < expectedValue;
+                    break;
+                default:
+                    System.out.println("Error in IfInstructionModel: unknown operator");
+                    result = false;
+                    break;
+                }
+                System.out.println("If makeChoice: returning " + result);
+                return result;
+            } catch (NumberFormatException ex) {
+                System.out.println("Error in comparing numbers. returning false.");
+                return false;
+            }
+        } else {
+            System.out.println("If instructions cannot make a choice for non-numbers yet.");
+            return result;
         }
-        System.out.println("If makes choice: " + result);
-        return result;
     }
 
     @Override
@@ -307,6 +314,32 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
 
     @Override
     public String toString() {
-        return getName() + " " + currentDirection + " " + currentBoolean + " " + choiceValue + " " + elseAddress + " " + endAddress;
+        return getName() + " " + currentDirection + " " + currentBoolean + " " + choiceBoxModel.getValue() + " " + elseAddress + " " + endAddress;
+    }
+
+    public void setChoiceValue(String newChoiceVal) {
+        if (choiceBoxModel == null) {
+            System.out.println("IfInstructionModel.setChoiceValue: choiceBoxModel is null");
+        }
+        String currentValue = choiceBoxModel.getValue();
+        if (choiceBoxModel == null) {
+            System.out.println("IIM: cBM is null");
+        } else {
+            if (choiceBoxModel.getValue() == null) {
+                System.out.println("IIM: boxModel.value==null");
+            } else {
+                System.out.println("value is " + choiceBoxModel.getValue());
+            }
+        }
+        System.out.println("IfInstructionModel.setChoiceValue: <" + newChoiceVal + ">, current is " + currentValue);
+    }
+
+    public String getChoiceValue() {
+        return choiceBoxModel.getStringValue();
+    }
+
+    public void setChoiceBoxModel(MyChoiceBoxModel newChoiceBoxModel) {
+        this.choiceBoxModel = newChoiceBoxModel;
+        System.out.println("IIM.setChoiceBoxModel: " + this.choiceBoxModel);
     }
 }

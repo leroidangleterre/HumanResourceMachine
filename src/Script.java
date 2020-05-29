@@ -321,19 +321,10 @@ public class Script extends MyDefaultComponent implements Observer {
      */
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
 
-        // First, display all non-selected instructions.
+        // Display the instruction from first to last.
         for (Instruction inst : instList) {
-            if (!inst.isSelected()) {
-                inst.paint(g, panelHeight, x0, y0, zoom);
-            }
+            inst.paint(g, panelHeight, x0, y0, zoom);
         }
-        // Then, display all selected instructions on top of the rest.
-        for (Instruction inst : instList) {
-            if (inst.isSelected()) {
-                inst.paint(g, panelHeight, x0, y0, zoom);
-            }
-        }
-
         paintWorkers(g, panelHeight, x0, y0, zoom);
     }
 

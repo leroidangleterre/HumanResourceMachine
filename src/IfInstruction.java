@@ -10,6 +10,8 @@ import java.awt.event.MouseEvent;
  */
 public class IfInstruction extends Instruction {
 
+    double marginPercentage = 0.05; // As a percentage of the apparent height: 0.05 means 5%
+
     // The element we are testing: current block, or neighbor square/worker/block...
     private Compass compass;
 
@@ -33,7 +35,6 @@ public class IfInstruction extends Instruction {
     private int xChoiceBox;
     private int yChoiceBox;
     private int choiceBoxApparentWidth;
-    private int choiceBoxApparentHeight;
 
     // The boolean operation: equals, greater than, ...
     private BooleanButton boolButton;
@@ -50,7 +51,6 @@ public class IfInstruction extends Instruction {
         super();
 
         model = new IfInstructionModel();
-        model.setText("If");
         elseInstruction = null;
         endInstruction = null;
         color = new Color(255, 140, 0);
@@ -61,9 +61,21 @@ public class IfInstruction extends Instruction {
         compass.setDirection(((IfInstructionModel) model).getCardinalPoint());
 
         boolButton = new BooleanButton(((IfInstructionModel) model).getCurrentBoolean());
-        choiceBox = new MyChoiceBox(
-                ((IfInstructionModel) model).getChoiceValue(),
-                model);
+
+        choiceBox = new MyChoiceBox(0, model);
+        if (choiceBox == null) {
+            System.out.println("box is null");
+        } else {
+            System.out.println("box is NOT null");
+        }
+
+        if (choiceBox.getModel() == null) {
+            System.out.println("ERROR: cb model is null");
+        } else {
+            System.out.println("cb not null, OK");
+        }
+
+        ((IfInstructionModel) model).setChoiceBoxModel((MyChoiceBoxModel) choiceBox.getModel());
     }
 
     /**
@@ -102,7 +114,6 @@ public class IfInstruction extends Instruction {
         if (endInstruction != null) {
             g.setColor(this.color);
         } else {
-            g.setColor(Color.blue);
             System.out.println("Error If: the 'endInstruction' is null");
         }
         int yEnd = this.endInstruction.getY();
@@ -111,41 +122,62 @@ public class IfInstruction extends Instruction {
         g.setColor(Color.green);
         g.drawRect(xDisplay, yDisplay, (int) (indentationWidth * zoom), (yEndDisplay - yDisplay));
 
+        // Compute all the coordinates of the sub-components
+        // Text sub-component
+        g.setColor(Color.BLACK);
+        String text = ((IfInstructionModel) model).getText();
+        int xText = (int) (xDisplay + textRelativeX * this.width * zoom);
+//        setFont(g);
+//        g.drawChars(text.toCharArray(), 0, text.length(), xText, yDisplay + g.getFont().getSize());
+        int textWidth = g.getFontMetrics().stringWidth(text);
+
+        int margin = (int) (marginPercentage * height * zoom);
+
+        // Apparent height of the Instruction
+        int appHeight = (int) (height * zoom);
+        int subComponentHeight = appHeight - 2 * margin;
+
+        // Compass sub-component
+        xCompass = (int) (xDisplay + margin + textWidth);
+        yCompass = (int) (yDisplay + margin);
+        compass.setPos(xCompass, yCompass);
+        compassApparentSize = subComponentHeight; // Compass is displayed as a square.
+        compass.setSize(compassApparentSize, subComponentHeight);
+
+        // Boolean sub-component
+        xBool = xDisplay + textWidth + 2 * margin + compassApparentSize;
+        yBool = yCompass;
+        boolApparentWidth = compassApparentSize;
+        boolButton.setPos(xBool, yBool);
+        boolButton.setSize(boolApparentWidth, subComponentHeight);
+
+        // ChoiceBox sub-component
+        xChoiceBox = xDisplay + textWidth + 3 * margin + compassApparentSize + boolApparentWidth;
+        yChoiceBox = yCompass;
+        int choiceBoxTextWidth = g.getFontMetrics().stringWidth(choiceBox.getValue());
+        // Text must be written in a rectangle at least as wide as it is high; the buttons are painted after that.
+        choiceBoxApparentWidth = (int) Math.max(subComponentHeight, choiceBoxTextWidth);
+        if (choiceBox.isNumber()) {
+            // Additional width for the buttons
+            choiceBoxApparentWidth += subComponentHeight;
+        }
+        if (choiceBox.isCompass()) {
+            // Specific width for when the choice box is a compass
+            choiceBoxApparentWidth = (int) (subComponentHeight * 1.5);
+        }
+        choiceBox.setSize(choiceBoxApparentWidth, subComponentHeight);
+        choiceBox.setPos(xChoiceBox, yChoiceBox);
+
+        // The width of the current IfInstruction depends on the width of its subcomponents. The height is not changed here.
+        this.width = (int) (textWidth / zoom + height + height + choiceBoxApparentWidth / zoom);
         super.paint(g, panelHeight, x0, y0, zoom);
 
-        g.setColor(Color.BLACK);
-        String text = "If ";
-
-        int xText = (int) (xDisplay + textRelativeX * this.width * zoom);
+        g.setColor(Color.black);
         setFont(g);
-
         g.drawChars(text.toCharArray(), 0, text.length(), xText, yDisplay + g.getFont().getSize());
-
-        // Paint the compass
-        compassApparentSize = (int) (compassRelativeSize * this.height * zoom);
-        xCompass = (int) (xDisplay + compassRelativeX * this.width * zoom);
-        yCompass = (int) (yDisplay + 0.5 * height * (1 - compassRelativeSize) * zoom);
-        compass.setPos(xCompass, yCompass);
-        compass.setSize(compassApparentSize, compassApparentSize);
         compass.paint(g, panelHeight, x0, y0, zoom);
-
-        // Paint the boolean button
-        boolApparentWidth = (int) (boolRelativeSize * this.height * zoom);
-        xBool = (int) (xDisplay + boolRelativeX * this.width * zoom);
-        yBool = (int) (yDisplay + 0.5 * height * (1 - boolRelativeSize) * zoom);
-        boolButton.setPos(xBool, yBool);
-        boolButton.setSize(boolApparentWidth, boolApparentWidth);
         boolButton.paint(g, panelHeight, x0, y0, zoom);
-
-        // Paint the choiceBox
-        choiceBoxApparentWidth = (int) (choiceBoxRelativeWidth * this.width * zoom);
-        choiceBoxApparentHeight = (int) (choiceBoxRelativeHeight * this.height * zoom);
-        xChoiceBox = (int) (xDisplay + choiceBoxRelativeX * this.width * zoom);
-        yChoiceBox = (int) (yDisplay + 0.5 * height * (1 - choiceBoxRelativeHeight) * zoom);
-        choiceBox.setPos(xChoiceBox, yChoiceBox);
-        choiceBox.setSize(choiceBoxApparentWidth, choiceBoxApparentHeight);
         choiceBox.paint(g, panelHeight, x0, y0, zoom);
-
     }
 
     /**
@@ -174,7 +206,7 @@ public class IfInstruction extends Instruction {
             repaint();
         } else if (xClick >= xChoiceBox && xClick <= xChoiceBox + choiceBoxApparentWidth) {
             // Act on the choice box.
-            choiceBox.toggle();
+            choiceBox.mousePressed(e);
             // TODO set the choice value of the model.
             ((IfInstructionModel) model).setChoiceValue(choiceBox.getValue());
             repaint();

@@ -298,23 +298,23 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
     @Override
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyChar()) {
-            case '0':
-                resetView();
-                break;
-            case '4':
-                swipe(-1, 0);
-                break;
-            case '6':
-                swipe(+1, 0);
-                break;
-            case '8':
-                swipe(0, +1);
-                break;
-            case '2':
-                swipe(0, -1);
-                break;
-            default:
-                break;
+        case '0':
+            resetView();
+            break;
+        case '4':
+            swipe(-1, 0);
+            break;
+        case '6':
+            swipe(+1, 0);
+            break;
+        case '8':
+            swipe(0, +1);
+            break;
+        case '2':
+            swipe(0, -1);
+            break;
+        default:
+            break;
         }
     }
 
