@@ -37,16 +37,11 @@ public class MyChoiceBox extends MyDefaultComponent {
         width = 30;
         height = 30;
         compass = new Compass();
+        ((MyChoiceBoxModel) model).setCompass(compass);
     }
 
     public MyChoiceBox(int val, InstructionModel inst) {
         this(0);
-        if (model == null) {
-            System.out.println("model is null in MyChoiceBox after constructor");
-        } else {
-            System.out.println("model is NOT null in MyChoiceBox after constructor");
-        }
-//        setInstructionModel(inst);
     }
 
     public MyChoiceBox(String text, InstructionModel inst) {
@@ -54,9 +49,6 @@ public class MyChoiceBox extends MyDefaultComponent {
         ((MyChoiceBoxModel) model).setValue(text);
     }
 
-//    private void setInstructionModel(InstructionModel newModel) {
-//        this.model.setInstructionModel(newModel);
-//    }
     @Override
     public void receiveCommand(String text) {
     }
@@ -198,13 +190,7 @@ public class MyChoiceBox extends MyDefaultComponent {
                     ((MyChoiceBoxModel) model).decreaseValue();
                 } else {
                     // Top button
-                    System.out.println("choice box: increasing value on click");
-                    try {
-                        ((MyChoiceBoxModel) model).increaseValue();
-                    } catch (NullPointerException exc) {
-                        System.out.println("NPE");
-                    }
-                    System.out.println("choice box: increasing value on click done");
+                    ((MyChoiceBoxModel) model).increaseValue();
                 }
             } else {
                 toggle();

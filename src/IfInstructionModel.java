@@ -27,6 +27,9 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
     private InstructionModel elseTarget;
     private InstructionModel endTarget;
 
+    private static int NB_IIM_CREATED = 0;
+    private int id;
+
     public IfInstructionModel() {
         super();
         elseAddress = 0;
@@ -38,6 +41,8 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
         currentBoolean = BooleanConstant.LOWER_THAN;
         choiceBoxModel = null;
         textValue = "If ";
+        id = NB_IIM_CREATED;
+        NB_IIM_CREATED++;
     }
 
     public CardinalPoint getCardinalPoint() {
@@ -83,27 +88,27 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
         this.currentBoolean = newBool;
     }
 
-    /**
-     * Execute the IF: evaluate the condition, then set the worker's next
-     * address.
-     *
-     * @param date
-     * @param w
-     */
-    @Override
-    public void execute(int date, Worker w) {
-        super.execute(date, w);
-        // Analyse the three sub-components: the direction, the operator, and the choice box,
-        // and choose between going to the "then" or to the "else" block.
-
-        String optionalText = "42" + w.getSerial() + "-" + w.getDirection();
-
-        Notification n = new Notification(this.getName(), w, optionalText);
-
-        isEvaluated = false;
-        notifyObservers(n);
-    }
-
+//    /**
+//     * Execute the IF: evaluate the condition, then set the worker's next
+//     * address.
+//     *
+//     * @param date
+//     * @param w
+//     */
+//    @Override
+//    public void execute(int date, Worker w) {
+//        super.execute(date, w);
+//        // Analyse the three sub-components: the direction, the operator, and the choice box,
+//        // and choose between going to the "then" or to the "else" block.
+//
+//        String optionalText = "42" + w.getSerial() + "-" + w.getDirection();
+//        System.out.println("            IfInstructionModel.execute(date = " + date + ", worker " + w.getSerial());
+//        Notification n = new Notification(this.getName(), w, optionalText);
+//        System.out.println("new notification: " + n.getName() + ", " + n.getOptions());
+//
+//        isEvaluated = false;
+//        notifyObservers(n);
+//    }
     public void setElseInstruction(InstructionModel newTarget) {
         elseTarget = newTarget;
     }
@@ -169,52 +174,38 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
 
         // Example of instruction: if Square north is holds a datacube, then goto 5, else goto 8.
         // res = "_N_==_DataCube_5_8";
-        switch (this.currentDirection) {
-        case CENTER:
-            res += "C_";
-            break;
-        case NORTH:
-            res += "N_";
-            break;
-        case SOUTH:
-            res += "S_";
-            break;
-        case EAST:
-            res += "E_";
-            break;
-        case WEST:
-            res += "W_";
-            break;
-        default:
-            break;
+        res += this.currentDirection + "_";
+
+        // If the second operand is a compass, we must ask the terrain about it.
+        if (choiceBoxModel.isCompass()) {
+            System.out.println("Second operand is a compass: <" + choiceBoxModel.getStringValue() + ">");
+            res += choiceBoxModel.getStringValue();
         }
 
-        switch (this.currentBoolean) {
-        case EQUAL:
-            res += "==";
-            break;
-        case NOT_EQUAL:
-            res += "!=";
-            break;
-        case GREATER_THAN:
-            res += ">=";
-            break;
-        case LOWER_THAN:
-            res += "<=";
-            break;
-        case STRICTLY_GREATER_THAN:
-            res += ">";
-            break;
-        case STRICTLY_LOWER_THAN:
-            res += "<";
-            break;
-        }
-
+//        switch (this.currentBoolean) {
+//        case EQUAL:
+//            res += "==";
+//            break;
+//        case NOT_EQUAL:
+//            res += "!=";
+//            break;
+//        case GREATER_THAN:
+//            res += ">=";
+//            break;
+//        case LOWER_THAN:
+//            res += "<=";
+//            break;
+//        case STRICTLY_GREATER_THAN:
+//            res += ">";
+//            break;
+//        case STRICTLY_LOWER_THAN:
+//            res += "<";
+//            break;
+//        }
         // add the expected type or value
         // Add the "then" address
         // add the "else" address
-        res += "_" + textValue + "_" + this.elseAddress + "_" + this.endAddress;
-
+//        res += "_" + choiceBoxModel.getValue(); // + "_" + this.elseAddress + "_" + this.endAddress;
         return res;
     }
 
@@ -230,12 +221,11 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
             String datacubeValue = tab[3];
             int observedWorkerId = Integer.parseInt(tab[4]);
 
-            System.out.println("\n\nIf instruction receives reply:");
-            System.out.println("square type: " + squareType);
-            System.out.println("current worker: " + workerSerial);
-            System.out.println("dataCube: " + datacubeValue);
-            System.out.println("observed worker: " + observedWorkerId);
-
+//            System.out.println("\n\nIf instruction " + this.id + " receives \"IfReply\" notification:");
+//            System.out.println("square type: " + squareType);
+//            System.out.println("current worker: " + workerSerial);
+//            System.out.println("dataCube: " + datacubeValue);
+//            System.out.println("observed worker: " + observedWorkerId);
             String options;
             if (makeChoice(squareType, workerSerial, datacubeValue, observedWorkerId)) {
                 // Goto the THEN part.
@@ -243,8 +233,8 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
                 // saying that worker <workerSerial> must go to instruction <address>
                 w.setCurrentAddress(w.getCurrentAddress() + 1);
             } else {
-                // Goto the ELSE part.
-                w.setCurrentAddress(elseAddress);
+                // Goto the ELSE part: the first instruction after the "ELSE"
+                w.setCurrentAddress(elseAddress + 1);
             }
         }
     }
@@ -268,31 +258,10 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
             try {
                 int expectedValue = choiceBoxModel.getIntValue();
                 int dataCubeVal = Integer.parseInt(dataCubeStringVal);
+
                 // Compare expectedValue with dataCubeVal.
-                switch (this.currentBoolean) {
-                case EQUAL:
-                    result = dataCubeVal == expectedValue;
-                    break;
-                case GREATER_THAN:
-                    result = dataCubeVal >= expectedValue;
-                    break;
-                case LOWER_THAN:
-                    result = dataCubeVal <= expectedValue;
-                    break;
-                case NOT_EQUAL:
-                    result = dataCubeVal != expectedValue;
-                    break;
-                case STRICTLY_GREATER_THAN:
-                    result = dataCubeVal > expectedValue;
-                    break;
-                case STRICTLY_LOWER_THAN:
-                    result = dataCubeVal < expectedValue;
-                    break;
-                default:
-                    System.out.println("Error in IfInstructionModel: unknown operator");
-                    result = false;
-                    break;
-                }
+                result = compare(expectedValue, dataCubeVal, currentBoolean);
+
                 System.out.println("If makeChoice: returning " + result);
                 return result;
             } catch (NumberFormatException ex) {
@@ -300,38 +269,67 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
                 return false;
             }
         } else {
-            System.out.println("If instructions cannot make a choice for non-numbers yet.");
+            if (choiceBoxModel.isCompass()) {
+                // Must compare the values of the two designated squares.
+            } else {
+                // Must test if designated square has the given type.
+                System.out.println("IfInstrModel: TODO: test square against a given type.");
+                result = false;
+            }
             return result;
         }
+    }
+
+    private boolean compare(int firstValue, int secondValue, BooleanConstant bool) {
+        boolean result;
+        switch (this.currentBoolean) {
+        case EQUAL:
+            result = firstValue == secondValue;
+            break;
+        case GREATER_THAN:
+            result = firstValue >= secondValue;
+            break;
+        case LOWER_THAN:
+            result = firstValue <= secondValue;
+            break;
+        case NOT_EQUAL:
+            result = firstValue != secondValue;
+            break;
+        case STRICTLY_GREATER_THAN:
+            result = firstValue > secondValue;
+            break;
+        case STRICTLY_LOWER_THAN:
+            result = firstValue < secondValue;
+            break;
+        default:
+            System.out.println("Error in IfInstructionModel: unknown operator");
+            result = false;
+            break;
+        }
+        return result;
     }
 
     @Override
     public Notification createNotification() {
         // Worker is set via the ScriptModel.
         Notification n = new Notification(this);
+        System.out.println("IfInstrModel.createNotification()");
         return n;
     }
 
     @Override
     public String toString() {
-        return getName() + " " + currentDirection + " " + currentBoolean + " " + choiceBoxModel.getValue() + " " + elseAddress + " " + endAddress;
+        System.out.println("IfInstrModel: choiceBoxModel returns " + choiceBoxModel.getValue());
+        return getName() + " " + currentDirection + " " + currentBoolean + " "
+                + choiceBoxModel.getValue() + " " + elseAddress + " " + endAddress;
     }
 
     public void setChoiceValue(String newChoiceVal) {
         if (choiceBoxModel == null) {
-            System.out.println("IfInstructionModel.setChoiceValue: choiceBoxModel is null");
-        }
-        String currentValue = choiceBoxModel.getValue();
-        if (choiceBoxModel == null) {
-            System.out.println("IIM: cBM is null");
+            System.out.println("IIM: ERROR, cBM is null");
         } else {
-            if (choiceBoxModel.getValue() == null) {
-                System.out.println("IIM: boxModel.value==null");
-            } else {
-                System.out.println("value is " + choiceBoxModel.getValue());
-            }
+            choiceBoxModel.setValue(newChoiceVal);
         }
-        System.out.println("IfInstructionModel.setChoiceValue: <" + newChoiceVal + ">, current is " + currentValue);
     }
 
     public String getChoiceValue() {
@@ -340,6 +338,5 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
 
     public void setChoiceBoxModel(MyChoiceBoxModel newChoiceBoxModel) {
         this.choiceBoxModel = newChoiceBoxModel;
-        System.out.println("IIM.setChoiceBoxModel: " + this.choiceBoxModel);
     }
 }

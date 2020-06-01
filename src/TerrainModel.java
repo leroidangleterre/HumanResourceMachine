@@ -32,14 +32,12 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         }
 
         for (int i = 0; i < nbLines; i++) {
-            int val = new Random().nextInt(4);
+            int val = new Random().nextInt(10);
             grid[i][0].createDataCube(val);
+            val = new Random().nextInt(10);
+            grid[i][2].createDataCube(val);
         }
 
-//        this.setSquare(new Wall(), 0, 2);
-//        this.setSquare(new Wall(), 1, 2);
-//        this.setSquare(new Wall(), 3, 2);
-//        this.setSquare(new Wall(), 5, 2);
         Square s = this.getSquare(0, 0);
 
         this.xMin = this.getSquare(0, 0).getXMin();
@@ -396,7 +394,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
      * @param w the worker that includes its own movement heading.
      */
     private void drop(Worker w) {
-        System.out.println("            Dropping");
+//        System.out.println("            Dropping");
 
         Square workerSquare = findWorker(w);
 
@@ -498,60 +496,75 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             currentWorker.setCurrentAddress(newAddress);
             break;
         case "InstructionIf":
-            System.out.println("\nTerrain receives If notification with options " + notif.getOptions());
-            System.out.println("" + notif);
+            System.out.println("\nTerrainModel receives If notification with options " + notif.getOptions());
+
+            String options = notif.getOptions();
+            int rank = 0;
+            String optionList[] = options.split("_");
+
             currentWorker = (Worker) notif.getObject();
             Square s = findWorker(currentWorker);
             int col = findColumn(s);
             int line = findLine(s);
-            String options = notif.getOptions();
-            int targetCol = -1;
-            int targetLine = -1;
-            switch (options.charAt(0)) {
-            case 'N':
-                targetCol = col;
-                targetLine = line - 1;
-                break;
-            case 'S':
-                targetCol = col;
-                targetLine = line + 1;
-                break;
-            case 'E':
-                targetCol = col + 1;
-                targetLine = line;
-                break;
-            case 'W':
-                targetCol = col - 1;
-                targetLine = line;
-                break;
-            case 'C':
-                targetCol = col;
-                targetLine = line;
-                break;
-            default:
-                break;
-            }
-            Square targetSquare = this.getSquare(targetLine, targetCol);
-            String replyOptions;
-            if (targetSquare == null) {
-                replyOptions = "out";
-            } else {
-                replyOptions = targetSquare.getClass().toString() + " " + currentWorker.getSerial();
-                if (targetSquare.containsDataCube()) {
-                    replyOptions += " " + targetSquare.getDataCube().getValue();
-                } else {
-                    replyOptions += " _";
-                }
-                if (targetSquare.containsWorker()) {
-                    replyOptions += " " + targetSquare.getWorkerId();
-                } else {
-                    replyOptions += " -1";
+
+            char firstDirection = optionList[0].charAt(0);
+            Square targetSquare = this.getNeighbor(line, col, firstDirection);
+
+            Notification reply = new Notification("IfReply", currentWorker);
+
+            Worker w = this.findWorker(targetSquare.getWorkerId());
+
+            reply.addOption(targetSquare.getClass() + " " + targetSquare.getDataCube().getValue() + " " + w);
+
+            if (optionList.length > 1) {
+                if (optionList[1].length() > 0) {
+                    char secondDirection = optionList[1].charAt(0);
+                    Square secondTargetSquare = this.getNeighbor(line, col, secondDirection);
+
+                    w = this.findWorker(secondTargetSquare.getWorkerId());
+                    reply.addOption(secondTargetSquare.getClass() + " "
+                            + secondTargetSquare.getDataCube().getValue() + " " + w);
                 }
             }
-            Notification reply = new Notification("IfReply", currentWorker, replyOptions);
-            System.out.println("Terrain sends back a notification \"IfReply\" with options <" + replyOptions + ">");
-            System.out.println("Options are: square class; current worker's serial; value of cube or '_'; other worker id or -1");
-            this.notifyObservers(reply);
+
+            System.out.println("Created notification with options: " + reply.getOptions());
+
+//            if (isInteger(optionList[2])) {
+//                // First possibility: we compare the square against a numeric value.
+//                int number = Integer.valueOf(optionList[2]);
+//                if (targetSquare.getValue() == number) {
+//                    reply = new Notification("IfReply", true);
+//                } else {
+//                    reply = new Notification("IfReply", false);
+//                }
+//            } else if (isDirection(optionList[2])) {
+//                // Second possibility: we compare the square against another square.
+//
+//            } else if (isSquareType(optionList[2])) {
+//                // Third possibility: we compare the square against a type.
+//            } else {
+//                // Invalid comparison.
+//            }
+//            String replyOptions;
+//            if (targetSquare == null) {
+//                replyOptions = "out";
+//            } else {
+//                replyOptions = targetSquare.getClass().toString() + " " + currentWorker.getSerial();
+//                if (targetSquare.containsDataCube()) {
+//                    replyOptions += " " + targetSquare.getDataCube().getValue();
+//                } else {
+//                    replyOptions += " _";
+//                }
+//                if (targetSquare.containsWorker()) {
+//                    replyOptions += " " + targetSquare.getWorkerId();
+//                } else {
+//                    replyOptions += " -1";
+//                }
+//            }
+//            Notification reply = new Notification("IfReply", currentWorker, replyOptions);
+//            System.out.println("Terrain sends back a notification \"IfReply\" with options <" + replyOptions + ">");
+//            System.out.println("Options are: square class; current worker's serial; value of cube or '_'; other worker id or -1");
+//            this.notifyObservers(reply);
             break;
 
         case "workerToAddress":
@@ -559,7 +572,6 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             branchWorker(notif);
             break;
         default:
-            System.out.println("Terrain received default instruction: " + notif.getName());
             break;
         }
     }
@@ -592,7 +604,9 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
 
     @Override
     public void notifyObservers(Notification notif) {
+//        System.out.println("TerrainModel is updating its " + observersList.size() + " observers.");
         for (Observer obs : observersList) {
+//            System.out.println("    Notifying observer " + obs);
             obs.update(notif);
         }
     }
@@ -684,5 +698,48 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
                 s.resetWorker();
             }
         }
+    }
+
+    /**
+     * Find and return the square that is the neighbor of (line, col) in the
+     * given direction
+     */
+    private Square getNeighbor(int line, int col, char direction) {
+
+        switch (direction) {
+        case 'N':
+            line = line - 1;
+            break;
+        case 'S':
+            line = line + 1;
+            break;
+        case 'E':
+            col = col + 1;
+            break;
+        case 'W':
+            col = col - 1;
+            break;
+        case 'C':
+            break;
+        default:
+            break;
+        }
+        return this.getSquare(line, col);
+    }
+
+    /**
+     * Tell if a String represents an integer.
+     *
+     * @param s the integer candidate
+     * @return true when the String actually represents an int, false otherwise
+     */
+    private boolean isInteger(String s) {
+        try {
+            int val = Integer.valueOf(s);
+        } catch (NumberFormatException e) {
+            // Not a String representing a number
+            return false;
+        }
+        return true;
     }
 }

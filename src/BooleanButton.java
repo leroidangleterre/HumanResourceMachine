@@ -12,7 +12,6 @@ import java.awt.Graphics;
  */
 class BooleanButton extends MyDefaultComponent {
 
-    private BooleanButtonModel model;
     private Color color = Color.gray;
 
     // Position in pixels
@@ -31,11 +30,15 @@ class BooleanButton extends MyDefaultComponent {
 
     public BooleanButton(BooleanConstant currentBoolean) {
         this();
-        model.setValue(currentBoolean);
+        ((BooleanButtonModel) model).setValue(currentBoolean);
     }
 
     public BooleanConstant getValue() {
         return ((BooleanButtonModel) model).getValue();
+    }
+
+    public void setValue(String newValue) {
+        ((BooleanButtonModel) model).setValue(newValue);
     }
 
     @Override
@@ -48,6 +51,7 @@ class BooleanButton extends MyDefaultComponent {
         y = newY;
     }
 
+    @Override
     public void setSize(int newWidth, int newHeight) {
         width = newWidth;
         height = newHeight;
@@ -73,14 +77,14 @@ class BooleanButton extends MyDefaultComponent {
 
         g.setColor(Color.black);
 
-        String text = (model).getText();
+        String text = ((BooleanButtonModel) model).getText();
         g.drawChars(text.toCharArray(), 0, text.length(),
                 xDisplay + width / 2 - g.getFontMetrics().stringWidth(text) / 2,
                 yDisplay + g.getFont().getSize());
     }
 
     public void toggle() {
-        model.toggle();
+        ((BooleanButtonModel) model).toggle();
         repaint();
     }
 }

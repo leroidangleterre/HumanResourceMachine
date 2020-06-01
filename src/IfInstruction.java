@@ -63,17 +63,6 @@ public class IfInstruction extends Instruction {
         boolButton = new BooleanButton(((IfInstructionModel) model).getCurrentBoolean());
 
         choiceBox = new MyChoiceBox(0, model);
-        if (choiceBox == null) {
-            System.out.println("box is null");
-        } else {
-            System.out.println("box is NOT null");
-        }
-
-        if (choiceBox.getModel() == null) {
-            System.out.println("ERROR: cb model is null");
-        } else {
-            System.out.println("cb not null, OK");
-        }
 
         ((IfInstructionModel) model).setChoiceBoxModel((MyChoiceBoxModel) choiceBox.getModel());
     }
@@ -269,5 +258,20 @@ public class IfInstruction extends Instruction {
         String newText = "IF goto next, else goto " + getElseAddress() + ", end goto " + getEndAddress();
 
         model.setText(newText);
+    }
+
+    void setChoiceBoxValue(String choiceBoxValue) {
+        choiceBox.setValue(choiceBoxValue);
+        ((IfInstructionModel) model).setChoiceValue(choiceBoxValue);
+    }
+
+    void setComparator(String newComparator) {
+        boolButton.setValue(newComparator);
+        ((IfInstructionModel) model).setCurrentBoolean(BooleanConstant.valueOf(newComparator));
+    }
+
+    void setCompass(String newCompassDirection) {
+        compass.setDirection(CardinalPoint.valueOf(newCompassDirection));
+        ((IfInstructionModel) model).setDirection(CardinalPoint.valueOf(newCompassDirection));
     }
 }

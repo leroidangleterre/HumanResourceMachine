@@ -14,12 +14,14 @@ public class MyChoiceBoxModel extends MyDefaultModel {
     // The instruction that the choice box will pilot.
     private InstructionModel instruction;
     private boolean isCompass;
+    private Compass compass;
 
     public MyChoiceBoxModel(int val) {
         isNumber = true;
         intValue = val;
         textValue = "" + val;
         isCompass = false;
+        compass = null;
     }
 
     public MyChoiceBoxModel(String text) {
@@ -27,6 +29,7 @@ public class MyChoiceBoxModel extends MyDefaultModel {
         intValue = 0;
         textValue = text;
         isCompass = false;
+        compass = null;
     }
 
     public void setInstructionModel(InstructionModel newInst) {
@@ -56,11 +59,18 @@ public class MyChoiceBoxModel extends MyDefaultModel {
             isNumber = false;
             break;
         case "DataCube":
-            textValue = "Compass";
+            textValue = "NORTH";
             isNumber = false;
             isCompass = true;
+            if (compass == null) {
+//                compass = new Compass();
+                System.out.println("MyChoiceBoxModel.toggle(): ERROR, compass is null");
+            }
             break;
-        case "Compass":
+        case "NORTH":
+        case "SOUTH":
+        case "EAST":
+        case "WEST":
             textValue = "0";
             isNumber = true;
             isCompass = false;
@@ -80,6 +90,21 @@ public class MyChoiceBoxModel extends MyDefaultModel {
         } catch (NumberFormatException e) {
             // Value is an actual String.
             this.isNumber = false;
+
+            try {
+                // If the value is a cardinal point, we need a compass.
+                CardinalPoint cp = CardinalPoint.valueOf(s);
+                if (!isCompass) {
+                    this.isCompass = true;
+                    if (this.compass == null) {
+                        compass = new Compass();
+                    }
+                }
+                compass.setDirection(cp);
+            } catch (IllegalArgumentException exc) {
+                // The exception simply says that the value is not a cardinal point,
+                // which means it is a normal text value.
+            }
             this.textValue = s;
         }
     }
@@ -105,16 +130,15 @@ public class MyChoiceBoxModel extends MyDefaultModel {
     }
 
     public String getValue() {
-        try {
-            if (this.isNumber) {
-                return "" + this.intValue;
-            } else {
-                return this.textValue;
-            }
-        } catch (NullPointerException e) {
-            System.out.println("NPE caught");
-            return "NPE_CAUGHT";
+        String result = "";
+        if (this.isNumber) {
+            result = "" + this.intValue;
+        } else if (this.isCompass) {
+            result = compass.toString();
+        } else {
+            result = this.textValue;
         }
+        return result;
     }
 
     public int getIntValue() {
@@ -122,7 +146,11 @@ public class MyChoiceBoxModel extends MyDefaultModel {
     }
 
     public String getStringValue() {
-        return this.textValue;
+        if (isCompass) {
+            return compass.toString();
+        } else {
+            return this.textValue;
+        }
     }
 
     public boolean isNumber() {
@@ -135,5 +163,9 @@ public class MyChoiceBoxModel extends MyDefaultModel {
 
     @Override
     public void selectContent() {
+    }
+
+    void setCompass(Compass compass) {
+        this.compass = compass;
     }
 }

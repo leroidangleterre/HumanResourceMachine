@@ -721,7 +721,7 @@ public class Script extends MyDefaultComponent implements Observer {
 
     void save() {
         try {
-            System.out.println("Script is saving.");
+//            System.out.println("Script is saving.");
             String path = "C:/Users/arthurmanoha/Documents/Programmation/Java/HumanResourceMachine/src/";
             String filename = "script.txt";
             BufferedWriter writer = new BufferedWriter(new FileWriter(path + filename));
@@ -743,7 +743,7 @@ public class Script extends MyDefaultComponent implements Observer {
      * Must clear the model.
      */
     public void clear() {
-        System.out.println("Clearing script");
+//        System.out.println("Clearing script");
         instList.clear();
         ((ScriptModel) model).clear();
         repaint();
@@ -751,7 +751,6 @@ public class Script extends MyDefaultComponent implements Observer {
 
     public void load() {
         try {
-            System.out.println("\nScript is loading.\n");
             clear();
             String path = "C:/Users/arthurmanoha/Documents/Programmation/Java/HumanResourceMachine/src/";
             String filename = "script.txt";
@@ -789,7 +788,6 @@ public class Script extends MyDefaultComponent implements Observer {
         } catch (IOException ex) {
             System.out.println("Cannot load: IO exception");
         }
-        System.out.println("\nEnd load script\n");
         repaint();
     }
 
@@ -805,16 +803,20 @@ public class Script extends MyDefaultComponent implements Observer {
     private void decodeInstruction(String text, int index) {
         Instruction inst = null;
 
-        System.out.println("Decoding <" + text + ">");
-
         if (text.equals("NoOperation")) {
             inst = new NoInstruction();
+            ((NoInstruction) inst).setText("");
         } else if (text.contains("WorkerPickup")) {
             CardinalPoint direction = CardinalPoint.valueOf(text.split(" ")[1]);
             inst = new PickupInstruction(direction);
         } else if (text.contains("If")) {
             inst = new IfInstruction();
             String ifOptions[] = text.split(" ");
+            ((IfInstruction) inst).setCompass(ifOptions[1]);
+//            System.out.println("If compass: " + ifOptions[1]);
+            ((IfInstruction) inst).setComparator(ifOptions[2]);
+            ((IfInstruction) inst).setChoiceBoxValue(ifOptions[3]);
+//            System.out.println("If choiceBox: " + ifOptions[3]);
             int elseAddress = Integer.valueOf(ifOptions[4]);
             int endAddress = Integer.valueOf(ifOptions[5]);
             ((IfInstruction) inst).setElseInstruction(null, elseAddress + 1);

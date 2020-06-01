@@ -26,7 +26,6 @@ public class Compass {
         serial = NB_DIR_CREATED;
         NB_DIR_CREATED++;
         currentDirection = CardinalPoint.NORTH;
-        setRandomDirection();
 
         color = Color.orange;
     }
@@ -110,7 +109,13 @@ public class Compass {
     }
 
     public CardinalPoint getCurrentDirection() {
+//        System.out.println("Compass " + serial + " getCurrentDirection is " + currentDirection);
         return currentDirection;
+    }
+
+    public String toString() {
+//        System.out.println("Compass " + serial + " toString: <" + currentDirection.toString() + ">");
+        return currentDirection.toString();
     }
 
     /**

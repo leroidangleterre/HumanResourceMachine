@@ -47,9 +47,9 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
 
     public MyDefaultComponent() {
         super();
-        this.x0 = 22;
-        this.y0 = 8;
-        this.zoom = 110.8;
+        this.x0 = 28;
+        this.y0 = 0;
+        this.zoom = 74.5;
 
         setPreferredSize(new Dimension(COMPONENT_WIDTH, COMPONENT_HEIGHT));
         setSize(new Dimension(COMPONENT_WIDTH, COMPONENT_HEIGHT));

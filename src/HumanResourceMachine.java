@@ -6,7 +6,7 @@ public class HumanResourceMachine {
 
     public static void main(String args[]) {
 
-        int nbLines = 80;
+        int nbLines = 12;
         int nbCols = 12;
 
         Terrain terrain = new Terrain(nbLines, nbCols);
@@ -24,29 +24,12 @@ public class HumanResourceMachine {
         MyDefaultComponent rightPanel = script;
         Window w = new Window(leftPanel, rightPanel);
 
-        script.addInstruction(new IfInstruction());
-        script.addInstruction(new PickupInstruction(CardinalPoint.WEST));
-        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
-        script.addInstruction(new DropInstruction());
-        script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
+        script.load();
 
-        script.moveInstruction(3, 1);
-        script.moveInstruction(4, 3);
-
-        JumpInstruction newInst = new JumpInstruction();
-        script.addInstruction(newInst);
-        int jumpRank = script.findIndexOf(newInst.getTargetInstruction());
-        script.moveInstruction(jumpRank, 0);
-        script.unselectEverything();
-
-//        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
-//        script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
-//        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
-//        script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
-//        script.addInstruction(new MoveInstruction(CardinalPoint.EAST));
-//        script.addInstruction(new MoveInstruction(CardinalPoint.SOUTH));
         int line = 0;
         int col = 1;
+        ((TerrainModel) (terrain.getModel())).addNewWorker(line, col);
+        col = 2;
         ((TerrainModel) (terrain.getModel())).addNewWorker(line, col);
 
         w.invalidate();
