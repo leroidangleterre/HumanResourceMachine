@@ -1,4 +1,3 @@
-
 import java.awt.Color;
 import java.awt.Graphics;
 
@@ -187,8 +186,12 @@ public class Square {
      */
     public int getWorkerId() {
         if (this.worker == null) {
+            System.out.println("Square.getWorkerId(): returning -1");
             return -1;
         } else {
+            System.out.println("Square.getWorkerId(): returning something:");
+            System.out.println(this.worker.getSerial() + "");
+            System.out.println("done.");
             return this.worker.getSerial();
         }
     }
@@ -214,6 +217,28 @@ public class Square {
     void resetWorker() {
         if (worker != null) {
             worker.setCurrentAddress(0);
+        }
+    }
+
+    /**
+     * Gets the value of a square
+     *
+     * @return If a worker has a datacube, the value of that cube (even if there
+     * is a cube on the square);
+     * Else, if a datacube is on the square, the value of that cube;
+     * Else, the minimum integer possible.
+     */
+    public int getValue() {
+        System.out.println("Square " + this + ": getValue()");
+        if (worker != null && worker.hasDataCube()) {
+            System.out.println("\treturns worker's value: " + worker.getCubeValue());
+            return worker.getCubeValue();
+        } else if (dataCube != null) {
+            System.out.println("\treturns square's cube's value: " + dataCube.getValue());
+            return dataCube.getValue();
+        } else {
+            System.out.println("\treturns null");
+            return Integer.MIN_VALUE;
         }
     }
 }

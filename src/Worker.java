@@ -63,6 +63,7 @@ public class Worker implements Observable {
 
     public void setCurrentAddress(int newAdress) {
         currentAddress = newAdress;
+        System.out.println("Worker.setCurrentAddress(" + newAdress + ");");
     }
 
     public int getCurrentAddress() {
@@ -184,5 +185,9 @@ public class Worker implements Observable {
         } else {
             return 1;
         }
+    }
+
+    public int getCubeValue() {
+        return dataCube.getValue();
     }
 }

@@ -70,7 +70,7 @@ public class Script extends MyDefaultComponent implements Observer {
         }
 
         if (newIns instanceof IfInstruction) {
-            // Create the Else and the Endif instructions, aligned on the left
+            // Create the Else and the Endif instructions.
             JumpInstruction elseTarget = new JumpInstruction();
             int elseAddress = rank + 1;
             this.addInstruction(elseTarget, elseAddress);
@@ -323,7 +323,9 @@ public class Script extends MyDefaultComponent implements Observer {
 
         // Display the instruction from first to last.
         for (Instruction inst : instList) {
-            inst.paint(g, panelHeight, x0, y0, zoom);
+            if (inst != null) {
+                inst.paint(g, panelHeight, x0, y0, zoom);
+            }
         }
         paintWorkers(g, panelHeight, x0, y0, zoom);
     }
@@ -550,56 +552,58 @@ public class Script extends MyDefaultComponent implements Observer {
         int dx = (int) (indentationWidth * zoom);
 
         for (Instruction inst : instList) {
-            inst.setZoom(zoom);
-            if (!(selectionIsMoving && inst.isSelected())) {
-                if (y != inst.getY()) {
-                    // A non-selected instruction is being translated.
-                    inst.setY(y);
+            if (inst != null) {
+                inst.setZoom(zoom);
+                if (!(selectionIsMoving && inst.isSelected())) {
+                    if (y != inst.getY()) {
+                        // A non-selected instruction is being translated.
+                        inst.setY(y);
+                    }
                 }
-            }
 
-            // Update the target rank of the Jump instructions in case their target has moved.
-            if (inst instanceof JumpInstruction) {
-                Instruction target = ((JumpInstruction) inst).getTargetInstruction();
-                if (target != null) {
-                    int targetRank = this.findIndexOf(target);
-                    ((JumpInstruction) inst).setTargetInstruction(target, targetRank);
+                // Update the target rank of the Jump instructions in case their target has moved.
+                if (inst instanceof JumpInstruction) {
+                    Instruction target = ((JumpInstruction) inst).getTargetInstruction();
+                    if (target != null) {
+                        int targetRank = this.findIndexOf(target);
+                        ((JumpInstruction) inst).setTargetInstruction(target, targetRank);
+                    }
                 }
-            }
 
-            // Update the target ranks of the IF instructions in case these targets have moved.
-            if (inst instanceof IfInstruction) {
-                Instruction elseTarget = ((IfInstruction) inst).getElseInstruction();
-                Instruction endTarget = ((IfInstruction) inst).getEndInstruction();
+                // Update the target ranks of the IF instructions in case these targets have moved.
+                if (inst instanceof IfInstruction) {
+                    Instruction elseTarget = ((IfInstruction) inst).getElseInstruction();
+                    Instruction endTarget = ((IfInstruction) inst).getEndInstruction();
 
-                int newElseRank = this.findIndexOf(elseTarget);
-                int newEndRank = this.findIndexOf(endTarget);
+                    int newElseRank = this.findIndexOf(elseTarget);
+                    int newEndRank = this.findIndexOf(endTarget);
 
-                ((IfInstruction) inst).setElseInstruction(elseTarget, newElseRank);
-                ((IfInstruction) inst).setEndInstruction(endTarget, newEndRank);
-                if (elseTarget != null) {
-                    ((JumpInstruction) elseTarget).setText("ELSE " + newEndRank);
+                    ((IfInstruction) inst).setElseInstruction(elseTarget, newElseRank);
+                    ((IfInstruction) inst).setEndInstruction(endTarget, newEndRank);
+                    if (elseTarget != null) {
+                        ((JumpInstruction) elseTarget).setText("ELSE " + newEndRank);
+                    }
                 }
-            }
 
-            // Everything inside an if construct is shifted to the right.
-            inst.setX(x);
-
-            if (inst instanceof IfInstruction) {
-                x += dx;
-            }
-            if (inst instanceof JumpInstruction && ((JumpInstruction) inst).getText().equals("ELSE")) {
-                // The ELSE must be one level to the left.
-                inst.setX(inst.getX() - dx);
-            }
-            if (inst instanceof NoInstruction && ((NoInstruction) inst).getText().equals("END")) {
-                // The END must be one level to the left.
-                x -= dx;
+                // Everything inside an if construct is shifted to the right.
                 inst.setX(x);
-                // Next instruction at same indent.
-            }
 
-            y -= inst.getHeight() * zoom;
+                if (inst instanceof IfInstruction) {
+                    x += dx;
+                }
+                if (inst instanceof JumpInstruction && ((JumpInstruction) inst).getText().equals("ELSE")) {
+                    // The ELSE must be one level to the left.
+                    inst.setX(inst.getX() - dx);
+                }
+                if (inst instanceof NoInstruction && ((NoInstruction) inst).getText().equals("END")) {
+                    // The END must be one level to the left.
+                    x -= dx;
+                    inst.setX(x);
+                    // Next instruction at same indent.
+                }
+
+                y -= inst.getHeight() * zoom;
+            }
         }
     }
 
@@ -686,7 +690,7 @@ public class Script extends MyDefaultComponent implements Observer {
     /**
      * Find at which rank the given instruction is located within the script.
      *
-     * @param inst the instruction we search for
+     * @param instParam the instruction we search for
      * @return -1 if the instruction does not exist in the script, the correct
      * index otherwise.
      */
@@ -709,13 +713,19 @@ public class Script extends MyDefaultComponent implements Observer {
     public void printInstructionsAsText() {
         int index = 0;
         for (Instruction inst : instList) {
-            System.out.print(index + " <" + inst.getClass());
-            if (inst instanceof IfInstruction) {
-                System.out.print(" else at " + ((IfInstructionModel) ((IfInstruction) inst).getModel()).getElseAddress());
-                System.out.print(" end at " + ((IfInstructionModel) ((IfInstruction) inst).getModel()).getEndAddress());
+            if (inst == null) {
+                System.out.println("Script: error in printInstructionsAsText, instruction is NULL");
+            } else {
+                System.out.print(index + " <" + inst.getClass());
+                if (inst instanceof IfInstruction) {
+                    System.out.print(" else at " + ((IfInstructionModel) ((IfInstruction) inst).getModel()).getElseAddress());
+                    System.out.print(" end at " + ((IfInstructionModel) ((IfInstruction) inst).getModel()).getEndAddress());
+                    index++;
+                } else if (inst instanceof JumpInstruction) {
+                    System.out.print(" jump to " + ((JumpInstructionModel) ((JumpInstruction) inst).getModel()).getTargetAddress());
+                }
+                System.out.println("");
             }
-            System.out.println(">");
-            index++;
         }
     }
 
@@ -780,7 +790,7 @@ public class Script extends MyDefaultComponent implements Observer {
 
             // Make the links between IfInstructions and their targets.
             // They already know the addresses, not the instructions yet.
-            linkIfsAndJumps();
+            printInstructionsAsText();
             computeSizesAndPositions();
 
         } catch (FileNotFoundException e) {
@@ -804,8 +814,13 @@ public class Script extends MyDefaultComponent implements Observer {
         Instruction inst = null;
 
         if (text.equals("NoOperation")) {
-            inst = new NoInstruction();
-            ((NoInstruction) inst).setText("");
+            // Check if this NoInstruction is already the target of an IF or a JUMP
+            if (getInstruction(index) instanceof NoInstruction) {
+                String currentText = ((NoInstruction) getInstruction(index)).getText();
+                if (currentText.contains("ELSE") || currentText.contains("END")) {
+                    System.out.println("Instruction " + currentText + " at " + index + " is already a target. Doing nothing");
+                }
+            }
         } else if (text.contains("WorkerPickup")) {
             CardinalPoint direction = CardinalPoint.valueOf(text.split(" ")[1]);
             inst = new PickupInstruction(direction);
@@ -813,18 +828,28 @@ public class Script extends MyDefaultComponent implements Observer {
             inst = new IfInstruction();
             String ifOptions[] = text.split(" ");
             ((IfInstruction) inst).setCompass(ifOptions[1]);
-//            System.out.println("If compass: " + ifOptions[1]);
             ((IfInstruction) inst).setComparator(ifOptions[2]);
             ((IfInstruction) inst).setChoiceBoxValue(ifOptions[3]);
-//            System.out.println("If choiceBox: " + ifOptions[3]);
             int elseAddress = Integer.valueOf(ifOptions[4]);
             int endAddress = Integer.valueOf(ifOptions[5]);
-            ((IfInstruction) inst).setElseInstruction(null, elseAddress + 1);
-            ((IfInstruction) inst).setEndInstruction(null, endAddress + 1);
+
+            NoInstruction endInst = new NoInstruction();
+            instList.set(endAddress, endInst);
+            endInst.setText("END");
+
+            JumpInstruction elseInst = new JumpInstruction();
+            instList.set(elseAddress, elseInst);
+            elseInst.setTargetInstruction(endInst, endAddress);
+            elseInst.setText("ELSE " + ((JumpInstruction) elseInst).getTargetAddress());
+
+            ((IfInstruction) inst).setElseInstruction(elseInst, elseAddress);
+            ((IfInstruction) inst).setEndInstruction(endInst, endAddress);
+
+            instList.set(elseAddress, elseInst);
+            ((ScriptModel) model).setInstruction(elseInst.getModel(), elseAddress);
 
             // Set the indentation one level deeper betweeen the IF and the END
             ((IfInstruction) inst).setIndentationWidth(indentationWidth);
-
         } else if (text.contains("Move")) {
             CardinalPoint direction = CardinalPoint.valueOf(text.split(" ")[1]);
             inst = new MoveInstruction(direction);
@@ -834,51 +859,19 @@ public class Script extends MyDefaultComponent implements Observer {
             inst = new JumpInstruction();
             // JUMP target must be set properly
             int targetAddress = Integer.valueOf(text.split(" ")[1]);
-            ((JumpInstruction) inst).setTargetInstruction(null, targetAddress);
+            Instruction target = getInstruction(targetAddress);
+            ((JumpInstruction) inst).setTargetInstruction(target, targetAddress);
         } else if (text.contains("ELSE")) {
-            inst = new JumpInstruction();
+            inst = null;
         }
-
-        instList.set(index, inst);
 
         // Update the script model now that the Script component is up-to-date
-        ((ScriptModel) model).setInstruction(inst.getModel(), index);
-    }
-
-    /**
-     * Create the links between If- and Jump- instructions and their targets.
-     *
-     */
-    private void linkIfsAndJumps() {
-        for (Instruction inst : instList) {
-            if (inst instanceof IfInstruction) {
-                IfInstruction ifInst = (IfInstruction) inst;
-
-                int elseAddress = ifInst.getElseAddress();
-                int endAddress = ifInst.getEndAddress();
-
-                // Creating else marker one step before elseAddress
-                JumpInstruction elseInst = new JumpInstruction();
-                elseInst.setText("ELSE");
-                instList.set(elseAddress - 1, elseInst);
-                ifInst.setElseInstruction(elseInst, elseAddress - 1);
-
-                // Creating end instruction
-                NoInstruction endInst = new NoInstruction();
-                ifInst.setEndInstruction(instList.get(endAddress - 1), endAddress - 1);
-                elseInst.setTargetInstruction(endInst, endAddress - 1);
-                ifInst.setEndInstruction(endInst, endAddress - 1);
-                endInst.setText("END");
-                instList.set(endAddress - 1, endInst);
-
-            } else if (inst instanceof JumpInstruction) {
-
-                JumpInstruction jumpInst = (JumpInstruction) inst;
-                int jumpAddress = jumpInst.getTargetAddress();
-                Instruction jumpTarget = instList.get(jumpAddress);
-                jumpInst.setTargetInstruction(jumpTarget, jumpAddress);
-            }
+        if (inst != null) {
+            instList.set(index, inst);
+            ((ScriptModel) model).setInstruction(inst.getModel(), index);
         }
+        printInstructionsAsText();
+        System.out.println("CURRENT END OF SCRIPT.\n\n");
     }
 
     private void waitForKeypressed() {

@@ -216,18 +216,44 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
             // The terrain sent information about the target square.
             String tab[] = n.getOptions().split(" ");
 
-            String squareType = tab[1];
-            int workerSerial = Integer.parseInt(tab[2]);
-            String datacubeValue = tab[3];
-            int observedWorkerId = Integer.parseInt(tab[4]);
+            for (String option : tab) {
+                System.out.println("    <" + option + ">");
+            }
 
-//            System.out.println("\n\nIf instruction " + this.id + " receives \"IfReply\" notification:");
-//            System.out.println("square type: " + squareType);
-//            System.out.println("current worker: " + workerSerial);
-//            System.out.println("dataCube: " + datacubeValue);
-//            System.out.println("observed worker: " + observedWorkerId);
-            String options;
-            if (makeChoice(squareType, workerSerial, datacubeValue, observedWorkerId)) {
+            String firstSquareType = tab[0];
+            String firstDatacubeValue = tab[1];
+            int firstCoWorkerId = Integer.parseInt(tab[2]);
+            int firstCoWorkersCube;
+            try {
+                firstCoWorkersCube = Integer.parseInt(tab[3]);
+            } catch (NumberFormatException formatEx) {
+                // Co-worker has no cube.
+                firstCoWorkersCube = Integer.MIN_VALUE;
+            }
+
+            String secondSquareType = "";
+            String secondDatacubeValue = "";
+            int secondCoWorkerId = -1;
+            int secondCoWorkersCube = Integer.MIN_VALUE;
+
+            // The second square only exists if the choice box is a compass.
+            if (choiceBoxModel.isCompass()) {
+                secondSquareType = tab[4];
+                secondDatacubeValue = tab[5];
+                secondCoWorkerId = Integer.parseInt(tab[6]);
+
+                try {
+                    secondCoWorkersCube = Integer.parseInt(tab[7]);
+                } catch (NumberFormatException formatEx) {
+                    secondCoWorkersCube = Integer.MIN_VALUE;
+                }
+            }
+
+            if (makeChoice(firstSquareType,
+                    firstDatacubeValue,
+                    firstCoWorkerId,
+                    firstCoWorkersCube,
+                    secondSquareType, secondDatacubeValue, secondCoWorkerId, secondCoWorkersCube)) {
                 // Goto the THEN part.
                 // Send a notification to the Worker,
                 // saying that worker <workerSerial> must go to instruction <address>
@@ -242,25 +268,25 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
     /**
      * Make the actual test of the If Instruction.
      *
-     * @param squareType
+     * @param firstSquareType
      * @param workerSerial
-     * @param dataCubeStringVal may be "_" if no cube exists; is a String
-     * representing a number otherwise.
-     * @param observedWorkerSerial
+     * @param firstDataCubeVal is a String representing a number or something
+     * else if no cube exists.
      * @return true when the condition is true and we branch to the THEN part,
      * false otherwise and we branch to the ELSE part.
      */
-    private boolean makeChoice(String squareType, int workerSerial, String dataCubeStringVal, int observedWorkerSerial) {
+    private boolean makeChoice(String firstSquareType, String firstDatacubeVal, int firstWorkerSerial, int firstWorkerDatacube,
+            String secondSquareType, String secondDatacubeVal, int secondWorkerSerial, int secondWorkerDatacube) {
 
         boolean result = false;
 
         if (choiceBoxModel.isNumber()) {
             try {
                 int expectedValue = choiceBoxModel.getIntValue();
-                int dataCubeVal = Integer.parseInt(dataCubeStringVal);
+                int dataCubeVal = Integer.parseInt(firstDatacubeVal);
 
                 // Compare expectedValue with dataCubeVal.
-                result = compare(expectedValue, dataCubeVal, currentBoolean);
+                result = compare(dataCubeVal, expectedValue, currentBoolean);
 
                 System.out.println("If makeChoice: returning " + result);
                 return result;
@@ -271,6 +297,8 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
         } else {
             if (choiceBoxModel.isCompass()) {
                 // Must compare the values of the two designated squares.
+                System.out.println("IfInstructionModel.makeChoice: incomplete, comparing two squares, returning false;");
+                result = false;
             } else {
                 // Must test if designated square has the given type.
                 System.out.println("IfInstrModel: TODO: test square against a given type.");
@@ -306,6 +334,8 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
             result = false;
             break;
         }
+        System.out.println("Comparing " + firstValue + " with " + secondValue
+                + " with boolean " + bool + ": result is " + result);
         return result;
     }
 
@@ -319,7 +349,6 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
 
     @Override
     public String toString() {
-        System.out.println("IfInstrModel: choiceBoxModel returns " + choiceBoxModel.getValue());
         return getName() + " " + currentDirection + " " + currentBoolean + " "
                 + choiceBoxModel.getValue() + " " + elseAddress + " " + endAddress;
     }

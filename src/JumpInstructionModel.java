@@ -1,4 +1,3 @@
-
 /**
  *
  * @author arthurmanoha
@@ -19,17 +18,6 @@ public class JumpInstructionModel extends InstructionModel {
         return "JumpInstruction";
     }
 
-    /**
-     * Set the worker's next address
-     *
-     */
-    @Override
-    public void execute(int date, Worker w) {
-
-        w.setCurrentAddress(this.targetAddress); // go to the instruction designated by this Jump.
-        super.execute(date, w);
-    }
-
     public void setTargetInstruction(InstructionModel newTarget) {
         target = newTarget;
     }
@@ -44,7 +32,6 @@ public class JumpInstructionModel extends InstructionModel {
 
     @Override
     public Notification createNotification() {
-//        System.out.println("JUMP create notification");
         Notification n = new Notification(this.getName(), null, this.targetAddress + "");
         return n;
     }
@@ -52,7 +39,6 @@ public class JumpInstructionModel extends InstructionModel {
     @Override
     public String toString() {
         String text = getText() + " " + targetAddress;
-        System.out.println("JumpInstruction.toString(): " + text);
         return text;
     }
 }

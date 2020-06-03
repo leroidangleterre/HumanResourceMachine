@@ -29,8 +29,8 @@ public class HumanResourceMachine {
         int line = 0;
         int col = 1;
         ((TerrainModel) (terrain.getModel())).addNewWorker(line, col);
-        col = 2;
-        ((TerrainModel) (terrain.getModel())).addNewWorker(line, col);
+//        line = 1;
+//        ((TerrainModel) (terrain.getModel())).addNewWorker(line, col);
 
         w.invalidate();
         w.revalidate();

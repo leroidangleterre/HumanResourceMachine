@@ -48,13 +48,13 @@ public class Notification {
      *
      * @param newOption the added option must start with a alphabetic character.
      * If there is no pre-existing option, the new one is simply added;
-     * if there is, a '_' is appended before the new one is added.
+     * if there is, a ' ' is appended before the new one is added.
      */
     public void addOption(String newOption) {
         if (options.isEmpty()) {
             options = newOption;
         } else {
-            options += "_" + newOption;
+            options += " " + newOption;
         }
     }
 }

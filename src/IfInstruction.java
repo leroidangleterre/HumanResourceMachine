@@ -116,8 +116,6 @@ public class IfInstruction extends Instruction {
         g.setColor(Color.BLACK);
         String text = ((IfInstructionModel) model).getText();
         int xText = (int) (xDisplay + textRelativeX * this.width * zoom);
-//        setFont(g);
-//        g.drawChars(text.toCharArray(), 0, text.length(), xText, yDisplay + g.getFont().getSize());
         int textWidth = g.getFontMetrics().stringWidth(text);
 
         int margin = (int) (marginPercentage * height * zoom);
@@ -225,6 +223,12 @@ public class IfInstruction extends Instruction {
             elseInstruction.color = this.color;
         }
         ((IfInstructionModel) model).setElseAddress(address);
+        if (newTarget == null) {
+        } else {
+            if (newTarget.getModel() != null) {
+                ((IfInstructionModel) model).setElseInstruction(newTarget.getModel());
+            }
+        }
         this.computeText();
     }
 
