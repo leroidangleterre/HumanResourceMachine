@@ -77,11 +77,11 @@ public class Worker implements Observable {
         g.setColor(Color.gray);
         g.fillOval(xDisplay, yDisplay, apparentDiameter, apparentDiameter);
 
-        String text;
+        String text = "w" + this.serial;
         if (dataCube == null) {
-            text = "<no cube>";
+            text += "<no cube>";
         } else {
-            text = "<cube " + dataCube.getValue() + ">";
+            text += "<cube " + dataCube.getValue() + ">";
         }
         g.setColor(Color.black);
         g.drawString(text, xDisplay + apparentDiameter / 2, yDisplay + apparentDiameter / 2);
@@ -184,5 +184,9 @@ public class Worker implements Observable {
         } else {
             return 1;
         }
+    }
+
+    public int getCubeValue() {
+        return dataCube.getValue();
     }
 }

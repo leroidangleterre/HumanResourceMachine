@@ -1,10 +1,6 @@
 import java.util.ArrayList;
+import java.util.Random;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 /**
  *
  * @author arthurmanoha
@@ -20,6 +16,8 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
 
     private ArrayList<Notification> notifList;
 
+    int nbCallsUpdate;
+
     public TerrainModel(int nbLines, int nbCols) {
 
         this.nbLines = nbLines;
@@ -30,11 +28,11 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             grid[i] = new Square[nbCols];
             for (int j = 0; j < nbCols; j++) {
                 grid[i][j] = new Ground((j + 0.5) * elemSize, (nbLines - 0.5 - i) * elemSize, elemSize);
-                if (j == 0) {
-                    grid[i][j].createDataCube(10 * i + j);
-                }
             }
         }
+
+        Square s = this.getSquare(0, 0);
+
         this.xMin = this.getSquare(0, 0).getXMin();
         this.xMax = this.getSquare(0, this.nbCols - 1).getXMax();
         this.yMin = this.getSquare(this.nbLines - 1, 0).getYMin();
@@ -42,6 +40,8 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
 
         observersList = new ArrayList<>();
         notifList = new ArrayList<>();
+
+        nbCallsUpdate = 0;
     }
 
     @Override
@@ -151,34 +151,41 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     public void placeOneSquare(int line, int col, TerrainTool tool) {
         Square newSquare;
         switch (tool) {
-            case HOLE:
-                newSquare = new Hole((col + 0.5) * elemSize,
-                        (nbLines - 0.5 - line) * elemSize, elemSize);
-                break;
-            case WALL:
-                newSquare = new Wall((col + 0.5) * elemSize,
-                        (nbLines - 0.5 - line) * elemSize, elemSize);
-                break;
-            case INPUT:
-                newSquare = new Input((col + 0.5) * elemSize,
-                        (nbLines - 0.5 - line) * elemSize, elemSize);
-                break;
-            case OUTPUT:
-                newSquare = new Output((col + 0.5) * elemSize,
-                        (nbLines - 0.5 - line) * elemSize, elemSize);
-                break;
-            case WORKER:
-                // Do not create a new square.
-                newSquare = getSquare(line, col);
-                if (newSquare != null) {
-                    this.addNewWorker(newSquare);
-                }
-                break;
-            case GROUND:
-            default: // Default is ground.
-                newSquare = new Ground((col + 0.5) * elemSize,
-                        (nbLines - 0.5 - line) * elemSize, elemSize);
-                break;
+        case HOLE:
+            newSquare = new Hole((col + 0.5) * elemSize,
+                    (nbLines - 0.5 - line) * elemSize, elemSize);
+            break;
+        case WALL:
+            newSquare = new Wall((col + 0.5) * elemSize,
+                    (nbLines - 0.5 - line) * elemSize, elemSize);
+            break;
+        case INPUT:
+            newSquare = new Input((col + 0.5) * elemSize,
+                    (nbLines - 0.5 - line) * elemSize, elemSize);
+            break;
+        case OUTPUT:
+            newSquare = new Output((col + 0.5) * elemSize,
+                    (nbLines - 0.5 - line) * elemSize, elemSize);
+            break;
+        case WORKER:
+            // Do not create a new square.
+            newSquare = getSquare(line, col);
+            if (newSquare != null) {
+                this.addNewWorker(newSquare);
+            }
+            break;
+        case DATACUBE:
+            // Do not create a new square.
+            newSquare = getSquare(line, col);
+            if (newSquare != null) {
+                this.addDatacube(newSquare);
+            }
+            break;
+        case GROUND:
+        default: // Default is ground.
+            newSquare = new Ground((col + 0.5) * elemSize,
+                    (nbLines - 0.5 - line) * elemSize, elemSize);
+            break;
         }
         setSquare(newSquare, line, col);
     }
@@ -273,6 +280,22 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     }
 
     /**
+     * Search and return the worker that has the given ID, if it exists.
+     *
+     * @param id the requested ID
+     * @return the worker that has this ID, or null if it does not exist.
+     */
+    private Worker findWorker(int id) {
+        for (Square s : getSquares()) {
+            Worker w = s.getWorker(id);
+            if (w != null) {
+                return w;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Move the given worker from its current position to its required position.
      * If the required position already contains a worker, the two workers are
      * swapped.
@@ -291,20 +314,20 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         int dLine = 0;
         int dCol = 0;
         switch (direction) {
-            case "N":
-                dLine--;
-                break;
-            case "S":
-                dLine++;
-                break;
-            case "E":
-                dCol++;
-                break;
-            case "W":
-                dCol--;
-                break;
-            default:
-                break;
+        case "N":
+            dLine--;
+            break;
+        case "S":
+            dLine++;
+            break;
+        case "E":
+            dCol++;
+            break;
+        case "W":
+            dCol--;
+            break;
+        default:
+            break;
         }
         int endLine = startLine + dLine;
         int endCol = startCol + dCol;
@@ -314,8 +337,23 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             endPoint.receiveWorker(w);
         }
 
+        w.setCurrentAddress(w.getCurrentAddress() + 1);
         Notification n = new Notification("TerrainRepaint", null);
         notifyObservers(n);
+    }
+
+    public void addDatacube(Square square) {
+
+        DataCube newCube = new DataCube(0, 0);
+        square.addDataCube(newCube);
+
+        Notification n = new Notification("newCube", newCube);
+        notifyObservers(n);
+    }
+
+    public void addDatacube(int line, int col) {
+        Square s = this.getSquare(line, col);
+        TerrainModel.this.addDatacube(s);
     }
 
     /**
@@ -323,7 +361,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
      *
      * @param w the worker that includes its own movement heading.
      */
-    private void pickup(Worker w) {
+    private void pickup(Worker w, String direction) {
 
         Square workerSquare = findWorker(w);
         Square pickupPoint;
@@ -334,21 +372,21 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         // Find the arrival square.
         int dLine = 0;
         int dCol = 0;
-        switch (w.getDirection()) {
-            case NORTH:
-                dLine--;
-                break;
-            case SOUTH:
-                dLine++;
-                break;
-            case EAST:
-                dCol++;
-                break;
-            case WEST:
-                dCol--;
-                break;
-            default:
-                break;
+        switch (direction) {
+        case "NORTH":
+            dLine--;
+            break;
+        case "SOUTH":
+            dLine++;
+            break;
+        case "EAST":
+            dCol++;
+            break;
+        case "WEST":
+            dCol--;
+            break;
+        default:
+            break;
         }
         int pickupLine = startLine + dLine;
         int pickupColumn = startCol + dCol;
@@ -358,6 +396,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             DataCube cube = pickupPoint.removeDataCube();
             w.setDataCube(cube);
         }
+        w.setCurrentAddress(w.getCurrentAddress() + 1);
         Notification n = new Notification("TerrainRepaint", null);
         notifyObservers(n);
     }
@@ -372,12 +411,16 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
 
         Square workerSquare = findWorker(w);
 
-        if (!(workerSquare.containsDataCube())) {
-            // Actually drop the cube
-            workerSquare.addDataCube(w.removeDataCube());
+        if (w.hasDataCube()) {
+            if (!(workerSquare.containsDataCube())) {
+                // Actually drop the cube
+                workerSquare.addDataCube(w.removeDataCube());
+            }
         }
-        Notification n = new Notification("TerrainRepaint", null);
 
+        w.setCurrentAddress(w.getCurrentAddress() + 1);
+
+        Notification n = new Notification("TerrainRepaint", null);
         notifyObservers(n);
     }
 
@@ -390,8 +433,18 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
      * @param col
      */
     public void setSquare(Square newSquare, int line, int col) {
+
+        Square oldSquare = this.grid[line][col];
+
         if (line >= 0 && col >= 0 && line < nbLines && col < nbCols) {
             this.grid[line][col] = newSquare;
+        }
+        // Set the geographical coordinates of the square
+        newSquare.xCenter = (col + 0.5) * elemSize;
+        newSquare.yCenter = (nbLines - 0.5 - line);
+
+        if (oldSquare.containsWorker()) {
+            newSquare.receiveWorker(oldSquare.removeWorker());
         }
     }
 
@@ -432,50 +485,148 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     @Override
     public void update(Notification notif) {
 
-//        System.out.println("TerrainModel received notification: <" + notif.getName() + "> with options <" + notif.getOptions() + ">");
-        switch (notif.getName()) {
-            case "InstructionMove":
-                System.out.println("terrain moving " + notif.getObject() + " " + notif.getOptions());
-                notifList.add(notif);
-                break;
-            case "TerrainApplyInstructions":
-                System.out.println("terrain must now apply the instructions");
-                applyNotifications();
-                break;
-            default:
-                break;
-        }
+        nbCallsUpdate++;
 
-//        switch (notif.getName()) {
-//            case "ScriptStep":
-//                break;
-//            case "WorkerMove":
-//                this.moveWorker((Worker) notif.getObject());
-//                break;
-//            case "WorkerPickup":
-//                this.pickup((Worker) notif.getObject());
-//                break;
-//            case "WorkerDrop":
-//                this.drop((Worker) notif.getObject());
-//                break;
-//            case "IfEvaluation":
-//                this.evaluateIf((Worker) notif.getObject(), notif.getOptions());
-//            default:
-//                break;
-//        }
+        Worker currentWorker;
+        int newAddress;
+
+        switch (notif.getName()) {
+        case "WorkerMove": // TODO replace this with MoveInstruction.getName();
+            String direction = notif.getOptions();
+            this.moveWorker((Worker) notif.getObject(), direction);
+            break;
+        case "WorkerPickup":
+            this.pickup((Worker) notif.getObject(), notif.getOptions());
+            break;
+        case "WorkerDrop":
+            this.drop((Worker) notif.getObject());
+            break;
+        case "InstructionMove":
+            System.out.println("TerrainModel: receive Move " + notif.getOptions());
+            notifList.add(notif);
+            break;
+        case "TerrainApplyInstructions":
+            applyNotifications();
+            break;
+        case "JumpInstruction":
+            currentWorker = (Worker) notif.getObject();
+            newAddress = Integer.parseInt(notif.getOptions());
+            currentWorker.setCurrentAddress(newAddress);
+            break;
+        case "NoOperation":
+            currentWorker = (Worker) notif.getObject();
+            newAddress = currentWorker.getCurrentAddress() + 1;
+            currentWorker.setCurrentAddress(newAddress);
+            break;
+        case "InstructionIf":
+            String options = notif.getOptions();
+            String optionList[] = options.split("_");
+
+            // Which If instruction emitted this request.
+            String emitterId = optionList[0];
+
+            currentWorker = (Worker) notif.getObject();
+            Square s = findWorker(currentWorker);
+            int col = findColumn(s);
+            int line = findLine(s);
+
+            char firstDirection = optionList[1].charAt(0);
+            Square targetSquare = this.getNeighbor(line, col, firstDirection);
+
+            Notification reply = new Notification("IfReply", currentWorker);
+
+            reply.addOption(emitterId + "");
+
+            String squareClass;
+            String cubeInSquare;
+            String coworkerId;
+
+            if (targetSquare == null) {
+                squareClass = "null";
+                cubeInSquare = "null";
+                coworkerId = "null";
+            } else {
+                // Get rid of "class " in "class Ground":
+                squareClass = targetSquare.getClass().toString().substring(6);
+                cubeInSquare = targetSquare.getCubeValue();
+                if (targetSquare.containsWorker()) {
+                    coworkerId = targetSquare.getWorkerId() + "";
+                } else {
+                    coworkerId = "null";
+                }
+            }
+
+            reply.addOption(squareClass + " " + cubeInSquare + " " + coworkerId);
+
+            if (coworkerId.equals("null")) {
+                reply.addOption("null");
+            } else {
+                Worker coWorker = findWorker(Integer.parseInt(coworkerId));
+                if (coWorker != null && coWorker.hasDataCube()) {
+                    reply.addOption(coWorker.getCubeValue() + "");
+                } else {
+                    reply.addOption("null");
+                }
+            }
+
+            if (optionList.length > 2) {
+                if (optionList[2].length() > 0) {
+                    char secondDirection = optionList[2].charAt(0);
+                    Square secondTargetSquare = this.getNeighbor(line, col, secondDirection);
+
+                    String secondSquareClass;
+                    String secondCubeInSquare;
+                    String secondWorkerId;
+
+                    if (secondTargetSquare == null) {
+                        secondSquareClass = "null";
+                        secondCubeInSquare = "null";
+                        secondWorkerId = "null";
+                    } else {
+                        secondSquareClass = secondTargetSquare.getClass().toString().substring(6);
+                        secondCubeInSquare = secondTargetSquare.getCubeValue();
+                        if (secondTargetSquare.containsWorker()) {
+                            secondWorkerId = secondTargetSquare.getWorkerId() + "";
+                        } else {
+                            secondWorkerId = "null";
+                        }
+                    }
+                    reply.addOption(secondSquareClass + " " + secondCubeInSquare + " " + secondWorkerId);
+
+                    if (secondWorkerId.equals("null")) {
+                        reply.addOption("null");
+                    } else {
+                        Worker secondCoWorker = findWorker(Integer.parseInt(secondWorkerId));
+                        if (secondCoWorker.hasDataCube()) {
+                            reply.addOption(secondCoWorker.getCubeValue() + "");
+                        } else {
+                            reply.addOption("null");
+                        }
+                    }
+                }
+            }
+
+            this.notifyObservers(reply);
+            break;
+
+        case "workerToAddress":
+
+            branchWorker(notif);
+            break;
+        default:
+            break;
+        }
     }
 
     private void applyNotifications() {
 
-        System.out.println("Terrain.applyNotifications()");
         for (Notification n : notifList) {
             switch (n.getName()) {
-                case "InstructionMove":
-                    System.out.println("    Moving worker");
-                    this.moveWorker((Worker) n.getObject(), n.getOptions());
-                default:
-                    System.out.println("    Other notification: " + n.getName());
-                    break;
+            case "InstructionMove":
+                this.moveWorker((Worker) n.getObject(), n.getOptions());
+            default:
+                System.out.println("    Terrain.applyNotification: other notification: " + n.getName());
+                break;
             }
         }
 
@@ -555,6 +706,80 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     }
 
     public void evaluateIf(Worker w, String conditions) {
-        System.out.println("TerrainModel.evaluateIf(" + conditions + ");");
+//        System.out.println("TerrainModel.evaluateIf(" + conditions + ");");
+    }
+
+    private void branchWorker(Notification notif) {
+
+        String options = notif.getOptions();
+        String tab[] = options.split(" ");
+        int workerID = Integer.parseInt(tab[0]);
+        Worker w = this.findWorker(workerID);
+        int newAddress;
+        if (tab[1].equals("+1")) {
+            // Branch to the next instruction
+            newAddress = w.getCurrentAddress() + 1;
+            w.setCurrentAddress(newAddress);
+        } else {
+            // Branch to the specified instruction
+            newAddress = Integer.parseInt(tab[1]);
+            w.setCurrentAddress(newAddress);
+        }
+
+    }
+
+    /**
+     * Replace all the worker at the first instruction od the script
+     * so that they are ready to start working again
+     */
+    public void resetWorkers() {
+        for (Square[] list : grid) {
+            for (Square s : list) {
+                s.resetWorker();
+            }
+        }
+    }
+
+    /**
+     * Find and return the square that is the neighbor of (line, col) in the
+     * given direction
+     */
+    private Square getNeighbor(int line, int col, char direction) {
+
+        switch (direction) {
+        case 'N':
+            line = line - 1;
+            break;
+        case 'S':
+            line = line + 1;
+            break;
+        case 'E':
+            col = col + 1;
+            break;
+        case 'W':
+            col = col - 1;
+            break;
+        case 'C':
+            break;
+        default:
+            break;
+        }
+        return this.getSquare(line, col);
+    }
+
+    /**
+     * Tell if a String represents an integer.
+     *
+     * @param s the integer candidate
+     * @return true when the String actually represents an int, false otherwise
+     */
+    private boolean isInteger(String s) {
+        try {
+            int val = Integer.valueOf(s);
+        } catch (NumberFormatException e) {
+            // Not a String representing a number
+            return false;
+        }
+        return true;
     }
 }

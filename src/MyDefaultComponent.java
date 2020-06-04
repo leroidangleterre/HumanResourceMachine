@@ -47,9 +47,9 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
 
     public MyDefaultComponent() {
         super();
-        this.x0 = 67;
-        this.y0 = 69;
-        this.zoom = 110.8;
+        this.x0 = 28;
+        this.y0 = 0;
+        this.zoom = 74.5;
 
         setPreferredSize(new Dimension(COMPONENT_WIDTH, COMPONENT_HEIGHT));
         setSize(new Dimension(COMPONENT_WIDTH, COMPONENT_HEIGHT));
@@ -129,6 +129,7 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
 
     public void setX0(double newX0) {
         this.x0 = newX0;
+//        System.out.println("x0: " + this.x0);
         repaint();
     }
 
@@ -138,6 +139,7 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
 
     public void setY0(double newY0) {
         this.y0 = newY0;
+//        System.out.println("y0: " + this.y0);
         repaint();
     }
 
@@ -296,23 +298,23 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
     @Override
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyChar()) {
-            case '0':
-                resetView();
-                break;
-            case '4':
-                swipe(-1, 0);
-                break;
-            case '6':
-                swipe(+1, 0);
-                break;
-            case '8':
-                swipe(0, +1);
-                break;
-            case '2':
-                swipe(0, -1);
-                break;
-            default:
-                break;
+        case '0':
+            resetView();
+            break;
+        case '4':
+            swipe(-1, 0);
+            break;
+        case '6':
+            swipe(+1, 0);
+            break;
+        case '8':
+            swipe(0, +1);
+            break;
+        case '2':
+            swipe(0, -1);
+            break;
+        default:
+            break;
         }
     }
 

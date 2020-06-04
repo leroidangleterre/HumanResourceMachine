@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 
 /*
@@ -22,7 +23,7 @@ public class InstructionModel extends MyDefaultModel implements Observable {
     private String text;
 
     // This list will contain only the TerrainModel.
-    private ArrayList<Observer> observersList;
+    protected ArrayList<Observer> observersList;
 
     public InstructionModel() {
         subInstructions = new ArrayList<>();
@@ -31,7 +32,7 @@ public class InstructionModel extends MyDefaultModel implements Observable {
         serial = NB_INSTRUCTION_MODELS_CREATED;
         NB_INSTRUCTION_MODELS_CREATED++;
         observersList = new ArrayList<>();
-        text = "";
+        text = "DefaultInstruction";
     }
 
     @Override
@@ -96,6 +97,8 @@ public class InstructionModel extends MyDefaultModel implements Observable {
 
     /**
      * This method must be redefined by any subclass.
+     *
+     * @return the name of the instruction
      */
     public String getName() {
         return "Instruction";
@@ -126,5 +129,19 @@ public class InstructionModel extends MyDefaultModel implements Observable {
 
     @Override
     public void notifyObservers(Notification n) {
+        System.out.println("    INSTRUCTION NOTIFY");
+        System.out.println("Notification " + n.getName() + " with options " + n.getOptions() + " is sent.");
+        for (Observer observer : observersList) {
+            observer.update(n);
+        }
+    }
+
+    public Notification createNotification() {
+        return new Notification("Instruction", null, "This instruction needs to override createNotification();");
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }

@@ -9,6 +9,12 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
+/**
+ * The window contains the terrain (as its split's left component) and the
+ * script (right component).
+ *
+ * @author arthurmanoha
+ */
 public class Window extends JFrame {
 
     int WINDOW_WIDTH = 1600;
@@ -71,7 +77,7 @@ public class Window extends JFrame {
         buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new GridLayout(1, 10));
 
-        String buttonNames[] = {"Selection", "Hole", "Ground", "Input", "Worker", "Move", "Pickup", "Drop", "Jump", "If", "DeleteInstr"};
+        String buttonNames[] = {"Selection", "Hole", "Ground", "Input", "Worker", "Datacube", "Move", "Pickup", "Drop", "Jump", "If", "DeleteInstr"};
         int rank = 0;
         for (String text : buttonNames) {
             JButton newButton = new JButton(text);
@@ -102,12 +108,48 @@ public class Window extends JFrame {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                ScriptModel model = (ScriptModel) ((Script) (split.getRightComponent())).getModel();
-                model.step();
+                Script script = (Script) split.getRightComponent();
+                script.step();
+            }
+        });
+
+        JButton saveScriptButton = new JButton("Save script");
+        saveScriptButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ((Script) split.getRightComponent()).save();
+            }
+        });
+
+        JButton loadScriptButton = new JButton("Load script");
+        loadScriptButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ((Script) split.getRightComponent()).load();
+            }
+        });
+        JButton clearButton = new JButton("clear");
+        clearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ((Script) split.getRightComponent()).clear();
+            }
+        });
+
+        JButton resetWorkersButton = new JButton("Reset workers");
+        resetWorkersButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ((Terrain) split.getLeftComponent()).resetWorkers();
+                repaint();
             }
         });
 
         controlPanel.add(stepButton);
+        controlPanel.add(saveScriptButton);
+        controlPanel.add(loadScriptButton);
+        controlPanel.add(resetWorkersButton);
+        controlPanel.add(clearButton);
 
         this.add(controlPanel, BorderLayout.SOUTH);
     }

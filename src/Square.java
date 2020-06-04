@@ -8,10 +8,10 @@ import java.awt.Graphics;
  */
 public class Square {
 
-    private double xCenter, yCenter;
-    private double size;
+    protected double xCenter, yCenter;
+    protected double size;
 
-    private Color color;
+    protected Color color;
 
     private boolean isSelected;
 
@@ -123,6 +123,20 @@ public class Square {
         return (this.worker != null);
     }
 
+    /**
+     * Return the worker contained in this square if it has the right ID.
+     *
+     * @param id the requested worker ID.
+     * @return the worker
+     */
+    public Worker getWorker(int id) {
+        if (this.worker != null && this.worker.getSerial() == id) {
+            return this.worker;
+        } else {
+            return null;
+        }
+    }
+
     public boolean containsDataCube() {
         return (this.dataCube != null);
     }
@@ -138,8 +152,12 @@ public class Square {
      * @param newCube the newly added cube
      */
     public void addDataCube(DataCube newCube) {
+        if (newCube == null) {
+            System.out.println("Error Square.addDataCube(" + newCube + ");");
+        }
         if (!this.containsDataCube()) {
             this.dataCube = newCube;
+            this.dataCube.setPosition(xCenter, yCenter);
         }
     }
 
@@ -164,6 +182,24 @@ public class Square {
         return this.dataCube;
     }
 
+    /**
+     * Return the ID of the worker if there is one in this square, -1 if no
+     * worker is there.
+     *
+     * @return
+     */
+    public int getWorkerId() {
+        if (this.worker == null) {
+            System.out.println("Square.getWorkerId(): returning -1");
+            return -1;
+        } else {
+            System.out.println("Square.getWorkerId(): returning something:");
+            System.out.println(this.worker.getSerial() + "");
+            System.out.println("done.");
+            return this.worker.getSerial();
+        }
+    }
+
     public int getNbCubes() {
 
         int count = 0;
@@ -176,5 +212,51 @@ public class Square {
             count += worker.getNbCubes();
         }
         return count;
+    }
+
+    /**
+     * Replace the worker (if there is one) at the beginning of its script.
+     *
+     */
+    void resetWorker() {
+        if (worker != null) {
+            worker.setCurrentAddress(0);
+        }
+    }
+
+    /**
+     * Gets the value of a square
+     *
+     * @return If a worker has a datacube, the value of that cube (even if there
+     * is a cube on the square);
+     * Else, if a datacube is on the square, the value of that cube;
+     * Else, the minimum integer possible.
+     */
+    public int getValue() {
+        System.out.println("Square " + this + ": getValue()");
+        if (worker != null && worker.hasDataCube()) {
+            System.out.println("\treturns worker's value: " + worker.getCubeValue());
+            return worker.getCubeValue();
+        } else if (dataCube != null) {
+            System.out.println("\treturns square's cube's value: " + dataCube.getValue());
+            return dataCube.getValue();
+        } else {
+            System.out.println("\treturns null");
+            return Integer.MIN_VALUE;
+        }
+    }
+
+    /**
+     * If there is a cube, return its value as a String;
+     * else, return the String "null".
+     *
+     * @return the value of the cube if it exists, or "null".
+     */
+    public String getCubeValue() {
+        if (dataCube == null) {
+            return "null";
+        } else {
+            return dataCube.getValue() + "";
+        }
     }
 }

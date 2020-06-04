@@ -10,10 +10,13 @@ import java.awt.event.MouseEvent;
  */
 public class DropInstruction extends Instruction {
 
+    private double textRelativeX = 0.01;
+
     public DropInstruction() {
         super();
 
         model = new DropInstructionModel();
+        model.setText("Drop");
 
         color = Color.gray;
     }
@@ -42,6 +45,17 @@ public class DropInstruction extends Instruction {
     @Override
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
         super.paint(g, panelHeight, x0, y0, zoom);
+
+        int margin = 0;
+        int xDisplay = (int) x0 + this.x + margin;
+        int yDisplay = (int) (panelHeight - (y0 + this.y));
+
+        String text = "Drop";
+        g.setColor(Color.orange);
+        setFont(g);
+        int xText = (int) (xDisplay + textRelativeX * this.width * zoom);
+        g.drawChars(text.toCharArray(), 0, text.length(),
+                xText, yDisplay + g.getFont().getSize());
     }
 
     /**
@@ -53,5 +67,10 @@ public class DropInstruction extends Instruction {
     @Override
     public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
+    }
+
+    @Override
+    public String toString() {
+        return model.toString();
     }
 }

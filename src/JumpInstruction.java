@@ -69,55 +69,64 @@ public class JumpInstruction extends Instruction {
      * @param zoom zoom factor used to scale things INSIDE the Instruction
      */
     private void paintLinkToTarget(Graphics g, int panelHeight, double x0, double y0, double zoom) {
+        if (target == null) {
 
-        int xDisplay = (int) (x0 + this.width * zoom);
-        int yDisplayStart = (int) (panelHeight - (y0 + this.y - (this.height) * zoom / 2));
+            int xDisplay = (int) (x0 + this.width * zoom);
+            int yDisplay = (int) (panelHeight - (y0 + this.y - (this.height) * zoom / 2));
+            int length = (int) (1.3 * this.width * zoom);
+            g.setColor(Color.red);
+            int linkWidth = 10;
+            g.fillRect(xDisplay, yDisplay - linkWidth / 2, length, linkWidth);
+        } else {
+            int xDisplay = (int) (x0 + this.width * zoom);
+            int yDisplayStart = (int) (panelHeight - (y0 + this.y - (this.height) * zoom / 2));
 
-        int yDisplayEnd = (int) (panelHeight - (y0 + target.y - (target.height) * zoom / 2));
+            int yDisplayEnd = (int) (panelHeight - (y0 + target.y - (target.height) * zoom / 2));
 
-        double radius = Math.abs(yDisplayStart - yDisplayEnd) / 2;
-        int yCenter = (yDisplayStart + yDisplayEnd) / 2;
+            double radius = Math.abs(yDisplayStart - yDisplayEnd) / 2;
+            int yCenter = (yDisplayStart + yDisplayEnd) / 2;
 
-        // Trunk of the arrow, without the tip.
-        int nbSegments = 13;
-        int nbPoints = 2 * nbSegments + 2;
-        double angle = Math.PI / (2 * (nbSegments - 1));
-        int tipWidth = (int) (height * zoom / 4);
-        int[] xTab = new int[nbPoints];
-        int[] yTab = new int[nbPoints];
+            // Trunk of the arrow, without the tip.
+            int nbSegments = 13;
+            int nbPoints = 2 * nbSegments + 2;
+            double angle = Math.PI / (2 * (nbSegments - 1));
+            int tipWidth = (int) (height * zoom / 4);
+            int[] xTab = new int[nbPoints];
+            int[] yTab = new int[nbPoints];
 
-        double signum = Math.signum(yDisplayStart - yDisplayEnd);
+            double signum = Math.signum(yDisplayStart - yDisplayEnd);
 
-        // Values for the body of the arrow
-        for (int i = 0; i < nbSegments + 1; i++) {
-            xTab[i] = (int) (xDisplay + tipWidth + (radius + tipWidth / 2) * Math.sin((2 * i - 1) * angle));
-            xTab[2 * nbSegments + 2 - i - 1] = (int) (xDisplay + tipWidth + (radius - tipWidth / 2) * Math.sin((2 * i - 1) * angle));
+            // Values for the body of the arrow
+            for (int i = 0; i < nbSegments + 1; i++) {
+                xTab[i] = (int) (xDisplay + tipWidth + (radius + tipWidth / 2) * Math.sin((2 * i - 1) * angle));
+                xTab[2 * nbSegments + 2 - i - 1] = (int) (xDisplay + tipWidth + (radius - tipWidth / 2) * Math.sin((2 * i - 1) * angle));
 
-            yTab[i] = (int) (yCenter + signum * (radius + tipWidth / 2) * Math.cos((2 * i - 1) * angle));
-            yTab[2 * nbSegments + 2 - i - 1] = (int) (yCenter + signum * (radius - tipWidth / 2) * Math.cos((2 * i - 1) * angle));
+                yTab[i] = (int) (yCenter + signum * (radius + tipWidth / 2) * Math.cos((2 * i - 1) * angle));
+                yTab[2 * nbSegments + 2 - i - 1] = (int) (yCenter + signum * (radius - tipWidth / 2) * Math.cos((2 * i - 1) * angle));
+            }
+            // Special values for the base of the arrow:
+            xTab[0] = xDisplay;
+            xTab[nbPoints - 1] = xDisplay;
+            // Part of the arrow that is linked to the tip
+            xTab[nbPoints / 2] = xDisplay + tipWidth;
+            xTab[nbPoints / 2 - 1] = xDisplay + tipWidth;
+
+            g.setColor(Color.red);
+            g.fillPolygon(xTab, yTab, nbPoints);
+
+            // Tip of the arrow: a triangle
+            xTab = new int[3];
+            yTab = new int[3];
+
+            xTab[0] = xDisplay;
+            yTab[0] = (int) (yCenter - signum * radius);
+            xTab[1] = xDisplay + tipWidth;
+            yTab[1] = (int) (yCenter - signum * radius + tipWidth);
+            xTab[2] = xDisplay + tipWidth;
+            yTab[2] = (int) (yCenter - signum * radius - tipWidth);
+
+            g.fillPolygon(xTab, yTab, 3);
         }
-        // Special values for the base of the arrow:
-        xTab[0] = xDisplay;
-        xTab[nbPoints - 1] = xDisplay;
-        // Part of the arrow that is linked to the tip
-        xTab[nbPoints / 2] = xDisplay + tipWidth;
-        xTab[nbPoints / 2 - 1] = xDisplay + tipWidth;
-
-        g.setColor(Color.red);
-        g.fillPolygon(xTab, yTab, nbPoints);
-
-        // Tip of the arrow: a triangle
-        xTab = new int[3];
-        yTab = new int[3];
-
-        xTab[0] = xDisplay;
-        yTab[0] = (int) (yCenter - signum * radius);
-        xTab[1] = xDisplay + tipWidth;
-        yTab[1] = (int) (yCenter - signum * radius + tipWidth);
-        xTab[2] = xDisplay + tipWidth;
-        yTab[2] = (int) (yCenter - signum * radius - tipWidth);
-
-        g.fillPolygon(xTab, yTab, 3);
     }
 
     /**
@@ -149,6 +158,10 @@ public class JumpInstruction extends Instruction {
 
     public Instruction getTargetInstruction() {
         return target;
+    }
+
+    public int getTargetAddress() {
+        return ((JumpInstructionModel) model).getTargetAddress();
     }
 
     public void setText(String newText) {

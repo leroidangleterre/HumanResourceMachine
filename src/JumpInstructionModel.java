@@ -13,15 +13,9 @@ public class JumpInstructionModel extends InstructionModel {
         target = null;
     }
 
-    /**
-     * Set the worker's next address
-     *
-     */
     @Override
-    public void execute(int date, Worker w) {
-
-        w.setCurrentAddress(this.targetAddress); // go to the instruction designated by this Jump.
-        super.execute(date, w);
+    public String getName() {
+        return "JumpInstruction";
     }
 
     public void setTargetInstruction(InstructionModel newTarget) {
@@ -36,4 +30,15 @@ public class JumpInstructionModel extends InstructionModel {
         return targetAddress;
     }
 
+    @Override
+    public Notification createNotification() {
+        Notification n = new Notification(this.getName(), null, this.targetAddress + "");
+        return n;
+    }
+
+    @Override
+    public String toString() {
+        String text = getText() + " " + targetAddress;
+        return text;
+    }
 }

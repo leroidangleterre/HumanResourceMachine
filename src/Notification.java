@@ -24,9 +24,7 @@ public class Notification {
     }
 
     public Notification(InstructionModel inst) {
-        this.name = inst.getName();
-        this.options = inst.getOptions();
-        System.out.println("    new Notification { name = " + this.name + ", options = " + this.options + " };");
+        this(inst.getName(), null, inst.getOptions());
     }
 
     public String getName() {
@@ -43,5 +41,20 @@ public class Notification {
 
     public void setWorker(Worker newWorker) {
         this.content = newWorker;
+    }
+
+    /**
+     * Add an option.
+     *
+     * @param newOption the added option must start with a alphabetic character.
+     * If there is no pre-existing option, the new one is simply added;
+     * if there is, a ' ' is appended before the new one is added.
+     */
+    public void addOption(String newOption) {
+        if (options.isEmpty()) {
+            options = newOption;
+        } else {
+            options += " " + newOption;
+        }
     }
 }

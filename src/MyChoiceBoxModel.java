@@ -2,7 +2,7 @@
  *
  * @author arthurmanoha
  */
-public class MyChoiceBoxModel {
+public class MyChoiceBoxModel extends MyDefaultModel {
 
     // The current value of the choice box. That String may represent an element such as a Worker or a Wall, or an integer value.
     private String textValue;
@@ -13,17 +13,23 @@ public class MyChoiceBoxModel {
 
     // The instruction that the choice box will pilot.
     private InstructionModel instruction;
+    private boolean isCompass;
+    private Compass compass;
 
     public MyChoiceBoxModel(int val) {
         isNumber = true;
         intValue = val;
         textValue = "" + val;
+        isCompass = false;
+        compass = null;
     }
 
     public MyChoiceBoxModel(String text) {
         isNumber = false;
         intValue = 0;
         textValue = text;
+        isCompass = false;
+        compass = null;
     }
 
     public void setInstructionModel(InstructionModel newInst) {
@@ -32,39 +38,108 @@ public class MyChoiceBoxModel {
 
     /**
      * Togge the type of the choice box: IntValue -> Empty -> Wall -> Hole ->
-     * Worker -> DataCube -> Intvalue
+     * Worker -> DataCube -> Compass -> Intvalue
      */
     public void toggle() {
         switch (textValue) {
-            case "Empty":
-                textValue = "Wall";
-                isNumber = false;
-                break;
-            case "Wall":
-                textValue = "Hole";
-                isNumber = false;
-                break;
-            case "Hole":
-                textValue = "Worker";
-                isNumber = false;
-                break;
-            case "Worker":
-                textValue = "DataCube";
-                isNumber = false;
-                break;
-            case "DataCube":
-                textValue = "0";
-                isNumber = false;
-                break;
-            default: // Integer value
-                textValue = "Empty";
-                isNumber = true;
-                break;
+        case "Empty":
+            textValue = "Wall";
+            isNumber = false;
+            break;
+        case "Wall":
+            textValue = "Hole";
+            isNumber = false;
+            break;
+        case "Hole":
+            textValue = "Worker";
+            isNumber = false;
+            break;
+        case "Worker":
+            textValue = "DataCube";
+            isNumber = false;
+            break;
+        case "DataCube":
+            textValue = "NORTH";
+            isNumber = false;
+            isCompass = true;
+            if (compass == null) {
+                System.out.println("MyChoiceBoxModel.toggle(): ERROR, compass is null");
+            }
+            break;
+        case "NORTH":
+        case "SOUTH":
+        case "EAST":
+        case "WEST":
+            textValue = "0";
+            isNumber = true;
+            isCompass = false;
+            break;
+        default: // Integer value
+            textValue = "Empty";
+            isNumber = false;
+            break;
+        }
+    }
+
+    public void setValue(String s) {
+        this.isCompass = false; // In all cases except for an actual compass
+        try {
+            this.intValue = Integer.parseInt(s);
+            // Conversion went OK, value is a number.
+            this.isNumber = true;
+        } catch (NumberFormatException e) {
+            // Value is an actual String.
+            this.isNumber = false;
+
+            try {
+                // If the value is a cardinal point, we need a compass.
+                CardinalPoint cp = CardinalPoint.valueOf(s);
+                if (!isCompass) {
+                    this.isCompass = true;
+                    if (this.compass == null) {
+                        compass = new Compass();
+                        this.isCompass = true;
+                    }
+                }
+                compass.setDirection(cp);
+            } catch (IllegalArgumentException exc) {
+                // The exception simply says that the value is not a cardinal point,
+                // which means it is a normal text value.
+            }
+            this.textValue = s;
+        }
+    }
+
+    /**
+     * Increase the number value of the box.
+     *
+     */
+    public void increaseValue() {
+        if (isNumber) {
+            intValue++;
+        }
+    }
+
+    /**
+     * Decrease the number value of the box.
+     *
+     */
+    public void decreaseValue() {
+        if (isNumber) {
+            intValue--;
         }
     }
 
     public String getValue() {
-        return this.textValue;
+        String result = "";
+        if (this.isNumber) {
+            result = "" + this.intValue;
+        } else if (this.isCompass) {
+            result = compass.toString();
+        } else {
+            result = this.textValue;
+        }
+        return result;
     }
 
     public int getIntValue() {
@@ -72,10 +147,30 @@ public class MyChoiceBoxModel {
     }
 
     public String getStringValue() {
-        return this.textValue;
+        if (isCompass) {
+            return compass.toString();
+        } else {
+            return this.textValue;
+        }
     }
 
     public boolean isNumber() {
         return this.isNumber;
+    }
+
+    public boolean isCompass() {
+        return this.isCompass;
+    }
+
+    @Override
+    public void selectContent() {
+    }
+
+    public void setCompass(Compass compass) {
+        this.compass = compass;
+    }
+
+    public boolean isSquareType() {
+        return textValue.equals("Ground") || textValue.equals("Wall");
     }
 }

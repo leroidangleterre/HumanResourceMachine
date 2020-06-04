@@ -9,5 +9,12 @@
  */
 public enum TerrainTool {
 
-    HOLE, GROUND, WALL, INPUT, OUTPUT, WORKER, SELECTION
+    HOLE,
+    GROUND,
+    WALL,
+    INPUT,
+    OUTPUT,
+    WORKER,
+    SELECTION,
+    DATACUBE
 }
