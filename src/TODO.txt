@@ -1,5 +1,11 @@
 TODO:
 
+Adapt the choice in IfInstructions to the current value of the boolean.
+
+Improve the GUI, paint actual workers, etc.
+
+Method "createNotification()" in subclasses of InstructionModel must be moved to InstructionModel.
+
 Change the event handling chain: a mouse event detected by the Script shall be transmitted to an instruction through its
 "mousePressed(MouseEvent)" method. The method "receiveCommand" probably should be removed.
 
@@ -14,6 +20,8 @@ Moving an instruction containing sub-instructions, such as If, shall translate a
 When a composite instruction is created (Jump or If), the targets shall appear immediately at the bottom of the main instruction, not at the address zero.
 
 DONE:
+
+IfInstructions evaluate the square types or datablock values, make a choice and branch the worker to the appropriate address.
 
 The IfInstruction sends a notification to the terrain which replies with details regarding a given square.
 The If evaluates the condition and branches the Worker to the appropriate instruction.

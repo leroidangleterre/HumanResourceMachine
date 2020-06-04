@@ -83,6 +83,9 @@ public class Terrain extends MyDefaultComponent implements Observer {
         case "WORKER":
             this.setTool(TerrainTool.WORKER);
             break;
+        case "DATACUBE":
+            this.setTool(TerrainTool.DATACUBE);
+            break;
         default:
         // Keep the current tool unchanged.
         }
@@ -161,6 +164,9 @@ public class Terrain extends MyDefaultComponent implements Observer {
                         tModel.placeOneSquare(line, col, currentTool);
                         break;
                     case WORKER:
+                        tModel.placeOneSquare(line, col, currentTool);
+                        break;
+                    case DATACUBE:
                         tModel.placeOneSquare(line, col, currentTool);
                         break;
                     default:

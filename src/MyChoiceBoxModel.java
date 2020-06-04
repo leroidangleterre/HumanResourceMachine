@@ -63,7 +63,6 @@ public class MyChoiceBoxModel extends MyDefaultModel {
             isNumber = false;
             isCompass = true;
             if (compass == null) {
-//                compass = new Compass();
                 System.out.println("MyChoiceBoxModel.toggle(): ERROR, compass is null");
             }
             break;
@@ -83,6 +82,7 @@ public class MyChoiceBoxModel extends MyDefaultModel {
     }
 
     public void setValue(String s) {
+        this.isCompass = false; // In all cases except for an actual compass
         try {
             this.intValue = Integer.parseInt(s);
             // Conversion went OK, value is a number.
@@ -98,6 +98,7 @@ public class MyChoiceBoxModel extends MyDefaultModel {
                     this.isCompass = true;
                     if (this.compass == null) {
                         compass = new Compass();
+                        this.isCompass = true;
                     }
                 }
                 compass.setDirection(cp);
@@ -165,7 +166,11 @@ public class MyChoiceBoxModel extends MyDefaultModel {
     public void selectContent() {
     }
 
-    void setCompass(Compass compass) {
+    public void setCompass(Compass compass) {
         this.compass = compass;
+    }
+
+    public boolean isSquareType() {
+        return textValue.equals("Ground") || textValue.equals("Wall");
     }
 }

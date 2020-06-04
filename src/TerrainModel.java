@@ -31,14 +31,6 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             }
         }
 
-        int line = 0;
-        int col = 2;
-        grid[line][col] = new Wall((col + 0.5) * elemSize, (nbLines - 0.5 - line) * elemSize, elemSize);
-
-        for (int i = 0; i < nbLines; i++) {
-            grid[i][0].createDataCube(10 + i);
-        }
-
         Square s = this.getSquare(0, 0);
 
         this.xMin = this.getSquare(0, 0).getXMin();
@@ -180,6 +172,13 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             newSquare = getSquare(line, col);
             if (newSquare != null) {
                 this.addNewWorker(newSquare);
+            }
+            break;
+        case DATACUBE:
+            // Do not create a new square.
+            newSquare = getSquare(line, col);
+            if (newSquare != null) {
+                this.addDatacube(newSquare);
             }
             break;
         case GROUND:
@@ -343,6 +342,20 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         notifyObservers(n);
     }
 
+    public void addDatacube(Square square) {
+
+        DataCube newCube = new DataCube(0, 0);
+        square.addDataCube(newCube);
+
+        Notification n = new Notification("newCube", newCube);
+        notifyObservers(n);
+    }
+
+    public void addDatacube(int line, int col) {
+        Square s = this.getSquare(line, col);
+        TerrainModel.this.addDatacube(s);
+    }
+
     /**
      * The worker picks up the data block in the selected direction.
      *
@@ -395,13 +408,14 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
      * @param w the worker that includes its own movement heading.
      */
     private void drop(Worker w) {
-//        System.out.println("            Dropping");
 
         Square workerSquare = findWorker(w);
 
-        if (!(workerSquare.containsDataCube())) {
-            // Actually drop the cube
-            workerSquare.addDataCube(w.removeDataCube());
+        if (w.hasDataCube()) {
+            if (!(workerSquare.containsDataCube())) {
+                // Actually drop the cube
+                workerSquare.addDataCube(w.removeDataCube());
+            }
         }
 
         w.setCurrentAddress(w.getCurrentAddress() + 1);
@@ -419,12 +433,19 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
      * @param col
      */
     public void setSquare(Square newSquare, int line, int col) {
+
+        Square oldSquare = this.grid[line][col];
+
         if (line >= 0 && col >= 0 && line < nbLines && col < nbCols) {
             this.grid[line][col] = newSquare;
         }
         // Set the geographical coordinates of the square
         newSquare.xCenter = (col + 0.5) * elemSize;
         newSquare.yCenter = (nbLines - 0.5 - line);
+
+        if (oldSquare.containsWorker()) {
+            newSquare.receiveWorker(oldSquare.removeWorker());
+        }
     }
 
     /**
@@ -498,126 +519,93 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             currentWorker.setCurrentAddress(newAddress);
             break;
         case "InstructionIf":
-            System.out.println("\nTerrainModel receives If notification with options " + notif.getOptions());
-
             String options = notif.getOptions();
-            int rank = 0;
             String optionList[] = options.split("_");
+
+            // Which If instruction emitted this request.
+            String emitterId = optionList[0];
 
             currentWorker = (Worker) notif.getObject();
             Square s = findWorker(currentWorker);
             int col = findColumn(s);
             int line = findLine(s);
 
-            char firstDirection = optionList[0].charAt(0);
+            char firstDirection = optionList[1].charAt(0);
             Square targetSquare = this.getNeighbor(line, col, firstDirection);
 
             Notification reply = new Notification("IfReply", currentWorker);
 
+            reply.addOption(emitterId + "");
+
             String squareClass;
-            int squareValue;
-            int workerId;
+            String cubeInSquare;
+            String coworkerId;
 
             if (targetSquare == null) {
-                System.out.println("target square is null.");
                 squareClass = "null";
-                squareValue = Integer.MIN_VALUE;
-                workerId = -1;
+                cubeInSquare = "null";
+                coworkerId = "null";
             } else {
                 // Get rid of "class " in "class Ground":
                 squareClass = targetSquare.getClass().toString().substring(6);
-                System.out.println("targetSquare: " + targetSquare);
-                squareValue = targetSquare.getValue();
-                System.out.println("after targetSquare.getValue(): " + squareValue);
-                workerId = targetSquare.getWorkerId();
-                System.out.println("after getWorkerId(): " + workerId);
+                cubeInSquare = targetSquare.getCubeValue();
+                if (targetSquare.containsWorker()) {
+                    coworkerId = targetSquare.getWorkerId() + "";
+                } else {
+                    coworkerId = "null";
+                }
             }
 
-            reply.addOption(squareClass + " " + squareValue + " " + workerId);
+            reply.addOption(squareClass + " " + cubeInSquare + " " + coworkerId);
 
-            if (workerId != -1) {
-                Worker coWorker = findWorker(workerId);
-                if (coWorker.hasDataCube()) {
+            if (coworkerId.equals("null")) {
+                reply.addOption("null");
+            } else {
+                Worker coWorker = findWorker(Integer.parseInt(coworkerId));
+                if (coWorker != null && coWorker.hasDataCube()) {
                     reply.addOption(coWorker.getCubeValue() + "");
                 } else {
-                    reply.addOption("first_coworker_no_cube");
+                    reply.addOption("null");
                 }
-            } else {
-                reply.addOption("first_coworker_no_cube");
             }
 
-            if (optionList.length > 1) {
-                if (optionList[1].length() > 0) {
-                    char secondDirection = optionList[1].charAt(0);
+            if (optionList.length > 2) {
+                if (optionList[2].length() > 0) {
+                    char secondDirection = optionList[2].charAt(0);
                     Square secondTargetSquare = this.getNeighbor(line, col, secondDirection);
 
                     String secondSquareClass;
-                    int secondSquareValue;
-                    int secondWorkerId;
+                    String secondCubeInSquare;
+                    String secondWorkerId;
 
                     if (secondTargetSquare == null) {
-                        System.out.println("second target square is null");
                         secondSquareClass = "null";
-                        secondSquareValue = Integer.MIN_VALUE;
-                        secondWorkerId = -1;
+                        secondCubeInSquare = "null";
+                        secondWorkerId = "null";
                     } else {
                         secondSquareClass = secondTargetSquare.getClass().toString().substring(6);
-                        System.out.println("secondTargetSquare: " + secondTargetSquare);
-                        secondSquareValue = secondTargetSquare.getValue();
-                        secondWorkerId = secondTargetSquare.getWorkerId();
+                        secondCubeInSquare = secondTargetSquare.getCubeValue();
+                        if (secondTargetSquare.containsWorker()) {
+                            secondWorkerId = secondTargetSquare.getWorkerId() + "";
+                        } else {
+                            secondWorkerId = "null";
+                        }
                     }
-                    reply.addOption(secondSquareClass + " " + secondSquareValue + " " + secondWorkerId);
+                    reply.addOption(secondSquareClass + " " + secondCubeInSquare + " " + secondWorkerId);
 
-                    if (secondWorkerId != -1) {
-                        Worker secondCoWorker = findWorker(secondWorkerId);
+                    if (secondWorkerId.equals("null")) {
+                        reply.addOption("null");
+                    } else {
+                        Worker secondCoWorker = findWorker(Integer.parseInt(secondWorkerId));
                         if (secondCoWorker.hasDataCube()) {
                             reply.addOption(secondCoWorker.getCubeValue() + "");
                         } else {
-                            reply.addOption("second_coworker_no_cube");
+                            reply.addOption("null");
                         }
-                    } else {
-                        reply.addOption("second_coworker_no_cube");
                     }
                 }
             }
 
-            System.out.println("Created notification with options: " + reply.getOptions());
-
-//            if (isInteger(optionList[2])) {
-//                // First possibility: we compare the square against a numeric value.
-//                int number = Integer.valueOf(optionList[2]);
-//                if (targetSquare.getValue() == number) {
-//                    reply = new Notification("IfReply", true);
-//                } else {
-//                    reply = new Notification("IfReply", false);
-//                }
-//            } else if (isDirection(optionList[2])) {
-//                // Second possibility: we compare the square against another square.
-//
-//            } else if (isSquareType(optionList[2])) {
-//                // Third possibility: we compare the square against a type.
-//            } else {
-//                // Invalid comparison.
-//            }
-//            String replyOptions;
-//            if (targetSquare == null) {
-//                replyOptions = "out";
-//            } else {
-//                replyOptions = targetSquare.getClass().toString() + " " + currentWorker.getSerial();
-//                if (targetSquare.containsDataCube()) {
-//                    replyOptions += " " + targetSquare.getDataCube().getValue();
-//                } else {
-//                    replyOptions += " _";
-//                }
-//                if (targetSquare.containsWorker()) {
-//                    replyOptions += " " + targetSquare.getWorkerId();
-//                } else {
-//                    replyOptions += " -1";
-//                }
-//            }
-//            Notification reply = new Notification("IfReply", currentWorker, replyOptions);
-//            System.out.println("Terrain sends back a notification \"IfReply\" with options <" + replyOptions + ">");
-//            System.out.println("Options are: square class; current worker's serial; value of cube or '_'; other worker id or -1");
             this.notifyObservers(reply);
             break;
 
@@ -635,7 +623,6 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         for (Notification n : notifList) {
             switch (n.getName()) {
             case "InstructionMove":
-                System.out.println("TerrainModel: other instruction move " + n.getName() + ", " + n.getOptions());
                 this.moveWorker((Worker) n.getObject(), n.getOptions());
             default:
                 System.out.println("    Terrain.applyNotification: other notification: " + n.getName());
@@ -659,9 +646,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
 
     @Override
     public void notifyObservers(Notification notif) {
-//        System.out.println("TerrainModel is updating its " + observersList.size() + " observers.");
         for (Observer obs : observersList) {
-//            System.out.println("    Notifying observer " + obs);
             obs.update(notif);
         }
     }

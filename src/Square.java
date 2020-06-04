@@ -152,8 +152,12 @@ public class Square {
      * @param newCube the newly added cube
      */
     public void addDataCube(DataCube newCube) {
+        if (newCube == null) {
+            System.out.println("Error Square.addDataCube(" + newCube + ");");
+        }
         if (!this.containsDataCube()) {
             this.dataCube = newCube;
+            this.dataCube.setPosition(xCenter, yCenter);
         }
     }
 
@@ -239,6 +243,20 @@ public class Square {
         } else {
             System.out.println("\treturns null");
             return Integer.MIN_VALUE;
+        }
+    }
+
+    /**
+     * If there is a cube, return its value as a String;
+     * else, return the String "null".
+     *
+     * @return the value of the cube if it exists, or "null".
+     */
+    public String getCubeValue() {
+        if (dataCube == null) {
+            return "null";
+        } else {
+            return dataCube.getValue() + "";
         }
     }
 }

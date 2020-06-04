@@ -790,7 +790,6 @@ public class Script extends MyDefaultComponent implements Observer {
 
             // Make the links between IfInstructions and their targets.
             // They already know the addresses, not the instructions yet.
-            printInstructionsAsText();
             computeSizesAndPositions();
 
         } catch (FileNotFoundException e) {
@@ -870,8 +869,6 @@ public class Script extends MyDefaultComponent implements Observer {
             instList.set(index, inst);
             ((ScriptModel) model).setInstruction(inst.getModel(), index);
         }
-        printInstructionsAsText();
-        System.out.println("CURRENT END OF SCRIPT.\n\n");
     }
 
     private void waitForKeypressed() {
