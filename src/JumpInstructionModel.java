@@ -4,8 +4,8 @@
  */
 public class JumpInstructionModel extends InstructionModel {
 
-    private int targetAddress;
-    private InstructionModel target;
+    protected int targetAddress;
+    protected InstructionModel target;
 
     public JumpInstructionModel() {
         super();

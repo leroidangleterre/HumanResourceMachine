@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Random;
 
 /**
  *
@@ -337,6 +336,8 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             endPoint.receiveWorker(w);
         }
 
+        w.setCurrentHeading(direction);
+
         w.setCurrentAddress(w.getCurrentAddress() + 1);
         Notification n = new Notification("TerrainRepaint", null);
         notifyObservers(n);
@@ -353,7 +354,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
 
     public void addDatacube(int line, int col) {
         Square s = this.getSquare(line, col);
-        TerrainModel.this.addDatacube(s);
+        this.addDatacube(s);
     }
 
     /**
@@ -414,7 +415,9 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         if (w.hasDataCube()) {
             if (!(workerSquare.containsDataCube())) {
                 // Actually drop the cube
-                workerSquare.addDataCube(w.removeDataCube());
+                DataCube droppedCube = w.removeDataCube();
+                droppedCube.setCarried(false);
+                workerSquare.addDataCube(droppedCube);
             }
         }
 
@@ -434,17 +437,20 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
      */
     public void setSquare(Square newSquare, int line, int col) {
 
-        Square oldSquare = this.grid[line][col];
+        try {
+            Square oldSquare = this.grid[line][col];
+            if (line >= 0 && col >= 0 && line < nbLines && col < nbCols) {
+                this.grid[line][col] = newSquare;
+            }
+            // Set the geographical coordinates of the square
+            newSquare.xCenter = (col + 0.5) * elemSize;
+            newSquare.yCenter = (nbLines - 0.5 - line);
 
-        if (line >= 0 && col >= 0 && line < nbLines && col < nbCols) {
-            this.grid[line][col] = newSquare;
-        }
-        // Set the geographical coordinates of the square
-        newSquare.xCenter = (col + 0.5) * elemSize;
-        newSquare.yCenter = (nbLines - 0.5 - line);
-
-        if (oldSquare.containsWorker()) {
-            newSquare.receiveWorker(oldSquare.removeWorker());
+            if (oldSquare.containsWorker()) {
+                newSquare.receiveWorker(oldSquare.removeWorker());
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            // Simply do not add a square outside the Terrain.
         }
     }
 
@@ -492,8 +498,8 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
 
         switch (notif.getName()) {
         case "WorkerMove": // TODO replace this with MoveInstruction.getName();
-            String direction = notif.getOptions();
-            this.moveWorker((Worker) notif.getObject(), direction);
+            // The movement request must be stored now and applied when all move requests have been received for the current step.
+            notifList.add(notif);
             break;
         case "WorkerPickup":
             this.pickup((Worker) notif.getObject(), notif.getOptions());
@@ -501,16 +507,17 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         case "WorkerDrop":
             this.drop((Worker) notif.getObject());
             break;
-        case "InstructionMove":
-            System.out.println("TerrainModel: receive Move " + notif.getOptions());
-            notifList.add(notif);
-            break;
         case "TerrainApplyInstructions":
             applyNotifications();
             break;
         case "JumpInstruction":
             currentWorker = (Worker) notif.getObject();
             newAddress = Integer.parseInt(notif.getOptions());
+            currentWorker.setCurrentAddress(newAddress);
+            break;
+        case "ElseInstruction":
+            newAddress = Integer.parseInt(notif.getOptions());
+            currentWorker = (Worker) notif.getObject();
             currentWorker.setCurrentAddress(newAddress);
             break;
         case "NoOperation":
@@ -620,10 +627,18 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
 
     private void applyNotifications() {
 
+        // Extract the pairs of WorkerMove notifications that lead to a worker swap
+        for (Notification n : notifList) {
+            if (n.getName().equals("WorkerMove")) {
+
+            }
+        }
+
         for (Notification n : notifList) {
             switch (n.getName()) {
-            case "InstructionMove":
+            case "WorkerMove":
                 this.moveWorker((Worker) n.getObject(), n.getOptions());
+                break;
             default:
                 System.out.println("    Terrain.applyNotification: other notification: " + n.getName());
                 break;

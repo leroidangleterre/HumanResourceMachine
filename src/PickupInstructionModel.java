@@ -1,4 +1,3 @@
-
 /**
  *
  * @author arthurmanoha
@@ -64,7 +63,6 @@ public class PickupInstructionModel extends InstructionModel {
 
     @Override
     public Notification createNotification() {
-        System.out.println("PICKUP create notification");
         Notification n = new Notification(this.getName(), null, this.currentDirection.toString());
         return n;
     }

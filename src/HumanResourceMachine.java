@@ -1,5 +1,3 @@
-import java.util.Random;
-
 /**
  * Main class for the Human Resource Machine game.
  *
@@ -8,8 +6,8 @@ public class HumanResourceMachine {
 
     public static void main(String args[]) {
 
-        int nbLines = 15;
-        int nbCols = 15;
+        int nbLines = 3;
+        int nbCols = 10;
 
         Terrain terrain = new Terrain(nbLines, nbCols);
         Script script = new Script();
@@ -28,16 +26,15 @@ public class HumanResourceMachine {
 
         script.load();
 
-        for (int line = 0; line < nbLines; line++) {
-            for (int col = 0; col < nbCols; col++) {
-                if (new Random().nextInt(10) <= 1) {
-                    ((TerrainModel) (terrain.getModel())).addNewWorker(line, col);
-                }
-                if (new Random().nextInt(10) <= 2) {
-                    ((TerrainModel) (terrain.getModel())).addDatacube(line, col);
-                }
-            }
+        TerrainModel terrainModel = (TerrainModel) terrain.getModel();
+
+        for (int col = 1; col < nbCols - 1; col++) {
+            terrainModel.addDatacube(1, col);
         }
+        terrainModel.addNewWorker(1, 1);
+        terrainModel.setSquare(new Hole(), 1, 0);
+        terrainModel.setSquare(new Hole(), 1, 9);
+
         w.invalidate();
         w.revalidate();
     }

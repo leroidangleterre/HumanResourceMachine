@@ -41,7 +41,7 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
     private static int COMPONENT_WIDTH = 800;
     private static int COMPONENT_HEIGHT = 700;
 
-    private double textRelativeSize = 0.7;
+    protected double textRelativeSize = 0.7;
     private String fontName = "Arial";
     private int fontStyle = 0;
 

@@ -24,7 +24,7 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
 
     private int elseAddress;
     private int endAddress;
-    private InstructionModel elseTarget;
+    private ElseInstructionModel elseTarget;
     private InstructionModel endTarget;
 
     private static int NB_IIM_CREATED = 0;
@@ -88,28 +88,7 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
         this.currentBoolean = newBool;
     }
 
-//    /**
-//     * Execute the IF: evaluate the condition, then set the worker's next
-//     * address.
-//     *
-//     * @param date
-//     * @param w
-//     */
-//    @Override
-//    public void execute(int date, Worker w) {
-//        super.execute(date, w);
-//        // Analyse the three sub-components: the direction, the operator, and the choice box,
-//        // and choose between going to the "then" or to the "else" block.
-//
-//        String optionalText = "42" + w.getSerial() + "-" + w.getDirection();
-//        System.out.println("            IfInstructionModel.execute(date = " + date + ", worker " + w.getSerial());
-//        Notification n = new Notification(this.getName(), w, optionalText);
-//        System.out.println("new notification: " + n.getName() + ", " + n.getOptions());
-//
-//        isEvaluated = false;
-//        notifyObservers(n);
-//    }
-    public void setElseInstruction(InstructionModel newTarget) {
+    public void setElseInstruction(ElseInstructionModel newTarget) {
         elseTarget = newTarget;
     }
 
@@ -154,7 +133,6 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
     public void notifyObservers(Notification n) {
         int i = 0;
         for (Observer observer : observersList) {
-            System.out.println("IfInstructionModel updating observer n°" + i);
             observer.update(n);
         }
     }
@@ -256,43 +234,54 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
 
                 return result;
             } catch (NumberFormatException ex) {
-                System.out.println("IfInstructionModel: Error in comparing numbers. returning false.");
                 return false;
             }
-        } else {
-            if (choiceBoxModel.isCompass()) {
-                // Must compare the values of the two designated squares.
+        } else if (choiceBoxModel.isCompass()) {
+            // Must compare the values of the two designated squares.
 
-                int firstCubeVal = 0, secondCubeVal = 0;
-                try {
-                    firstCubeVal = Integer.parseInt(firstDatacubeVal);
-                    secondCubeVal = Integer.parseInt(secondDatacubeVal);
-                    result = compare(firstCubeVal, secondCubeVal, currentBoolean);
-                } catch (NumberFormatException e) {
-                    // Not actually numbers, default comparison.
-                    result = false;
-                }
-            } else {
-                // Must test if designated square has the given type, or contains the requested thing (i.e. a worker or cube).
-                if (choiceBoxModel.isSquareType()) {
-                    result = firstSquareType.equals(choiceBoxModel.getStringValue());
+            int firstCubeVal = 0, secondCubeVal = 0;
+            try {
+
+                if (firstDatacubeVal.equals("null") && !firstWorkerDatacube.equals("null")) {
+                    // No cube on the ground but first worker carries a cube.
+                    firstCubeVal = Integer.parseInt(firstWorkerDatacube);
                 } else {
-                    if (choiceBoxModel.getStringValue().equals("Worker")) {
-                        // Need to check that the square contains a worker
-                        result = !firstWorkerSerial.equals("null");
-                    } else if (choiceBoxModel.getStringValue().equals("DataCube")) {
-                        // Need to check that the square contains a datacube (no datacube means value MIN_VALUE)
-                        boolean datacubeAbsent = (firstDatacubeVal.equals("null"));
-                        if (datacubeAbsent) {
-                            result = false;
-                        } else {
-                            result = true;
-                        }
-                    }
+                    firstCubeVal = Integer.parseInt(firstDatacubeVal);
                 }
+
+                if (secondDatacubeVal.equals("null") && !secondWorkerDatacube.equals("null")) {
+                    // No cube on the ground but second worker carries a cube.
+                    secondCubeVal = Integer.parseInt(secondWorkerDatacube);
+                } else {
+                    secondCubeVal = Integer.parseInt(secondDatacubeVal);
+                }
+
+                result = compare(firstCubeVal, secondCubeVal, currentBoolean);
+            } catch (NumberFormatException e) {
+                // Not actually numbers, default comparison.
+                result = false;
             }
-            return result;
+        } else if (choiceBoxModel.isSquareType()) {
+            // Must test if designated square has the given type, or contains the requested thing (i.e. a worker or cube).
+            result = firstSquareType.equals(choiceBoxModel.getStringValue());
+        } else {
+            if (choiceBoxModel.getStringValue().equals("Worker")) {
+                // Need to check that the square contains a worker
+                result = !firstWorkerSerial.equals("null");
+            } else if (choiceBoxModel.getStringValue().equals("DataCube")) {
+                // Need to check that the square contains a datacube (no datacube means value MIN_VALUE)
+                boolean datacubeAbsent = (firstDatacubeVal.equals("null"));
+                if (datacubeAbsent) {
+                    result = false;
+                } else {
+                    result = true;
+                }
+            } else if (choiceBoxModel.getStringValue().equals("Empty")) {
+                // Designated square must be either empty or out of bounds.
+                result = firstSquareType.equals("Empty") || firstSquareType.equals("null");
+            }
         }
+        return result;
     }
 
     private boolean compare(int firstValue, int secondValue, BooleanConstant bool) {
@@ -328,7 +317,6 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
     public Notification createNotification() {
         // Worker is set via the ScriptModel.
         Notification n = new Notification(this);
-        System.out.println("IfInstrModel.createNotification()");
         return n;
     }
 

@@ -19,8 +19,8 @@ public class Script extends MyDefaultComponent implements Observer {
 
     protected boolean newInstructionBeingCreated;
 
-    double initX0 = 235;
-    double initY0 = 800;
+    double initX0 = 68;
+    double initY0 = 694;
     double initZoom = 2;
 
     private final int indentationWidth = 25;
@@ -71,14 +71,13 @@ public class Script extends MyDefaultComponent implements Observer {
 
         if (newIns instanceof IfInstruction) {
             // Create the Else and the Endif instructions.
-            JumpInstruction elseTarget = new JumpInstruction();
+            ElseInstruction elseTarget = new ElseInstruction();
             int elseAddress = rank + 1;
             this.addInstruction(elseTarget, elseAddress);
             ((IfInstruction) newIns).setElseInstruction(elseTarget, elseAddress);
             NoInstruction endTarget = (NoInstruction) elseTarget.getTargetInstruction();
             endTarget.setText("END");
             int endAddress = rank + 2;
-            elseTarget.setText("ELSE " + endAddress);
             ((IfInstruction) newIns).setEndInstruction(endTarget, endAddress);
             elseTarget.setSelected(true);
             endTarget.setSelected(true);
@@ -161,6 +160,7 @@ public class Script extends MyDefaultComponent implements Observer {
      */
     @Override
     public void receiveCommand(String text) {
+
         Instruction newInst = null;
         switch (text) {
         case "MOVE":
@@ -425,14 +425,9 @@ public class Script extends MyDefaultComponent implements Observer {
             selectionIsMoving = false;
             break;
         case MouseEvent.BUTTON3:
-            // Right click shall trigger a specific behavior in the instruction
+            // The right click event is passed to the appropriate instruction.
             Instruction inst = this.getInstruction(yClickInScript);
             if (inst != null) {
-                // TODO: should not be done that way.
-                inst.receiveCommand("RECEIVE_RIGHT_CLICK");
-            }
-            if (inst instanceof IfInstruction) {
-                // TODO: should be done that way for all kinds of instructions
                 inst.mousePressed(e);
             }
             break;
@@ -572,7 +567,7 @@ public class Script extends MyDefaultComponent implements Observer {
 
                 // Update the target ranks of the IF instructions in case these targets have moved.
                 if (inst instanceof IfInstruction) {
-                    Instruction elseTarget = ((IfInstruction) inst).getElseInstruction();
+                    ElseInstruction elseTarget = ((IfInstruction) inst).getElseInstruction();
                     Instruction endTarget = ((IfInstruction) inst).getEndInstruction();
 
                     int newElseRank = this.findIndexOf(elseTarget);
@@ -817,7 +812,6 @@ public class Script extends MyDefaultComponent implements Observer {
             if (getInstruction(index) instanceof NoInstruction) {
                 String currentText = ((NoInstruction) getInstruction(index)).getText();
                 if (currentText.contains("ELSE") || currentText.contains("END")) {
-                    System.out.println("Instruction " + currentText + " at " + index + " is already a target. Doing nothing");
                 }
             }
         } else if (text.contains("WorkerPickup")) {
@@ -836,10 +830,9 @@ public class Script extends MyDefaultComponent implements Observer {
             instList.set(endAddress, endInst);
             endInst.setText("END");
 
-            JumpInstruction elseInst = new JumpInstruction();
+            ElseInstruction elseInst = new ElseInstruction();
             instList.set(elseAddress, elseInst);
             elseInst.setTargetInstruction(endInst, endAddress);
-            elseInst.setText("ELSE " + ((JumpInstruction) elseInst).getTargetAddress());
 
             ((IfInstruction) inst).setElseInstruction(elseInst, elseAddress);
             ((IfInstruction) inst).setEndInstruction(endInst, endAddress);

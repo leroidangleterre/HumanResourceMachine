@@ -1,5 +1,17 @@
 TODO:
 
+Remove the green line on IFs.
+
+Replace all notification names with properly defined constants.
+
+Allow neighbor workers to swap places when they both request a move to each other's location.
+
+When a Jump is placed in the script, the JumpInstr shall not be selected anymore.
+
+Create a WHILE instruction in the same spirit as the IF.
+
+Use the mouseWheel to toggle IF parameters.
+
 Adapt the choice in IfInstructions to the current value of the boolean.
 
 Improve the GUI, paint actual workers, etc.
@@ -20,6 +32,8 @@ Moving an instruction containing sub-instructions, such as If, shall translate a
 When a composite instruction is created (Jump or If), the targets shall appear immediately at the bottom of the main instruction, not at the address zero.
 
 DONE:
+
+Trying to manually add a DataCube in a square that already contains one removes the existing cube.
 
 IfInstructions evaluate the square types or datablock values, make a choice and branch the worker to the appropriate address.
 

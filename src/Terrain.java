@@ -13,6 +13,9 @@ public class Terrain extends MyDefaultComponent implements Observer {
 
         model = new TerrainModel(nbLines, nbCols);
         currentTool = TerrainTool.SELECTION;
+
+        x0 = 46;
+        y0 = 251;
     }
 
     /**

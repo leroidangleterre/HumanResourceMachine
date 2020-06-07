@@ -53,12 +53,12 @@ public class Square {
         }
         g.drawRect(xDisplay, yDisplay, sizeApp, sizeApp);
 
-        if (dataCube != null) {
-            dataCube.paint(g, panelHeight, x0, y0, zoom);
-        }
-
         if (worker != null) {
             worker.paint(g, panelHeight, x0, y0, zoom);
+        }
+
+        if (dataCube != null) {
+            dataCube.paint(g, panelHeight, x0, y0, zoom);
         }
     }
 
@@ -155,7 +155,9 @@ public class Square {
         if (newCube == null) {
             System.out.println("Error Square.addDataCube(" + newCube + ");");
         }
-        if (!this.containsDataCube()) {
+        if (this.containsDataCube()) {
+            removeDataCube();
+        } else {
             this.dataCube = newCube;
             this.dataCube.setPosition(xCenter, yCenter);
         }
@@ -193,9 +195,6 @@ public class Square {
             System.out.println("Square.getWorkerId(): returning -1");
             return -1;
         } else {
-            System.out.println("Square.getWorkerId(): returning something:");
-            System.out.println(this.worker.getSerial() + "");
-            System.out.println("done.");
             return this.worker.getSerial();
         }
     }
@@ -233,15 +232,11 @@ public class Square {
      * Else, the minimum integer possible.
      */
     public int getValue() {
-        System.out.println("Square " + this + ": getValue()");
         if (worker != null && worker.hasDataCube()) {
-            System.out.println("\treturns worker's value: " + worker.getCubeValue());
             return worker.getCubeValue();
         } else if (dataCube != null) {
-            System.out.println("\treturns square's cube's value: " + dataCube.getValue());
             return dataCube.getValue();
         } else {
-            System.out.println("\treturns null");
             return Integer.MIN_VALUE;
         }
     }

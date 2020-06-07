@@ -171,6 +171,10 @@ public class MyChoiceBoxModel extends MyDefaultModel {
     }
 
     public boolean isSquareType() {
-        return textValue.equals("Ground") || textValue.equals("Wall");
+        return textValue.equals("Ground")
+                || textValue.equals("Wall")
+                || textValue.equals("Hole")
+                || textValue.equals("Input")
+                || textValue.equals("Output");
     }
 }

@@ -1,6 +1,10 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import javax.imageio.ImageIO;
 
 /**
  * This class represents a character that obeys a Script and that may move in
@@ -30,6 +34,12 @@ public class Worker implements Observable {
     // A worker may carry a data cube.
     private DataCube dataCube;
 
+    private static BufferedImage imageNorth;
+    private static BufferedImage imageSouth;
+    private static BufferedImage imageWest;
+    private static BufferedImage imageEast;
+    private BufferedImage currentImage;
+
     /**
      * The date of the last time this worker executed an instruction.
      *
@@ -43,6 +53,19 @@ public class Worker implements Observable {
         NB_WORKERS++;
         observersList = new ArrayList<>();
         currentAddress = -1;
+
+        if (imageNorth == null) {
+            try {
+                imageNorth = ImageIO.read(new File("C:\\Users\\arthurmanoha\\Documents\\Programmation\\Java\\HumanResourceMachine\\src\\img_worker_north.png"));
+                imageSouth = ImageIO.read(new File("C:\\Users\\arthurmanoha\\Documents\\Programmation\\Java\\HumanResourceMachine\\src\\img_worker_south.png"));
+                imageEast = ImageIO.read(new File("C:\\Users\\arthurmanoha\\Documents\\Programmation\\Java\\HumanResourceMachine\\src\\img_worker_east.png"));
+                imageWest = ImageIO.read(new File("C:\\Users\\arthurmanoha\\Documents\\Programmation\\Java\\HumanResourceMachine\\src\\img_worker_west.png"));
+            } catch (IOException e) {
+                System.out.println("Worker images loading failed.");
+            }
+        }
+        currentHeading = CardinalPoint.SOUTH;
+        currentImage = imageSouth;
     }
 
     public void setPosition(double xParam, double yParam) {
@@ -74,17 +97,14 @@ public class Worker implements Observable {
         int yDisplay = (int) (panelHeight - (zoom * (this.y + this.size / 2) + y0));
         int apparentDiameter = (int) (size * zoom);
 
-        g.setColor(Color.gray);
-        g.fillOval(xDisplay, yDisplay, apparentDiameter, apparentDiameter);
-
-        String text = "w" + this.serial;
-        if (dataCube == null) {
-            text += "<no cube>";
+        if (currentImage == null) {
+            g.setColor(Color.gray);
+            g.fillOval(xDisplay, yDisplay, apparentDiameter, apparentDiameter);
         } else {
-            text += "<cube " + dataCube.getValue() + ">";
+            g.drawImage(currentImage, xDisplay, yDisplay, (int) zoom, (int) zoom, null);
         }
+
         g.setColor(Color.black);
-        g.drawString(text, xDisplay + apparentDiameter / 2, yDisplay + apparentDiameter / 2);
         if (this.hasDataCube()) {
             dataCube.paint(g, panelHeight, x0, y0, zoom);
         }
@@ -125,15 +145,29 @@ public class Worker implements Observable {
         return this.currentHeading;
     }
 
-    /**
-     * Request from the Terrain to move in the given direction.
-     *
-     * @param cardinalPoint
-     */
-    public void moveInDirection(CardinalPoint cardinalPoint) {
-        currentHeading = cardinalPoint;
-        Notification notif = new Notification("WorkerMove", this);
-        notifyObservers(notif);
+    public void setCurrentHeading(String newHeading) {
+        switch (newHeading) {
+        case "N":
+            currentHeading = CardinalPoint.NORTH;
+            currentImage = imageNorth;
+            break;
+        case "S":
+            currentHeading = CardinalPoint.SOUTH;
+            currentImage = imageSouth;
+            break;
+        case "E":
+            currentHeading = CardinalPoint.EAST;
+            currentImage = imageEast;
+            break;
+        case "W":
+            currentHeading = CardinalPoint.WEST;
+            currentImage = imageWest;
+            break;
+        default:
+            System.out.println("Worker.setCurrentHeading - invalid parameter: " + newHeading);
+            currentHeading = CardinalPoint.SOUTH;
+            break;
+        }
     }
 
     public void pickup(CardinalPoint direction) {
@@ -165,6 +199,7 @@ public class Worker implements Observable {
         if (dataCube == null) {
             dataCube = newCube;
             dataCube.setPosition(this.x, this.y);
+            dataCube.setCarried(true);
         }
     }
 

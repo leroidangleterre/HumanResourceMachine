@@ -86,8 +86,6 @@ public class MoveInstruction extends Instruction {
     public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
 
-        System.out.println("Move: Mouse pressed");
-
         // Switch direction with right click
         if (e.getButton() == MouseEvent.BUTTON3) {
             toggleDirection();
@@ -100,15 +98,4 @@ public class MoveInstruction extends Instruction {
         repaint();
     }
 
-    /**
-     * Receive a command from another component.
-     *
-     * @param s
-     */
-    @Override
-    public void receiveCommand(String s) {
-        if (s.equals("RECEIVE_RIGHT_CLICK")) {
-            this.toggleDirection();
-        }
-    }
 }

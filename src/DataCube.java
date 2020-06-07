@@ -1,17 +1,20 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.Random;
 
 /**
  *
  * @author arthurmanoha
  */
-public class DataCube implements Comparable {
+public class DataCube extends MyDefaultComponent {
 
     /**
      * The worker's current position (its center).
      */
     private double x, y;
     private double size = 0.5;
+
+    private double defaultZoomFactor = 0.001;
 
     private int value;
 
@@ -21,29 +24,45 @@ public class DataCube implements Comparable {
     private int arcWidth = 10;
     private int arcHeight = 10;
 
+    private boolean isCarried; // True when carried by a worker
+    private double offsetWhenCarried = 0.4;
+    private double offsetWhenNotCarried = -0.4;
+
     public DataCube(double xParam, double yParam, int newValue) {
         x = xParam;
         y = yParam;
         serial = NB_CUBES;
         NB_CUBES++;
         value = newValue;
+        isCarried = false;
+
+        textRelativeSize = 0.5;
+        zoom = 1;
     }
 
     public DataCube(double xParam, double yParam) {
-        this(xParam, yParam, 0);
+        this(xParam, yParam, new Random().nextInt(99));
     }
 
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
+        double offset = isCarried ? offsetWhenCarried : offsetWhenNotCarried;
         int xDisplay = (int) (zoom * (this.x - this.size / 2) + x0);
-        int yDisplay = (int) (panelHeight - (zoom * (this.y + this.size / 2) + y0));
+        int yDisplay = (int) (panelHeight - (zoom * (this.y + this.size * (0.5 + offset)) + y0));
         int apparentDiameter = (int) (size * zoom);
 
         g.setColor(new Color(204, 153, 0));
         g.fillRoundRect(xDisplay, yDisplay, apparentDiameter, apparentDiameter, arcWidth, arcHeight);
 
-        String text = "" + value;
         g.setColor(Color.black);
-        g.drawString(text, xDisplay + apparentDiameter / 2, yDisplay + apparentDiameter / 2);
+        g.drawRoundRect(xDisplay, yDisplay, apparentDiameter, apparentDiameter, arcWidth, arcHeight);
+
+        this.zoom = zoom * defaultZoomFactor;
+        setFont(g);
+        String text = "" + value;
+        g.setColor(Color.blue);
+        g.drawChars(text.toCharArray(), 0, text.length(),
+                (int) (xDisplay + this.size * zoom - g.getFontMetrics().stringWidth(text)),
+                yDisplay + g.getFont().getSize());
     }
 
     public int getValue() {
@@ -54,12 +73,13 @@ public class DataCube implements Comparable {
         this.value = newValue;
     }
 
-    public double getX() {
-        return x;
+    @Override
+    public int getX() {
+        return (int) x;
     }
 
-    public double getY() {
-        return y;
+    public int getY() {
+        return (int) y;
     }
 
     public void setPosition(double newX, double newY) {
@@ -67,29 +87,13 @@ public class DataCube implements Comparable {
         y = newY;
     }
 
-    @Override
-    public boolean isLessThan(Comparable other) {
-        if (other instanceof DataCube) {
-            return this.value <= ((DataCube) other).value;
-        } else if (other instanceof IntegerValue) {
-            return this.value <= ((IntegerValue) other).getValue();
-        } else {
-            return false;
-        }
+    public void setCarried(boolean newIsCarried) {
+        isCarried = newIsCarried;
     }
 
     @Override
-    public boolean isEqualTo(Comparable other) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void receiveCommand(String text) {
+        System.out.println("Cube should not receive commands.");
     }
 
-    @Override
-    public boolean isMoreThan(Comparable other) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean isDifferentThan(Comparable other) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 }

@@ -42,7 +42,7 @@ public class IfInstruction extends Instruction {
     // TODO: replace that type with some sort of a Comparable interface.
     private MyChoiceBox choiceBox;
 
-    private Instruction elseInstruction;
+    private ElseInstruction elseInstruction;
     private Instruction endInstruction;
 
     private int indentationWidth;
@@ -95,6 +95,8 @@ public class IfInstruction extends Instruction {
      */
     @Override
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
+
+        setFont(g);
 
         int xDisplay = (int) x0 + this.x;
         int yDisplay = (int) (panelHeight - (y0 + this.y));
@@ -160,7 +162,6 @@ public class IfInstruction extends Instruction {
         super.paint(g, panelHeight, x0, y0, zoom);
 
         g.setColor(Color.black);
-        setFont(g);
         g.drawChars(text.toCharArray(), 0, text.length(), xText, yDisplay + g.getFont().getSize());
         compass.paint(g, panelHeight, x0, y0, zoom);
         boolButton.paint(g, panelHeight, x0, y0, zoom);
@@ -217,7 +218,7 @@ public class IfInstruction extends Instruction {
      * @param newTarget
      * @param address
      */
-    public void setElseInstruction(Instruction newTarget, int address) {
+    public void setElseInstruction(ElseInstruction newTarget, int address) {
         if (newTarget != null) {
             elseInstruction = newTarget;
             elseInstruction.color = this.color;
@@ -232,7 +233,7 @@ public class IfInstruction extends Instruction {
         this.computeText();
     }
 
-    public Instruction getElseInstruction() {
+    public ElseInstruction getElseInstruction() {
         return elseInstruction;
     }
 
