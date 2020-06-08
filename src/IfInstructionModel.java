@@ -262,20 +262,17 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
                 result = false;
             }
         } else if (choiceBoxModel.isSquareType()) {
-            // Must test if designated square has the given type, or contains the requested thing (i.e. a worker or cube).
-            result = firstSquareType.equals(choiceBoxModel.getStringValue());
+            // Must test if designated square has the given type.
+            result = compare(firstSquareType, choiceBoxModel.getStringValue(), currentBoolean);
         } else {
             if (choiceBoxModel.getStringValue().equals("Worker")) {
                 // Need to check that the square contains a worker
                 result = !firstWorkerSerial.equals("null");
             } else if (choiceBoxModel.getStringValue().equals("DataCube")) {
                 // Need to check that the square contains a datacube (no datacube means value MIN_VALUE)
-                boolean datacubeAbsent = (firstDatacubeVal.equals("null"));
-                if (datacubeAbsent) {
-                    result = false;
-                } else {
-                    result = true;
-                }
+                boolean datacubeExists = !(firstDatacubeVal.equals("null"));
+                result = currentBoolean.equals(BooleanConstant.EQUAL) && datacubeExists
+                        || currentBoolean.equals(BooleanConstant.NOT_EQUAL) && (!datacubeExists);
             } else if (choiceBoxModel.getStringValue().equals("Empty")) {
                 // Designated square must be either empty or out of bounds.
                 result = firstSquareType.equals("Empty") || firstSquareType.equals("null");
@@ -311,6 +308,18 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
             break;
         }
         return result;
+    }
+
+    private boolean compare(String firstSquareType, String secondSquareType, BooleanConstant bool) {
+        switch (bool) {
+        case EQUAL:
+            return firstSquareType.equals(secondSquareType);
+        case NOT_EQUAL:
+            return !firstSquareType.equals(secondSquareType);
+        default:
+            System.out.println("Square types cannot be compare with " + bool + ", returning false.");
+            return false;
+        }
     }
 
     @Override

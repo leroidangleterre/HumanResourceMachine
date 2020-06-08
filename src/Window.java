@@ -52,7 +52,11 @@ public class Window extends JFrame {
         split.add(leftComponent);
         split.add(rightComponent);
         this.add(split, BorderLayout.CENTER);
-        resetSizes();
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        if (split != null) {
+            split.setResizeWeight(SPLIT_PANE_HALF);
+            split.setDividerLocation(SPLIT_PANE_HALF);
+        }
         repaint();
     }
 
@@ -113,6 +117,39 @@ public class Window extends JFrame {
             }
         });
 
+        JButton playPauseButton = new JButton("Play");
+        playPauseButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Script script = (Script) split.getRightComponent();
+                if (script.isPlaying()) {
+                    script.pause();
+                    playPauseButton.setText("Play");
+                } else {
+                    script.play();
+                    playPauseButton.setText("Pause");
+                }
+            }
+        });
+
+        JButton fasterButton = new JButton("+++");
+        fasterButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Script script = (Script) split.getRightComponent();
+                script.increaseSpeed(true);
+            }
+        });
+
+        JButton slowerButton = new JButton("---");
+        slowerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Script script = (Script) split.getRightComponent();
+                script.increaseSpeed(false);
+            }
+        });
+
         JButton saveScriptButton = new JButton("Save script");
         saveScriptButton.addActionListener(new ActionListener() {
             @Override
@@ -146,6 +183,9 @@ public class Window extends JFrame {
         });
 
         controlPanel.add(stepButton);
+        controlPanel.add(playPauseButton);
+        controlPanel.add(fasterButton);
+        controlPanel.add(slowerButton);
         controlPanel.add(saveScriptButton);
         controlPanel.add(loadScriptButton);
         controlPanel.add(resetWorkersButton);

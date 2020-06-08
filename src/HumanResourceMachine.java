@@ -6,8 +6,8 @@ public class HumanResourceMachine {
 
     public static void main(String args[]) {
 
-        int nbLines = 3;
-        int nbCols = 10;
+        int nbLines = 15;
+        int nbCols = 15;
 
         Terrain terrain = new Terrain(nbLines, nbCols);
         Script script = new Script();
@@ -28,13 +28,11 @@ public class HumanResourceMachine {
 
         TerrainModel terrainModel = (TerrainModel) terrain.getModel();
 
-        for (int col = 1; col < nbCols - 1; col++) {
-            terrainModel.addDatacube(1, col);
+        int line = 5;
+        for (int col = 0; col < nbCols; col++) {
+            terrainModel.addDatacube(line, col);
+            terrainModel.addNewWorker(line, col);
         }
-        terrainModel.addNewWorker(1, 1);
-        terrainModel.setSquare(new Hole(), 1, 0);
-        terrainModel.setSquare(new Hole(), 1, 9);
-
         w.invalidate();
         w.revalidate();
     }

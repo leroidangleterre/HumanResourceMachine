@@ -4,13 +4,13 @@ Remove the green line on IFs.
 
 Replace all notification names with properly defined constants.
 
-Allow neighbor workers to swap places when they both request a move to each other's location.
-
 When a Jump is placed in the script, the JumpInstr shall not be selected anymore.
 
 Create a WHILE instruction in the same spirit as the IF.
 
-Use the mouseWheel to toggle IF parameters.
+Improve compass to handle eight directions (N, NE, E, SE, S, SW, W, NW)
+Improve compass to handle multiple directions (randomly)
+Improve compass to select a direction by clicking the corresponding area inside the compass (nine radio-button equivalents).
 
 Adapt the choice in IfInstructions to the current value of the boolean.
 
@@ -32,6 +32,8 @@ Moving an instruction containing sub-instructions, such as If, shall translate a
 When a composite instruction is created (Jump or If), the targets shall appear immediately at the bottom of the main instruction, not at the address zero.
 
 DONE:
+
+Allow neighbor workers to swap places when they both request a move to each other's location.
 
 Trying to manually add a DataCube in a square that already contains one removes the existing cube.
 

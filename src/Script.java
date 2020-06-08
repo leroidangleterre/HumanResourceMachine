@@ -9,6 +9,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * This is the set of instructions that each worker will execute.
@@ -19,8 +21,8 @@ public class Script extends MyDefaultComponent implements Observer {
 
     protected boolean newInstructionBeingCreated;
 
-    double initX0 = 68;
-    double initY0 = 694;
+    double initX0 = 90;
+    double initY0 = 614;
     double initZoom = 2;
 
     private final int indentationWidth = 25;
@@ -33,6 +35,11 @@ public class Script extends MyDefaultComponent implements Observer {
 
     private ArrayList<Instruction> instList;
 
+    private boolean isPlaying;
+    private int delay;
+    private int period; // milliseconds
+    private Timer timer;
+
     public Script() {
         super();
         model = new ScriptModel();
@@ -43,6 +50,10 @@ public class Script extends MyDefaultComponent implements Observer {
         y0 = initY0;
         zoom = initZoom;
         newInstructionBeingCreated = false;
+
+        isPlaying = false;
+        delay = 0;
+        period = 1000;
     }
 
     /**
@@ -879,4 +890,48 @@ public class Script extends MyDefaultComponent implements Observer {
                 + ", in model: " + ((ScriptModel) model).getNbInstructions());
     }
 
+    public boolean isPlaying() {
+        return isPlaying;
+    }
+
+    /**
+     * Start playing (or keep playing) with the most recently set period.
+     */
+    public void play() {
+        this.isPlaying = true;
+        if (timer != null) {
+            timer.cancel();
+        }
+        timer = new Timer();
+
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                step();
+            }
+        }, delay, period);
+        System.out.println("Script timer new period: " + period);
+    }
+
+    public void pause() {
+        this.isPlaying = false;
+        timer.cancel();
+    }
+
+    /**
+     * Change the speed of the timer.
+     *
+     * @param faster true to execute instructions faster, false otherwise.
+     */
+    public void increaseSpeed(boolean faster) {
+        if (faster) {
+            period = period / 2;
+            if (period == 0) {
+                period = 1;
+            }
+        } else {
+            period = 2 * period;
+        }
+        play();
+    }
 }
