@@ -51,6 +51,10 @@ public class MyChoiceBoxModel extends MyDefaultModel {
             isNumber = false;
             break;
         case "Hole":
+            textValue = "Ground";
+            isNumber = false;
+            break;
+        case "Ground":
             textValue = "Worker";
             isNumber = false;
             break;

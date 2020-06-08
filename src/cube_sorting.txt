@@ -1,0 +1,48 @@
+One single worker, many squares:
+
+
+30
+NoOperation
+NoOperation
+InstructionIf EAST EQUAL Hole 4 20
+Jump 22
+Else 20
+InstructionIf CENTER STRICTLY_GREATER_THAN EAST 17 19
+WorkerPickup CENTER
+WorkerMove EAST
+WorkerMove NORTH
+WorkerDrop
+WorkerPickup SOUTH
+WorkerMove WEST
+WorkerMove SOUTH
+WorkerDrop
+WorkerMove EAST
+WorkerPickup NORTH
+WorkerDrop
+Else 19
+WorkerMove EAST
+NoOperation
+NoOperation
+Jump 1
+NoOperation
+NoOperation
+InstructionIf WEST EQUAL Hole 26 28
+Jump 0
+Else 28
+WorkerMove WEST
+NoOperation
+Jump 23
+
+
+
+One worker per square:
+
+8
+WorkerPickup CENTER
+NoOperation
+InstructionIf CENTER STRICTLY_GREATER_THAN EAST 4 6
+WorkerMove EAST
+Else 6
+WorkerMove WEST
+NoOperation
+Jump 1

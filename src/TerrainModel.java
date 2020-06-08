@@ -279,6 +279,44 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     }
 
     /**
+     * Find the line containing the given worker.
+     *
+     * @param w the worker we look for
+     * @return -1 if the worker was not found, or the line number if it was.
+     */
+    private int findWorkerLine(Worker w) {
+        return findWorkerCoordinate(w, true);
+    }
+
+    /**
+     * Find the column containing the given worker.
+     *
+     * @param w the worker we look for
+     * @return -1 if the worker was not found, or the col number if it was.
+     */
+    private int findWorkerColumn(Worker w) {
+        return findWorkerCoordinate(w, false);
+    }
+
+    private int findWorkerCoordinate(Worker w, boolean lookForLine) {
+        for (int line = 0; line < nbLines; line++) {
+            for (int col = 0; col < nbCols; col++) {
+                Square s = grid[line][col];
+                if (s.containsWorker(w)) {
+                    // Found the guy, return line OR col number.
+                    if (lookForLine) {
+                        return line;
+                    } else {
+                        return col;
+                    }
+                }
+            }
+        }
+        // Did not find the worker
+        return -1;
+    }
+
+    /**
      * Search and return the worker that has the given ID, if it exists.
      *
      * @param id the requested ID
@@ -355,6 +393,10 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     public void addDatacube(int line, int col) {
         Square s = this.getSquare(line, col);
         this.addDatacube(s);
+    }
+
+    public void addDatacube(int line, int col, int value) {
+        this.getSquare(line, col).addDataCube(new DataCube(0, 0, value));
     }
 
     /**
@@ -628,20 +670,45 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     private void applyNotifications() {
 
         // Extract the pairs of WorkerMove notifications that lead to a worker swap
-        for (Notification n : notifList) {
-            if (n.getName().equals("WorkerMove")) {
+        for (Notification firstNotif : notifList) {
+            if (firstNotif.getName().equals("WorkerMove")) {
 
+                for (Notification secondNotif : notifList) {
+                    if (secondNotif.getName().equals("WorkerMove")) {
+
+                        if (firstNotif.isToBePerformed() && secondNotif.isToBePerformed()) {
+                            if (checkForSwap(firstNotif, secondNotif)) {
+
+                                Worker w0 = (Worker) (firstNotif.getObject());
+                                Worker w1 = (Worker) (secondNotif.getObject());
+
+                                swapWorkers((Worker) (firstNotif.getObject()), (Worker) (secondNotif.getObject()));
+                                // Movements done, notification fulfilled.
+                                firstNotif.setPerformed();
+                                secondNotif.setPerformed();
+
+                                w0.setCurrentAddress(w0.getCurrentAddress() + 1);
+                                w1.setCurrentAddress(w1.getCurrentAddress() + 1);
+                            }
+                        }
+                    }
+                }
             }
+            Notification n = new Notification("TerrainRepaint", null);
+            notifyObservers(n);
         }
 
+        // Process only the notification not already involved in a swap
         for (Notification n : notifList) {
-            switch (n.getName()) {
-            case "WorkerMove":
-                this.moveWorker((Worker) n.getObject(), n.getOptions());
-                break;
-            default:
-                System.out.println("    Terrain.applyNotification: other notification: " + n.getName());
-                break;
+            if (n.isToBePerformed()) {
+                switch (n.getName()) {
+                case "WorkerMove":
+                    this.moveWorker((Worker) n.getObject(), n.getOptions());
+                    break;
+                default:
+                    System.out.println("    Terrain.applyNotification: other notification: " + n.getName());
+                    break;
+                }
             }
         }
 
@@ -720,10 +787,6 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         return count;
     }
 
-    public void evaluateIf(Worker w, String conditions) {
-//        System.out.println("TerrainModel.evaluateIf(" + conditions + ");");
-    }
-
     private void branchWorker(Notification notif) {
 
         String options = notif.getOptions();
@@ -796,5 +859,68 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             return false;
         }
         return true;
+    }
+
+    /**
+     * Check if two movement notifications lead to two workers swapping places.
+     * Warning: behavior defined only for WorkerMove notifications.
+     *
+     * @param notif0 the first WorkerMove notification
+     * @param notif1 the second WorkerMove notification
+     * @return
+     */
+    private boolean checkForSwap(Notification notif0, Notification notif1) {
+        if (notif0.equals(notif1)) {
+            // Do not test a notification against itself.
+            return false;
+        }
+
+        String direction0 = notif0.getOptions();
+        String direction1 = notif1.getOptions();
+
+        Worker worker0 = (Worker) notif0.getObject();
+        Worker worker1 = (Worker) notif1.getObject();
+
+        int line0 = findWorkerLine(worker0);
+        int col0 = findWorkerColumn(worker0);
+        int line1 = findWorkerLine(worker1);
+        int col1 = findWorkerColumn(worker1);
+
+        switch (direction0) {
+        case "N":
+            if (direction1.equals("S") && line0 == line1 + 1 && col0 == col1) {
+                return true;
+            }
+            break;
+        case "S":
+            if (direction1.equals("N") && line0 == line1 - 1 && col0 == col1) {
+                return true;
+            }
+            break;
+        case "E":
+            if (direction1.equals("W") && line0 == line1 && col0 == col1 - 1) {
+                return true;
+            }
+            break;
+        case "W":
+            if (direction1.equals("E") && line0 == line1 && col0 == col1 + 1) {
+                return true;
+            }
+            break;
+        default:
+            break;
+        }
+
+        return false;
+    }
+
+    private void swapWorkers(Worker worker0, Worker worker1) {
+
+        Square s0 = findWorker(worker0);
+        Square s1 = findWorker(worker1);
+        s0.removeWorker();
+        s1.removeWorker();
+        s0.receiveWorker(worker1);
+        s1.receiveWorker(worker0);
     }
 }

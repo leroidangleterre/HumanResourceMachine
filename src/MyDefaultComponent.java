@@ -129,7 +129,6 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
 
     public void setX0(double newX0) {
         this.x0 = newX0;
-//        System.out.println("x0: " + this.x0);
         repaint();
     }
 
@@ -139,7 +138,6 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
 
     public void setY0(double newY0) {
         this.y0 = newY0;
-//        System.out.println("y0: " + this.y0);
         repaint();
     }
 

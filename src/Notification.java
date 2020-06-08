@@ -13,10 +13,18 @@ public class Notification {
     private Object content;
     private String options;
 
+    private boolean toBePerformed; // The action may be performed only when notif has not been completed yet.
+
+    private static int NB_NOTIFS_CREATED = 0;
+    private int serial;
+
     public Notification(String nameParam, Object contentParam, String optionsParam) {
         name = nameParam;
         content = contentParam;
         options = optionsParam;
+        toBePerformed = true;
+        serial = NB_NOTIFS_CREATED;
+        NB_NOTIFS_CREATED++;
     }
 
     public Notification(String nameParam, Object contentParam) {
@@ -56,5 +64,13 @@ public class Notification {
         } else {
             options += " " + newOption;
         }
+    }
+
+    public void setPerformed() {
+        this.toBePerformed = false;
+    }
+
+    public boolean isToBePerformed() {
+        return toBePerformed;
     }
 }
