@@ -18,4 +18,11 @@ public class Input extends Square {
     public Input(double x, double y, double size) {
         super(x, y, size, new Color(255, 120, 0));
     }
+
+    @Override
+    protected boolean isEmpty() {
+        // An input is never empty.
+        return false;
+    }
+
 }

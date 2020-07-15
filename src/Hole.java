@@ -18,4 +18,10 @@ public class Hole extends Square {
     public Hole(double x, double y, double size) {
         super(x, y, size, new Color(0, 0, 0));
     }
+
+    @Override
+    protected boolean isEmpty() {
+        // A hole is always empty.
+        return true;
+    }
 }

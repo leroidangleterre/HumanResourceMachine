@@ -11,16 +11,6 @@ public class NoInstructionModel extends InstructionModel {
         text = "NoOp";
     }
 
-    /**
-     * Set the worker's next address to the next address.
-     *
-     */
-    @Override
-    public void execute(int date, Worker w) {
-        super.execute(date, w);
-        w.setCurrentAddress(w.getCurrentAddress() + 1);
-    }
-
     public void setText(String newText) {
         this.text = newText;
     }

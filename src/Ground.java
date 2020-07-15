@@ -18,4 +18,9 @@ public class Ground extends Square {
     public Ground(double x, double y, double size) {
         super(x, y, size, new Color(200, 200, 200));
     }
+
+    @Override
+    protected boolean isEmpty() {
+        return !(this.containsDataCube() || this.containsWorker());
+    }
 }

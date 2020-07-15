@@ -177,6 +177,9 @@ public class Script extends MyDefaultComponent implements Observer {
         case "MOVE":
             newInst = new MoveInstruction();
             break;
+        case "PUSH":
+            newInst = new PushInstruction();
+            break;
         case "PICKUP":
             newInst = new PickupInstruction();
             break;
@@ -856,6 +859,9 @@ public class Script extends MyDefaultComponent implements Observer {
         } else if (text.contains("Move")) {
             CardinalPoint direction = CardinalPoint.valueOf(text.split(" ")[1]);
             inst = new MoveInstruction(direction);
+        } else if (text.contains("Push")) {
+            CardinalPoint direction = CardinalPoint.valueOf(text.split(" ")[1]);
+            inst = new PushInstruction(direction);
         } else if (text.contains("Drop")) {
             inst = new DropInstruction();
         } else if (text.contains("Jump")) {

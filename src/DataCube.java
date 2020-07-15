@@ -41,7 +41,7 @@ public class DataCube extends MyDefaultComponent {
     }
 
     public DataCube(double xParam, double yParam) {
-        this(xParam, yParam, new Random().nextInt(99));
+        this(xParam, yParam, NB_CUBES);
     }
 
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {

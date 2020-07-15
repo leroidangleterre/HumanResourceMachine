@@ -46,6 +46,13 @@ public class Worker implements Observable {
      */
     private int date;
 
+    /**
+     * The maximum amount of consecutive datacubes that a worker is able to
+     * push.
+     *
+     */
+    private int pushAmount;
+
     public Worker() {
         x = 0;
         y = 0;
@@ -66,6 +73,8 @@ public class Worker implements Observable {
         }
         currentHeading = CardinalPoint.SOUTH;
         currentImage = imageSouth;
+
+        pushAmount = 2;
     }
 
     public void setPosition(double xParam, double yParam) {
@@ -223,5 +232,9 @@ public class Worker implements Observable {
 
     public int getCubeValue() {
         return dataCube.getValue();
+    }
+
+    public int getPushAmount() {
+        return this.pushAmount;
     }
 }

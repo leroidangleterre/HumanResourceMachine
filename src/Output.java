@@ -18,4 +18,10 @@ public class Output extends Square {
     public Output(double x, double y, double size) {
         super(x, y, size, new Color(255, 0, 0));
     }
+
+    @Override
+    protected boolean isEmpty() {
+        // An output is never empty.
+        return false;
+    }
 }

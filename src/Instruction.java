@@ -103,6 +103,18 @@ public class Instruction extends MyDefaultComponent {
         }
     }
 
+    // Paint the name of the instruction.
+    protected void paintName(Graphics g, int panelHeight, double x0, double y0, double zoom) {
+
+        int xDisplay = (int) x0 + this.x;
+        int yDisplay = (int) (panelHeight - (y0 + this.y));
+
+        String text = model.getName();
+        g.setColor(Color.black);
+        setFont(g);
+        g.drawChars(text.toCharArray(), 0, text.length(), xDisplay, yDisplay + g.getFont().getSize());
+    }
+
     /**
      * Tell if the instruction spans over the given y-coordinate, regardless of
      * the x position and width.

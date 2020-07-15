@@ -540,6 +540,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
 
         switch (notif.getName()) {
         case "WorkerMove": // TODO replace this with MoveInstruction.getName();
+        case "WorkerPush":
             // The movement request must be stored now and applied when all move requests have been received for the current step.
             notifList.add(notif);
             break;
@@ -669,9 +670,9 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
 
     private void applyNotifications() {
 
-        // Extract the pairs of WorkerMove notifications that lead to a worker swap
         for (Notification firstNotif : notifList) {
             if (firstNotif.getName().equals("WorkerMove")) {
+                // Extract the pairs of WorkerMove notifications that lead to a worker swap
 
                 for (Notification secondNotif : notifList) {
                     if (secondNotif.getName().equals("WorkerMove")) {
@@ -698,15 +699,17 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             notifyObservers(n);
         }
 
-        // Process only the notification not already involved in a swap
+        // Process only the notifications not already involved in a swap
         for (Notification n : notifList) {
             if (n.isToBePerformed()) {
                 switch (n.getName()) {
                 case "WorkerMove":
                     this.moveWorker((Worker) n.getObject(), n.getOptions());
                     break;
+                case "WorkerPush":
+                    this.moveAndPush((Worker) n.getObject(), n.getOptions());
+                    break;
                 default:
-                    System.out.println("    Terrain.applyNotification: other notification: " + n.getName());
                     break;
                 }
             }
@@ -737,7 +740,8 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
      * Find in which line a given square is.
      *
      * @param s the required square
-     * @return the line number if the square is in the Terrain, -1 if it is not.
+     * @return the line number if the square is in the Terrain, -1 if it is
+     * not.
      */
     private int findLine(Square s) {
         int numLine = -1;
@@ -922,5 +926,110 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         s1.removeWorker();
         s0.receiveWorker(worker1);
         s1.receiveWorker(worker0);
+    }
+
+    /**
+     * Move a worker in a given direction and push the cubes that are in the
+     * way.
+     * Only a certain amount of consecutive cubes can be moved. If more cubes
+     * are aligned, nothing moves.
+     *
+     * @param w the moving worker
+     */
+    private void moveAndPush(Worker w, String direction) {
+        System.out.println("TerrainModel.moveAndPush(" + w + ")" + ", direction: " + direction + ": TODO");
+
+        int dLine = 0;
+        int dCol = 0;
+
+        Square startPoint = findWorker(w);
+        Square endPoint;
+
+        int startLine = this.findLine(startPoint);
+        int startCol = this.findColumn(startPoint);
+
+        switch (direction) {
+        case "N":
+            dLine--;
+            break;
+        case "S":
+            dLine++;
+            break;
+        case "E":
+            dCol++;
+            break;
+        case "W":
+            dCol--;
+            break;
+        default:
+            break;
+        }
+
+        // Compute the list of squares that are impacted.
+        // The first square contains the worker, the following squares contain datacubes;
+        // the move is legal only if the first square after the last datacube is defined and empty.
+        ArrayList<Square> squareChain = new ArrayList<>();
+        Square currentSquare = startPoint;
+        int currentLine = startLine;
+        int currentCol = startCol;
+
+        int nbConsecutiveDatacubes = 0;
+
+        do {
+            squareChain.add(currentSquare);
+//            System.out.println("adding " + (currentSquare.containsWorker() ? "worker" : "no worker")
+//                    + (currentSquare.containsDataCube() ? (" datacube " + currentSquare.getCubeValue()) : "  no datacube"));
+
+            if (currentSquare.containsDataCube()) {
+                nbConsecutiveDatacubes++;
+            }
+
+            currentLine += dLine;
+            currentCol += dCol;
+            currentSquare = getSquare(currentLine, currentCol);
+        } while (currentSquare != null && currentSquare.containsDataCube());
+        if (currentSquare != null) {
+            // First square without a cube
+            squareChain.add(currentSquare);
+        }
+
+//        System.out.println("chain length: " + squareChain.size());
+//        for (Square s : squareChain) {
+//            System.out.println("\t<" + s.getCubeValue() + ">");
+//        }
+        // Test the last square
+        if (currentSquare == null) {
+            // push outside
+            System.out.println("push outside");
+        } else if (currentSquare.containsWorker()) {
+            // Movement not allowed
+            System.out.println("cannot push a worker.");
+        } else {
+            if (nbConsecutiveDatacubes <= w.getPushAmount()) {
+                System.out.println("pushing");
+
+                for (int i = squareChain.size() - 1; i > 0; i--) {
+                    // Move the datacube from origin to target
+                    Square targetSquare = squareChain.get(i);
+                    Square originSquare = squareChain.get(i - 1);
+                    // Only if the target exists; otherwise the cube is lost.
+                    if (targetSquare != null) {
+                        System.out.println("\tpushing cube " + originSquare.getCubeValue());
+                        targetSquare.addDataCube(originSquare.removeDataCube());
+                    } else {
+                        System.out.println("\tNOT pushing cube " + originSquare.getCubeValue());
+                    }
+                }
+
+            } else {
+                System.out.println("Too many cubes.");
+            }
+        }
+
+        moveWorker(w, direction);
+//        w.setCurrentHeading(direction);
+//        w.setCurrentAddress(w.getCurrentAddress() + 1);
+//        Notification n = new Notification("TerrainRepaint", null);
+//        notifyObservers(n);
     }
 }

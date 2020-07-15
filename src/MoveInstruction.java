@@ -29,7 +29,7 @@ public class MoveInstruction extends Instruction {
         updateCompass();
     }
 
-    private void updateCompass() {
+    protected void updateCompass() {
         compass = new Compass();
         compass.setDirection(((MoveInstructionModel) model).getCardinalPoint());
 

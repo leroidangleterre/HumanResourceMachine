@@ -6,7 +6,7 @@ import java.awt.Graphics;
  *
  * @author arthurmanoha
  */
-public class Square {
+public abstract class Square {
 
     protected double xCenter, yCenter;
     protected double size;
@@ -154,8 +154,7 @@ public class Square {
     public void addDataCube(DataCube newCube) {
         if (newCube == null) {
             System.out.println("Error Square.addDataCube(" + newCube + ");");
-        }
-        if (this.containsDataCube()) {
+        } else if (this.containsDataCube()) {
             removeDataCube();
         } else {
             this.dataCube = newCube;
@@ -254,4 +253,6 @@ public class Square {
             return dataCube.getValue() + "";
         }
     }
+
+    protected abstract boolean isEmpty();
 }

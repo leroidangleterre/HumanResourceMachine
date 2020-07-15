@@ -9,7 +9,7 @@
  */
 public class MoveInstructionModel extends InstructionModel {
 
-    private CardinalPoint currentDirection;
+    protected CardinalPoint currentDirection;
 
     public MoveInstructionModel() {
         super();
@@ -66,46 +66,6 @@ public class MoveInstructionModel extends InstructionModel {
 //        System.out.println("Movecreate notification");
         Notification n = new Notification(this.getName(), null, this.getOptions());
         return n;
-    }
-
-    /**
-     * Apply a specific treatment to the worker. That includes updating the
-     * worker's current address (i.e. next instruction)
-     *
-     */
-    @Override
-    public void execute(int date, Worker w) {
-
-        // Mark this worker as trying to move in that direction.
-        //
-        // This shall be done by the Terrain.
-        //        w.moveInDirection(this.getCardinalPoint());
-//        w.setCurrentAddress(w.getCurrentAddress() + 1); // go to the next instruction
-        String directionString;
-        switch (this.currentDirection) {
-        case CENTER:
-            directionString = "C";
-            break;
-        case NORTH:
-            directionString = "N";
-            break;
-        case EAST:
-            directionString = "E";
-            break;
-        case SOUTH:
-            directionString = "S";
-            break;
-        case WEST:
-            directionString = "W";
-            break;
-        default:
-            directionString = "-";
-            break;
-        }
-        Notification notif = new Notification("InstructionMove", w, directionString);
-        notifyObservers(notif);
-
-        super.execute(date, w);
     }
 
     public String getOptions() {

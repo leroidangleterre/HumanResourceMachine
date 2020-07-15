@@ -18,4 +18,10 @@ public class Wall extends Square {
     public Wall(double x, double y, double size) {
         super(x, y, size, new Color(0, 0, 200));
     }
+
+    @Override
+    protected boolean isEmpty() {
+        // A wall is never empty.
+        return false;
+    }
 }

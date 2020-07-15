@@ -28,11 +28,12 @@ public class HumanResourceMachine {
 
         TerrainModel terrainModel = (TerrainModel) terrain.getModel();
 
-        int line = 5;
-        for (int col = 0; col < nbCols; col++) {
-            terrainModel.addDatacube(line, col);
-            terrainModel.addNewWorker(line, col);
+        int line = 13;
+        terrainModel.addNewWorker(line, 0);
+        for (int i = 1; i <= 2; i++) {
+            terrainModel.addDatacube(line - i, 0);
         }
+
         w.invalidate();
         w.revalidate();
     }

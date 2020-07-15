@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 
 /*
@@ -82,17 +81,6 @@ public class InstructionModel extends MyDefaultModel implements Observable {
 
     public int getSerial() {
         return serial;
-    }
-
-    /**
-     * Execute the instruction. This method must be overriden by the subclasses
-     * AND called by the overriding methods. NB: each instruction model must set
-     * the proper information to send to the TerrainModel.
-     */
-    public void execute(int date, Worker w) {
-        if (w.getDate() == date) {
-            w.setDate(w.getDate() + 1);
-        }
     }
 
     /**
