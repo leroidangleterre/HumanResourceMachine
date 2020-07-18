@@ -77,12 +77,23 @@ public class Worker implements Observable {
         pushAmount = 2;
     }
 
-    public void setPosition(double xParam, double yParam) {
-        x = xParam;
-        y = yParam;
+    public void setX(double newX) {
+        this.x = newX;
         if (dataCube != null) {
-            dataCube.setPosition(this.x, this.y);
+            dataCube.setX(newX);
         }
+    }
+
+    public void setY(double newY) {
+        this.y = newY;
+        if (dataCube != null) {
+            dataCube.setY(newY);
+        }
+    }
+
+    public void setPosition(double xParam, double yParam) {
+        setX(xParam);
+        setY(yParam);
     }
 
     public void setDate(int newDate) {

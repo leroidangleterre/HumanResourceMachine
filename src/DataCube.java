@@ -82,6 +82,14 @@ public class DataCube extends MyDefaultComponent {
         return (int) y;
     }
 
+    public void setX(double newX) {
+        x = newX;
+    }
+
+    public void setY(double newY) {
+        y = newY;
+    }
+
     public void setPosition(double newX, double newY) {
         x = newX;
         y = newY;

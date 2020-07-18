@@ -1,3 +1,7 @@
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -9,20 +13,40 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     // The grid that contains squares (walls, ground, ...) and in which workers evolve.
     protected Square[][] grid;
     // The dimensions of the grid.
-    private final int nbCols, nbLines;
-    private final double elemSize;
+    private int nbCols, nbLines;
+    private final double elemSize = 1;
     private ArrayList<Observer> observersList;
 
     private ArrayList<Notification> notifList;
 
     int nbCallsUpdate;
 
+    // Number of targets that must receive a datacube.
+    int nbTargets;
+
+    int nbMoves;
+
     public TerrainModel(int nbLines, int nbCols) {
 
         this.nbLines = nbLines;
         this.nbCols = nbCols;
+        initGrid();
+
+        observersList = new ArrayList<>();
+        notifList = new ArrayList<>();
+
+        nbCallsUpdate = 0;
+
+        loadSokoban();
+        nbMoves = 0;
+
+        Notification n = new Notification("TerrainRepaint", null);
+        notifyObservers(n);
+    }
+
+    private void initGrid() {
+
         grid = new Square[nbLines][];
-        elemSize = 1;
         for (int i = 0; i < nbLines; i++) {
             grid[i] = new Square[nbCols];
             for (int j = 0; j < nbCols; j++) {
@@ -36,11 +60,6 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         this.xMax = this.getSquare(0, this.nbCols - 1).getXMax();
         this.yMin = this.getSquare(this.nbLines - 1, 0).getYMin();
         this.yMax = this.getSquare(0, 0).getYMax();
-
-        observersList = new ArrayList<>();
-        notifList = new ArrayList<>();
-
-        nbCallsUpdate = 0;
     }
 
     @Override
@@ -485,8 +504,8 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
                 this.grid[line][col] = newSquare;
             }
             // Set the geographical coordinates of the square
-            newSquare.xCenter = (col + 0.5) * elemSize;
-            newSquare.yCenter = (nbLines - 0.5 - line);
+            newSquare.setX((col + 0.5) * elemSize);
+            newSquare.setY((nbLines - 0.5 - line));
 
             if (oldSquare.containsWorker()) {
                 newSquare.receiveWorker(oldSquare.removeWorker());
@@ -959,6 +978,10 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
                 }
             }
         }
+        if (evaluateScore() == 0) {
+            System.out.println("VICTORY ! " + nbMoves + " moves.");
+        }
+        nbMoves++;
     }
 
     /**
@@ -1018,7 +1041,12 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             /* Add squares to the list:
              * First square contains the current worker, each subsequent square contains a datacube;
              * The last square contains something else than a datacube (other worker, wall, ...)
+             * Special case: the worker is not supposed to be already on a cube. In that case, nothing moves.
              */
+            if (currentSquare.containsDataCube()) {
+                // A worker may not be on a cube.
+                return;
+            }
             do {
                 squareChain.add(currentSquare);
 
@@ -1030,6 +1058,10 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
                 currentCol += dCol;
                 currentSquare = getSquare(currentLine, currentCol);
             } while (currentSquare != null && (currentSquare.containsDataCube() || currentSquare.containsWorker(w)));
+            if (currentSquare instanceof Wall) {
+                // Cannot push or move through a wall.
+                return;
+            }
             // Add the first empty square that will receive the last cube (possibly null)
             squareChain.add(currentSquare);
 
@@ -1060,5 +1092,120 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         }
         Notification n = new Notification("TerrainRepaint", null);
         notifyObservers(n);
+    }
+
+    private void loadSokoban() {
+
+        try {
+
+            String path = "C:/Users/arthurmanoha/Documents/Programmation/Java/HumanResourceMachine/src/";
+            String filename = "sokoban-terrain.txt";
+
+            FileReader fileReader = new FileReader(path + filename);
+
+            BufferedReader reader = new BufferedReader(fileReader);
+            String text;
+
+            int line = 0, col;
+            nbLines = -1;
+            nbCols = -1;
+            nbTargets = 0;
+
+            while ((text = reader.readLine()) != null) {
+                if (nbLines == -1) {
+                    nbLines = Integer.valueOf(text);
+                } else if (nbCols == -1) {
+                    nbCols = Integer.valueOf(text);
+                    initGrid();
+                } else {
+                    col = 0;
+                    // Read a line that represents the terrain.
+                    for (char c : text.toCharArray()) {
+                        Square newSquare;
+                        switch (c) {
+                        case ' ':
+                            newSquare = new Ground();
+                            break;
+                        case '#':
+                            newSquare = new Wall();
+                            break;
+                        case '$':
+                            newSquare = new Ground();
+                            newSquare.addDataCube(new DataCube(0, 0));
+                            break;
+                        case '@':
+                            newSquare = new Ground();
+                            newSquare.receiveWorker(new Worker());
+                            break;
+                        case '.':
+                            newSquare = new Output();
+                            nbTargets++;
+                            break;
+                        default:
+                            newSquare = new Ground();
+                            System.out.println("TerrainModel: default square when reading sokoban: '" + c + "'");
+                            break;
+                        }
+                        setSquare(newSquare, line, col);
+                        col++;
+                    }
+                    line++;
+                }
+            }
+
+        } catch (FileNotFoundException ex) {
+            System.out.println("TerrainModel: Cannot load, sokoban file not found.");
+        } catch (IOException ex) {
+            System.out.println("TerrainModel: IOException");
+        }
+    }
+
+    /**
+     * The score is a value that get smaller when each datacube gets closer to
+     * the closest available output.
+     *
+     * @return the score of the current grid.
+     */
+    private int evaluateScore() {
+
+        int score = 0;
+
+        for (Square line[] : grid) {
+            for (Square currentSquare : line) {
+                if (currentSquare.containsDataCube()) {
+                    score += distanceToClosestFreeTarget(currentSquare);
+                }
+            }
+        }
+        return score;
+    }
+
+    private int distanceToClosestFreeTarget(Square currentSquare) {
+
+        int currentLine = findLine(currentSquare);
+        int currentCol = findColumn(currentSquare);
+        int minDistance = -1;
+
+        int line = 0;
+
+        for (Square[] array : grid) {
+            int col = 0;
+            for (Square s : array) {
+                if (s == currentSquare && s instanceof Output) {
+                    minDistance = 0;
+                } else {
+                    if (s instanceof Output && !s.containsDataCube()) {
+                        int currentDistance = Math.abs(currentLine - line) + Math.abs(currentCol - col);
+                        if (currentDistance < minDistance || minDistance == -1) {
+                            // Found a target closer to the previous one.
+                            minDistance = currentDistance;
+                        }
+                    }
+                }
+                col++;
+            }
+            line++;
+        }
+        return minDistance;
     }
 }

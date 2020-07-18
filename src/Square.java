@@ -70,6 +70,26 @@ public abstract class Square {
         return this.yCenter;
     }
 
+    public void setX(double newX) {
+        this.xCenter = newX;
+        if (this.containsDataCube()) {
+            this.dataCube.setX(newX);
+        }
+        if (this.containsWorker()) {
+            this.getWorker(this.getWorkerId()).setX(newX);
+        }
+    }
+
+    public void setY(double newY) {
+        this.yCenter = newY;
+        if (this.containsDataCube()) {
+            this.dataCube.setY(newY);
+        }
+        if (this.containsWorker()) {
+            this.getWorker(this.getWorkerId()).setY(newY);
+        }
+    }
+
     public double getXMin() {
         return this.xCenter - this.size / 2;
     }
