@@ -19,7 +19,8 @@ public class Terrain extends MyDefaultComponent implements Observer {
     }
 
     /**
-     * Compute the next state of the terrain. Each worker executes one step of
+     * Compute the next state of the terrain. Each worker executes one step
+     * of
      * the script.
      */
     public void evolve() {
@@ -232,5 +233,10 @@ public class Terrain extends MyDefaultComponent implements Observer {
      */
     public void resetWorkers() {
         ((TerrainModel) model).resetWorkers();
+    }
+
+    public void pushWorkers(String direction) {
+
+        ((TerrainModel) model).moveAndPush(direction);
     }
 }

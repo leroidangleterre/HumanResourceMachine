@@ -156,19 +156,19 @@ public class Worker implements Observable {
 
     public void setCurrentHeading(String newHeading) {
         switch (newHeading) {
-        case "N":
+        case "NORTH":
             currentHeading = CardinalPoint.NORTH;
             currentImage = imageNorth;
             break;
-        case "S":
+        case "SOUTH":
             currentHeading = CardinalPoint.SOUTH;
             currentImage = imageSouth;
             break;
-        case "E":
+        case "EAST":
             currentHeading = CardinalPoint.EAST;
             currentImage = imageEast;
             break;
-        case "W":
+        case "WEST":
             currentHeading = CardinalPoint.WEST;
             currentImage = imageWest;
             break;

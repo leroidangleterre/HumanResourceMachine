@@ -152,21 +152,21 @@ public abstract class Square {
      * @param newCube the newly added cube
      */
     public void addDataCube(DataCube newCube) {
-        if (newCube == null) {
-            System.out.println("Error Square.addDataCube(" + newCube + ");");
-        } else if (this.containsDataCube()) {
-            removeDataCube();
-        } else {
-            this.dataCube = newCube;
-            this.dataCube.setPosition(xCenter, yCenter);
+        if (newCube != null) {
+            if (this.containsDataCube()) {
+                removeDataCube();
+            } else {
+                this.dataCube = newCube;
+                this.dataCube.setPosition(xCenter, yCenter);
+            }
         }
     }
 
     /**
      * Remove and return the data cube from the square, if one exists.
      *
-     * @return null if no data cube occupies the square, or the data cube, which
-     * gets removed.
+     * @return null if no data cube occupies the square, or the data cube,
+     * which gets removed.
      */
     public DataCube removeDataCube() {
         DataCube result = this.dataCube;

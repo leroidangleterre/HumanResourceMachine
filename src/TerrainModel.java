@@ -351,16 +351,16 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         int dLine = 0;
         int dCol = 0;
         switch (direction) {
-        case "N":
+        case "NORTH":
             dLine--;
             break;
-        case "S":
+        case "SOUTH":
             dLine++;
             break;
-        case "E":
+        case "EAST":
             dCol++;
             break;
-        case "W":
+        case "WEST":
             dCol--;
             break;
         default:
@@ -929,107 +929,136 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     }
 
     /**
+     * Ask all workers to move and push cubes in the given direction.
+     *
+     * Set the date of each worker to zero, then increase it to one during
+     * moveAndPush, so that no worker makes the move several times (esp. if it
+     * walks south or east and gets examined during next column or line sweep).
+     *
+     * @param direction the direction in which the workers shall try to push
+     * cubes.
+     */
+    public void moveAndPush(String direction) {
+
+        for (Square[] list : grid) {
+            for (Square s : list) {
+                if (s.containsWorker()) {
+                    s.getWorker(s.getWorkerId()).setDate(0);
+                }
+            }
+        }
+        for (Square[] list : grid) {
+            for (Square s : list) {
+                // Move and push the worker of this square if there is one.
+                if (s.containsWorker()) {
+                    Worker w = s.getWorker(s.getWorkerId());
+                    if (w.getDate() == 0) {
+                        this.moveAndPush(w, direction);
+                        w.setDate(1);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Move a worker in a given direction and push the cubes that are in the
      * way.
      * Only a certain amount of consecutive cubes can be moved. If more cubes
-     * are aligned, nothing moves.
+     * are aligned, or if there is no square to receive the last cube, nothing
+     * moves.
      *
      * @param w the moving worker
      */
     private void moveAndPush(Worker w, String direction) {
-        System.out.println("TerrainModel.moveAndPush(" + w + ")" + ", direction: " + direction + ": TODO");
 
         int dLine = 0;
         int dCol = 0;
 
         Square startPoint = findWorker(w);
-        Square endPoint;
 
         int startLine = this.findLine(startPoint);
         int startCol = this.findColumn(startPoint);
 
         switch (direction) {
-        case "N":
+        case "NORTH":
             dLine--;
             break;
-        case "S":
+        case "SOUTH":
             dLine++;
             break;
-        case "E":
+        case "EAST":
             dCol++;
             break;
-        case "W":
+        case "WEST":
             dCol--;
             break;
         default:
+            // Invalid push direction
             break;
         }
 
-        // Compute the list of squares that are impacted.
-        // The first square contains the worker, the following squares contain datacubes;
-        // the move is legal only if the first square after the last datacube is defined and empty.
-        ArrayList<Square> squareChain = new ArrayList<>();
-        Square currentSquare = startPoint;
-        int currentLine = startLine;
-        int currentCol = startCol;
+        int endLine = startLine + dLine;
+        int endCol = startCol + dCol;
+        Square endPoint = this.getSquare(endLine, endCol);
 
-        int nbConsecutiveDatacubes = 0;
+        // Only try to push cubes if the worker tries to move (i.e. not fot CENTER).
+        if (dLine != 0 || dCol != 0) {
 
-        do {
-            squareChain.add(currentSquare);
-//            System.out.println("adding " + (currentSquare.containsWorker() ? "worker" : "no worker")
-//                    + (currentSquare.containsDataCube() ? (" datacube " + currentSquare.getCubeValue()) : "  no datacube"));
+            // Compute the list of squares that are impacted.
+            // The first square contains the worker, the following squares contain datacubes;
+            // the move is legal only if the first square after the last datacube is defined and empty.
+            ArrayList<Square> squareChain = new ArrayList<>();
+            Square currentSquare = startPoint;
+            int currentLine = startLine;
+            int currentCol = startCol;
 
-            if (currentSquare.containsDataCube()) {
-                nbConsecutiveDatacubes++;
-            }
+            int nbConsecutiveDatacubes = 0;
 
-            currentLine += dLine;
-            currentCol += dCol;
-            currentSquare = getSquare(currentLine, currentCol);
-        } while (currentSquare != null && currentSquare.containsDataCube());
-        if (currentSquare != null) {
-            // First square without a cube
-            squareChain.add(currentSquare);
-        }
+            /* Add squares to the list:
+             * First square contains the current worker, each subsequent square contains a datacube;
+             * The last square contains something else than a datacube (other worker, wall, ...)
+             */
+            do {
+                squareChain.add(currentSquare);
 
-//        System.out.println("chain length: " + squareChain.size());
-//        for (Square s : squareChain) {
-//            System.out.println("\t<" + s.getCubeValue() + ">");
-//        }
-        // Test the last square
-        if (currentSquare == null) {
-            // push outside
-            System.out.println("push outside");
-        } else if (currentSquare.containsWorker()) {
-            // Movement not allowed
-            System.out.println("cannot push a worker.");
-        } else {
-            if (nbConsecutiveDatacubes <= w.getPushAmount()) {
-                System.out.println("pushing");
-
-                for (int i = squareChain.size() - 1; i > 0; i--) {
-                    // Move the datacube from origin to target
-                    Square targetSquare = squareChain.get(i);
-                    Square originSquare = squareChain.get(i - 1);
-                    // Only if the target exists; otherwise the cube is lost.
-                    if (targetSquare != null) {
-                        System.out.println("\tpushing cube " + originSquare.getCubeValue());
-                        targetSquare.addDataCube(originSquare.removeDataCube());
-                    } else {
-                        System.out.println("\tNOT pushing cube " + originSquare.getCubeValue());
-                    }
+                if (currentSquare.containsDataCube()) {
+                    nbConsecutiveDatacubes++;
                 }
 
-            } else {
-                System.out.println("Too many cubes.");
-            }
-        }
+                currentLine += dLine;
+                currentCol += dCol;
+                currentSquare = getSquare(currentLine, currentCol);
+            } while (currentSquare != null && (currentSquare.containsDataCube() || currentSquare.containsWorker(w)));
+            // Add the first empty square that will receive the last cube (possibly null)
+            squareChain.add(currentSquare);
 
-        moveWorker(w, direction);
-//        w.setCurrentHeading(direction);
-//        w.setCurrentAddress(w.getCurrentAddress() + 1);
-//        Notification n = new Notification("TerrainRepaint", null);
-//        notifyObservers(n);
+            if (nbConsecutiveDatacubes == 0) {
+                moveWorker(w, direction);
+            } else if (nbConsecutiveDatacubes <= w.getPushAmount()) {
+
+                // Movement can only be done if the last datacube has somewhere to go.
+                if (squareChain.get(nbConsecutiveDatacubes + 1) != null) {
+                    for (int i = squareChain.size() - 1; i > 0; i--) {
+                        // Move the datacube from origin to target
+                        Square targetSquare = squareChain.get(i);
+                        Square originSquare = squareChain.get(i - 1);
+                        // Only if the target exists; otherwise the cube is lost.
+                        if (targetSquare != null) {
+                            targetSquare.addDataCube(originSquare.removeDataCube());
+                        }
+                    }
+
+                    startPoint.removeWorker();
+                    endPoint.receiveWorker(w);
+                    w.setCurrentHeading(direction);
+                }
+                // else last square does not exist.
+            }
+            // else there are too many cubes.
+
+        }
+        Notification n = new Notification("TerrainRepaint", null);
+        notifyObservers(n);
     }
 }

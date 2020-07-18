@@ -18,31 +18,34 @@ public class KeyboardListener implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
+
+        System.out.println("KeyboardListener.keyPressed()");
+
         if (panel == null) {
             System.out.println("KeyboardListener: panel is null");
         } else {
             switch (e.getKeyChar()) {
-                case '0':
+            case '0':
 //                    System.out.println("KeyboardListener: KeyPressed: resetView");
-                    panel.resetView();
-                    break;
-                case '4':
-                    panel.swipe(-1, 0);
-                    break;
-                case '6':
-                    panel.swipe(+1, 0);
-                    break;
-                case '8':
-                    panel.swipe(0, +1);
-                    break;
-                case '2':
-                    panel.swipe(0, -1);
-                    break;
-                case 'p':
+                panel.resetView();
+                break;
+            case '4':
+                panel.swipe(-1, 0);
+                break;
+            case '6':
+                panel.swipe(+1, 0);
+                break;
+            case '8':
+                panel.swipe(0, +1);
+                break;
+            case '2':
+                panel.swipe(0, -1);
+                break;
+            case 'p':
 //                    panel.togglePlayPause();
-                    break;
-                default:
-                    break;
+                break;
+            default:
+                break;
             }
         }
     }

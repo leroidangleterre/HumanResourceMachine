@@ -4,6 +4,8 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -15,7 +17,7 @@ import javax.swing.JSplitPane;
  *
  * @author arthurmanoha
  */
-public class Window extends JFrame {
+public class Window extends JFrame implements KeyListener {
 
     int WINDOW_WIDTH = 1600;
     int WINDOW_HEIGHT = 1000;
@@ -41,6 +43,8 @@ public class Window extends JFrame {
         this.pack();
 
         resetSizes();
+
+        this.addKeyListener(this);
 
         this.setVisible(true);
     }
@@ -93,9 +97,11 @@ public class Window extends JFrame {
                     ((MyDefaultComponent) (split.getRightComponent())).receiveCommand(text.toUpperCase());
                 }
             });
+            newButton.addKeyListener(this);
             buttonsPanel.add(newButton, rank);
             rank++;
         }
+        buttonsPanel.addKeyListener(this);
         this.add(buttonsPanel, BorderLayout.NORTH);
     }
 
@@ -192,5 +198,37 @@ public class Window extends JFrame {
         controlPanel.add(clearButton);
 
         this.add(controlPanel, BorderLayout.SOUTH);
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        CardinalPoint cardPoint;
+        switch (e.getKeyChar()) {
+        case '8':
+            cardPoint = CardinalPoint.NORTH;
+            break;
+        case '6':
+            cardPoint = CardinalPoint.EAST;
+            break;
+        case '4':
+            cardPoint = CardinalPoint.WEST;
+            break;
+        case '2':
+            cardPoint = CardinalPoint.SOUTH;
+            break;
+        default:
+            cardPoint = CardinalPoint.CENTER;
+            break;
+        }
+
+        ((Terrain) split.getLeftComponent()).pushWorkers(cardPoint.toString());
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
     }
 }

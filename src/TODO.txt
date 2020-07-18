@@ -8,6 +8,10 @@ When a Jump is placed in the script, the JumpInstr shall not be selected anymore
 
 Create a WHILE instruction in the same spirit as the IF.
 
+Add a "CLONE" command with a direction
+
+Add the inputs and outputs
+
 Improve compass to handle eight directions (N, NE, E, SE, S, SW, W, NW)
 Improve compass to handle multiple directions (randomly)
 Improve compass to select a direction by clicking the corresponding area inside the compass (nine radio-button equivalents).
@@ -32,6 +36,8 @@ Moving an instruction containing sub-instructions, such as If, shall translate a
 When a composite instruction is created (Jump or If), the targets shall appear immediately at the bottom of the main instruction, not at the address zero.
 
 DONE:
+
+Sokoban: enable cube pushing.
 
 Allow neighbor workers to swap places when they both request a move to each other's location.
 

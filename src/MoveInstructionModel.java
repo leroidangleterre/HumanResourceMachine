@@ -63,7 +63,6 @@ public class MoveInstructionModel extends InstructionModel {
 
     @Override
     public Notification createNotification() {
-//        System.out.println("Movecreate notification");
         Notification n = new Notification(this.getName(), null, this.getOptions());
         return n;
     }
@@ -72,19 +71,11 @@ public class MoveInstructionModel extends InstructionModel {
         String option = "";
         switch (this.currentDirection) {
         case CENTER:
-            option = "C";
-            break;
         case NORTH:
-            option = "N";
-            break;
         case SOUTH:
-            option = "S";
-            break;
         case EAST:
-            option = "E";
-            break;
         case WEST:
-            option = "W";
+            option = this.currentDirection.toString();
             break;
         default:
             option = "_";
