@@ -133,14 +133,13 @@ public class ScriptModel extends MyDefaultModel implements Observable {
         for (Worker w : workers) {
             // Find the correct instruction
             int currentAddress = w.getCurrentAddress();
-            if (currentAddress >= this.length()) {
-                System.out.println("Worker " + w + " has finished working.");
-            } else {
+            if (currentAddress < this.length()) {
                 InstructionModel inst = this.instructions.get(currentAddress);
                 Notification notif = inst.createNotification();
                 notif.setWorker(w);
                 notifyObservers(notif);
             }
+            // Else the worker has finished working.
         }
 
         // Replace the workers in the correct instructions for display.

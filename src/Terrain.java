@@ -1,5 +1,6 @@
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 /**
  *
@@ -15,7 +16,7 @@ public class Terrain extends MyDefaultComponent implements Observer {
         currentTool = TerrainTool.SELECTION;
 
         x0 = 46;
-        y0 = 251;
+        y0 = 80;
     }
 
     /**
@@ -238,5 +239,9 @@ public class Terrain extends MyDefaultComponent implements Observer {
     public void pushWorkers(String direction) {
 
         ((TerrainModel) model).moveAndPush(direction);
+    }
+
+    public ArrayList<Worker> getWorkers() {
+        return ((TerrainModel) model).getWorkers();
     }
 }

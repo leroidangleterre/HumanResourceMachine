@@ -22,8 +22,8 @@ public class Script extends MyDefaultComponent implements Observer {
     protected boolean newInstructionBeingCreated;
 
     double initX0 = 90;
-    double initY0 = 614;
-    double initZoom = 2;
+    double initY0 = 926;
+    double initZoom = 0.85;
 
     private final int indentationWidth = 25;
 
@@ -234,6 +234,12 @@ public class Script extends MyDefaultComponent implements Observer {
             break;
         default:
             break;
+        }
+    }
+
+    public void initWorkers(ArrayList<Worker> list) {
+        for (Worker w : list) {
+            ((ScriptModel) model).addWorker(w);
         }
     }
 

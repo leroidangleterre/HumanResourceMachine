@@ -352,6 +352,24 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     }
 
     /**
+     * Create and return the list of workers.
+     *
+     * @return the list containing all the workers of this terrain.
+     */
+    protected ArrayList<Worker> getWorkers() {
+        ArrayList<Worker> list = new ArrayList<>();
+        for (Square s : getSquares()) {
+            if (s.containsWorker()) {
+                Worker w = s.getWorker();
+                if (w != null) {
+                    list.add(w);
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
      * Move the given worker from its current position to its required position.
      * If the required position already contains a worker, the two workers are
      * swapped.
@@ -999,6 +1017,10 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         int dCol = 0;
 
         Square startPoint = findWorker(w);
+        if (startPoint == null) {
+            System.out.println("TerrainModel.movendPush: start point is null");
+            return;
+        }
 
         int startLine = this.findLine(startPoint);
         int startCol = this.findColumn(startPoint);
@@ -1058,38 +1080,42 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
                 currentCol += dCol;
                 currentSquare = getSquare(currentLine, currentCol);
             } while (currentSquare != null && (currentSquare.containsDataCube() || currentSquare.containsWorker(w)));
-            if (currentSquare instanceof Wall) {
-                // Cannot push or move through a wall.
-                return;
-            }
-            // Add the first empty square that will receive the last cube (possibly null)
-            squareChain.add(currentSquare);
 
-            if (nbConsecutiveDatacubes == 0) {
-                moveWorker(w, direction);
-            } else if (nbConsecutiveDatacubes <= w.getPushAmount()) {
+            // A worker may push or move only if no wall blocks the way.
+            if (!(currentSquare instanceof Wall)) {
 
-                // Movement can only be done if the last datacube has somewhere to go.
-                if (squareChain.get(nbConsecutiveDatacubes + 1) != null) {
-                    for (int i = squareChain.size() - 1; i > 0; i--) {
-                        // Move the datacube from origin to target
-                        Square targetSquare = squareChain.get(i);
-                        Square originSquare = squareChain.get(i - 1);
-                        // Only if the target exists; otherwise the cube is lost.
-                        if (targetSquare != null) {
-                            targetSquare.addDataCube(originSquare.removeDataCube());
-                        }
-                    }
+                // Add the first empty square that will receive the last cube (possibly null)
+                squareChain.add(currentSquare);
 
+                if (nbConsecutiveDatacubes == 0) {
                     startPoint.removeWorker();
                     endPoint.receiveWorker(w);
                     w.setCurrentHeading(direction);
-                }
-                // else last square does not exist.
-            }
-            // else there are too many cubes.
+                } else if (nbConsecutiveDatacubes <= w.getPushAmount()) {
 
+                    // Movement can only be done if the last datacube has somewhere to go.
+                    if (squareChain.get(nbConsecutiveDatacubes + 1) != null) {
+                        for (int i = squareChain.size() - 1; i > 0; i--) {
+                            // Move the datacube from origin to target
+                            Square targetSquare = squareChain.get(i);
+                            Square originSquare = squareChain.get(i - 1);
+                            // Only if the target exists; otherwise the cube is lost.
+                            if (targetSquare != null) {
+                                targetSquare.addDataCube(originSquare.removeDataCube());
+                            }
+                        }
+
+                        startPoint.removeWorker();
+                        endPoint.receiveWorker(w);
+                        w.setCurrentHeading(direction);
+                    }
+                    // else last square does not exist.
+                }
+                // else there are too many cubes.
+            }
         }
+        w.setCurrentAddress(w.getCurrentAddress() + 1);
+
         Notification n = new Notification("TerrainRepaint", null);
         notifyObservers(n);
     }
@@ -1135,7 +1161,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
                             break;
                         case '@':
                             newSquare = new Ground();
-                            newSquare.receiveWorker(new Worker());
+                            addNewWorker(newSquare);
                             break;
                         case '.':
                             newSquare = new Output();

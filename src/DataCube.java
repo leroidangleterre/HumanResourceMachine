@@ -14,7 +14,7 @@ public class DataCube extends MyDefaultComponent {
     private double x, y;
     private double size = 0.5;
 
-    private double defaultZoomFactor = 0.001;
+    private double defaultZoomFactor = 0.015;
 
     private int value;
 

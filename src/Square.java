@@ -157,6 +157,15 @@ public abstract class Square {
         }
     }
 
+    /**
+     * Return the worker contained in this square if it exists.
+     *
+     * @return the worker.
+     */
+    public Worker getWorker() {
+        return this.worker;
+    }
+
     public boolean containsDataCube() {
         return (this.dataCube != null);
     }

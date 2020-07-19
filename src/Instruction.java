@@ -189,4 +189,8 @@ public class Instruction extends MyDefaultComponent {
     public String toString() {
         return model.toString();
     }
+
+    public int getNbWorkers() {
+        return model.getNbWorkers();
+    }
 }

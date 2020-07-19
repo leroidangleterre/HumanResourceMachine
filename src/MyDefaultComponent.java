@@ -38,8 +38,8 @@ public abstract class MyDefaultComponent extends JPanel implements MouseListener
     protected double xRightClick, yRightClick;
     protected boolean leftClickIsActive, wheelClickIsActive;
 
-    private static int COMPONENT_WIDTH = 800;
-    private static int COMPONENT_HEIGHT = 700;
+    private static int COMPONENT_WIDTH = 50;
+    private static int COMPONENT_HEIGHT = 50;
 
     protected double textRelativeSize = 0.7;
     private String fontName = "Arial";

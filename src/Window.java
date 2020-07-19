@@ -24,6 +24,7 @@ public class Window extends JFrame implements KeyListener {
 
     JSplitPane split;
     private static final double SPLIT_PANE_HALF = 0.5;
+    private static final double SPLIT_PANE_EIGHTY = .8;
 
     private JPanel buttonsPanel;
     private JPanel controlPanel;
@@ -52,14 +53,14 @@ public class Window extends JFrame implements KeyListener {
     public Window(MyDefaultComponent leftComponent, MyDefaultComponent rightComponent) {
         this();
         split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        split.setDividerLocation(SPLIT_PANE_HALF);
+//        split.setDividerLocation(SPLIT_PANE_HALF);
         split.add(leftComponent);
         split.add(rightComponent);
         this.add(split, BorderLayout.CENTER);
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         if (split != null) {
-            split.setResizeWeight(SPLIT_PANE_HALF);
-            split.setDividerLocation(SPLIT_PANE_HALF);
+            split.setResizeWeight(SPLIT_PANE_EIGHTY);
+            split.setDividerLocation(SPLIT_PANE_EIGHTY);
         }
         repaint();
     }
@@ -122,6 +123,7 @@ public class Window extends JFrame implements KeyListener {
                 script.step();
             }
         });
+        stepButton.addKeyListener(this);
 
         JButton playPauseButton = new JButton("Play");
         playPauseButton.addActionListener(new ActionListener() {
@@ -137,6 +139,7 @@ public class Window extends JFrame implements KeyListener {
                 }
             }
         });
+        playPauseButton.addKeyListener(this);
 
         JButton fasterButton = new JButton("+++");
         fasterButton.addActionListener(new ActionListener() {
@@ -146,6 +149,7 @@ public class Window extends JFrame implements KeyListener {
                 script.increaseSpeed(true);
             }
         });
+        fasterButton.addKeyListener(this);
 
         JButton slowerButton = new JButton("---");
         slowerButton.addActionListener(new ActionListener() {
@@ -155,6 +159,7 @@ public class Window extends JFrame implements KeyListener {
                 script.increaseSpeed(false);
             }
         });
+        slowerButton.addKeyListener(this);
 
         JButton saveScriptButton = new JButton("Save script");
         saveScriptButton.addActionListener(new ActionListener() {
@@ -163,6 +168,7 @@ public class Window extends JFrame implements KeyListener {
                 ((Script) split.getRightComponent()).save();
             }
         });
+        saveScriptButton.addKeyListener(this);
 
         JButton loadScriptButton = new JButton("Load script");
         loadScriptButton.addActionListener(new ActionListener() {
@@ -171,6 +177,7 @@ public class Window extends JFrame implements KeyListener {
                 ((Script) split.getRightComponent()).load();
             }
         });
+        loadScriptButton.addKeyListener(this);
         JButton clearButton = new JButton("clear");
         clearButton.addActionListener(new ActionListener() {
             @Override
@@ -178,7 +185,7 @@ public class Window extends JFrame implements KeyListener {
                 ((Script) split.getRightComponent()).clear();
             }
         });
-
+        clearButton.addKeyListener(this);
         JButton resetWorkersButton = new JButton("Reset workers");
         resetWorkersButton.addActionListener(new ActionListener() {
             @Override
@@ -187,6 +194,7 @@ public class Window extends JFrame implements KeyListener {
                 repaint();
             }
         });
+        resetWorkersButton.addKeyListener(this);
 
         controlPanel.add(stepButton);
         controlPanel.add(playPauseButton);

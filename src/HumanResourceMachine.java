@@ -26,6 +26,8 @@ public class HumanResourceMachine {
 
         script.load();
 
+        script.initWorkers(terrain.getWorkers());
+
         TerrainModel terrainModel = (TerrainModel) terrain.getModel();
 
         w.invalidate();
