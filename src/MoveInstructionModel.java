@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.Random;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -9,47 +12,34 @@
  */
 public class MoveInstructionModel extends InstructionModel {
 
-    private CardinalPoint currentDirection;
+    private CompassModel currentDirection;
 
     public MoveInstructionModel() {
         super();
-        currentDirection = CardinalPoint.NORTH;
+        currentDirection = new CompassModel();
     }
 
     public MoveInstructionModel(CardinalPoint newCardPoint) {
         this();
-        currentDirection = newCardPoint;
+        currentDirection.setValue(newCardPoint);
     }
 
     public CardinalPoint getCardinalPoint() {
-        return this.currentDirection;
-    }
-
-    public void toggleDirection() {
-
-        switch (currentDirection) {
-        case NORTH:
-            currentDirection = CardinalPoint.EAST;
-            break;
-        case EAST:
-            currentDirection = CardinalPoint.SOUTH;
-            break;
-        case SOUTH:
-            currentDirection = CardinalPoint.WEST;
-            break;
-        case WEST:
-            currentDirection = CardinalPoint.CENTER;
-            break;
-        case CENTER:
-            currentDirection = CardinalPoint.NORTH;
-            break;
-        default:
-            break;
+//        System.out.println("MoveInstrModel.getCardinalPoint: returns only one possible direction.");
+        if (currentDirection.getCurrentDirections().size() > 0) {
+            return currentDirection.getCurrentDirections().get(0);
+        } else {
+            return null;
         }
     }
 
+    public void toggleDirection() {
+//        System.out.println("MoveInstructionModel.toggleDirection: TODO");
+//        currentDirection.toggle(CardinalPoint.NORTH);
+    }
+
     public void setDirection(CardinalPoint newCardPoint) {
-        this.currentDirection = newCardPoint;
+        currentDirection.setValue(newCardPoint);
     }
 
     /**
@@ -82,26 +72,13 @@ public class MoveInstructionModel extends InstructionModel {
         //        w.moveInDirection(this.getCardinalPoint());
 //        w.setCurrentAddress(w.getCurrentAddress() + 1); // go to the next instruction
         String directionString;
-        switch (this.currentDirection) {
-        case CENTER:
-            directionString = "C";
-            break;
-        case NORTH:
-            directionString = "N";
-            break;
-        case EAST:
-            directionString = "E";
-            break;
-        case SOUTH:
-            directionString = "S";
-            break;
-        case WEST:
-            directionString = "W";
-            break;
-        default:
-            directionString = "-";
-            break;
-        }
+
+        ArrayList<CardinalPoint> possibleDirections = currentDirection.getCurrentDirections();
+
+        // Choose one direction among the available ones. If only one exists, choose that one.
+        int index = new Random().nextInt(possibleDirections.size());
+        directionString = possibleDirections.get(index).toString();
+
         Notification notif = new Notification("InstructionMove", w, directionString);
         notifyObservers(notif);
 
@@ -110,26 +87,27 @@ public class MoveInstructionModel extends InstructionModel {
 
     public String getOptions() {
         String option = "";
-        switch (this.currentDirection) {
-        case CENTER:
-            option = "C";
-            break;
-        case NORTH:
-            option = "N";
-            break;
-        case SOUTH:
-            option = "S";
-            break;
-        case EAST:
-            option = "E";
-            break;
-        case WEST:
-            option = "W";
-            break;
-        default:
-            option = "_";
-            break;
-        }
+        System.out.println("MoveInstructionModel.getOptions(): TODO");
+//        switch (this.currentDirection) {
+//        case CENTER:
+        option = "C";
+//            break;
+//        case NORTH:
+//            option = "N";
+//            break;
+//        case SOUTH:
+//            option = "S";
+//            break;
+//        case EAST:
+//            option = "E";
+//            break;
+//        case WEST:
+//            option = "W";
+//            break;
+//        default:
+//            option = "_";
+//            break;
+//        }
         return option;
     }
 

@@ -56,10 +56,10 @@ public class Worker implements Observable {
 
         if (imageNorth == null) {
             try {
-                imageNorth = ImageIO.read(new File("C:\\Users\\arthurmanoha\\Documents\\Programmation\\Java\\HumanResourceMachine\\src\\img_worker_north.png"));
-                imageSouth = ImageIO.read(new File("C:\\Users\\arthurmanoha\\Documents\\Programmation\\Java\\HumanResourceMachine\\src\\img_worker_south.png"));
-                imageEast = ImageIO.read(new File("C:\\Users\\arthurmanoha\\Documents\\Programmation\\Java\\HumanResourceMachine\\src\\img_worker_east.png"));
-                imageWest = ImageIO.read(new File("C:\\Users\\arthurmanoha\\Documents\\Programmation\\Java\\HumanResourceMachine\\src\\img_worker_west.png"));
+                imageNorth = ImageIO.read(new File(HumanResourceMachine.path + "\\img\\img_worker_north.png"));
+                imageSouth = ImageIO.read(new File(HumanResourceMachine.path + "\\img\\img_worker_south.png"));
+                imageEast = ImageIO.read(new File(HumanResourceMachine.path + "\\img\\img_worker_east.png"));
+                imageWest = ImageIO.read(new File(HumanResourceMachine.path + "\\img\\img_worker_west.png"));
             } catch (IOException e) {
                 System.out.println("Worker images loading failed.");
             }
@@ -162,6 +162,10 @@ public class Worker implements Observable {
         case "W":
             currentHeading = CardinalPoint.WEST;
             currentImage = imageWest;
+            break;
+        case "C":
+            currentHeading = CardinalPoint.CENTER;
+            currentImage = imageSouth;
             break;
         default:
             System.out.println("Worker.setCurrentHeading - invalid parameter: " + newHeading);

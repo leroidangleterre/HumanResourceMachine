@@ -11,6 +11,11 @@ import java.awt.event.MouseEvent;
 public class MoveInstruction extends Instruction {
 
     private Compass compass;
+
+    private int xCompass, yCompass;
+    private int compassSize;
+    private double textRelativeX = 0.01;
+
     // Between 0.0 (the direction is a point) and 1.0 (the direction takes the whole height of the instruction)
     private double directionRelativeSize = 0.9;
 
@@ -31,7 +36,7 @@ public class MoveInstruction extends Instruction {
 
     private void updateCompass() {
         compass = new Compass();
-        compass.setDirection(((MoveInstructionModel) model).getCardinalPoint());
+        compass.set(((MoveInstructionModel) model).getCardinalPoint());
 
         int directionSize = (int) (directionRelativeSize * this.height);
         compass.setSize(directionSize, directionSize);
@@ -65,13 +70,21 @@ public class MoveInstruction extends Instruction {
         int xDisplay = (int) x0 + this.x;
         int yDisplay = (int) (panelHeight - (y0 + this.y));
 
+        String text = "Move";
+        g.setColor(Color.orange);
+        setFont(g);
+        int xText = (int) (xDisplay + textRelativeX * this.width * zoom);
+        g.drawChars(text.toCharArray(), 0, text.length(),
+                xText, yDisplay + g.getFont().getSize());
+
         // Paint the direction on the right-hand side of the instruction
-        int xDir = (int) (xDisplay + (width - 0.5 * (height + height * directionRelativeSize)) * zoom);
+        xCompass = (int) (xDisplay + (width - 0.5 * (height + height * directionRelativeSize)) * zoom);
 
-        int yDir = (int) (yDisplay + 0.5 * (height - height * directionRelativeSize) * zoom);
+        yCompass = (int) (yDisplay + 0.5 * (height - height * directionRelativeSize) * zoom);
 
-        compass.setPos(xDir, yDir);
-        compass.setSize((int) (height * zoom * directionRelativeSize), (int) (height * zoom * directionRelativeSize));
+        compass.setPos(xCompass, yCompass);
+        compassSize = (int) (height * zoom * directionRelativeSize);
+        compass.setSize(compassSize, compassSize);
 
         compass.paint(g, panelHeight, x0, y0, zoom);
     }
@@ -86,16 +99,19 @@ public class MoveInstruction extends Instruction {
     public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
 
+        int xClick = e.getX();
+        int yClick = e.getY();
         // Switch direction with right click
         if (e.getButton() == MouseEvent.BUTTON3) {
-            toggleDirection();
+            if (xClick >= xCompass) {
+                compass.mousePressed(e);
+            }
         }
     }
 
-    private void toggleDirection() {
-        ((MoveInstructionModel) model).toggleDirection();
-        compass.setDirection(((MoveInstructionModel) model).getCardinalPoint());
-        repaint();
-    }
-
+//    private void toggleDirection() {
+//        ((MoveInstructionModel) model).toggleDirection();
+//        compass.toggleDirection(((MoveInstructionModel) model).getCardinalPoint());
+//        repaint();
+//    }
 }

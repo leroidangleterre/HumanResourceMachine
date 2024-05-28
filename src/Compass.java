@@ -1,13 +1,15 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 /**
- * This component is a button with an arrow oriented in one of the four possible
- * directions: N, S, E or W.
+ * This component is a button with an arrow oriented in one of the eight
+ * possible directions: N, S, E, W, NE, SE, SW, NW.
  *
  * @author arthurmanoha
  */
-public class Compass {
+public class Compass extends MyDefaultComponent {
 
     private static int NB_DIR_CREATED = 0;
     private int serial;
@@ -20,14 +22,18 @@ public class Compass {
     // Position in pixels
     private int x, y;
 
-    private CardinalPoint currentDirection;
-
     public Compass() {
         serial = NB_DIR_CREATED;
         NB_DIR_CREATED++;
-        currentDirection = CardinalPoint.NORTH;
+
+        model = new CompassModel();
 
         color = Color.orange;
+    }
+
+    public Compass(boolean allowMultiple) {
+        this();
+        ((CompassModel) model).setAllowMultipleDirections(allowMultiple);
     }
 
     public void setPos(int newX, int newY) {
@@ -44,14 +50,21 @@ public class Compass {
     public void paint(Graphics g, int panelHeight, double x0, double y0, double zoom) {
         g.setColor(this.color);
 
-        int xDisplay = this.x;
-        int yDisplay = this.y;
+        g.fillRect(x, y, (int) (width), (int) (height));
 
-        g.fillRect(xDisplay, yDisplay, (int) (width), (int) (height));
-        if (currentDirection != null) {
-            int arrowSize = width / 2;
-            paintArrow(g, xDisplay + width / 2, yDisplay + width / 2, arrowSize, currentDirection);
+        g.setColor(Color.black);
+        g.drawLine(x + width / 3, y, x + width / 3, y + height);
+        g.drawLine(x + 2 * width / 3, y, x + 2 * width / 3, y + height);
+        g.drawLine(x, y + height / 3, x + width, y + height / 3);
+        g.drawLine(x, y + 2 * height / 3, x + width, y + 2 * height / 3);
+
+        int arrowSize = width / 2;
+        for (CardinalPoint currentDirection : getCurrentDirections()) {
+            if (currentDirection != null) {
+                paintArrow(g, x + width / 2, y + width / 2, arrowSize, currentDirection);
+            }
         }
+
     }
 
     /**
@@ -68,18 +81,48 @@ public class Compass {
         int xTop, xLeft, xRight;
         int yTop, yLeft, yRight;
         double angle;
+        double xArrow = 0;
+        double yArrow = 0;
         switch (cardinal) {
         case EAST:
-            angle = 0;
+            angle = 0 * Math.PI / 4;
+            xArrow = xCenter + 2 * size / 3;
+            yArrow = yCenter;
             break;
-        case NORTH:
-            angle = -Math.PI / 2;
-            break;
-        case WEST:
-            angle = Math.PI;
+        case SOUTH_EAST:
+            angle = 1 * Math.PI / 4;
+            xArrow = xCenter + 2 * size / 3;
+            yArrow = yCenter + 2 * size / 3;
             break;
         case SOUTH:
-            angle = Math.PI / 2;
+            angle = 2 * Math.PI / 4;
+            xArrow = xCenter;
+            yArrow = yCenter + 2 * size / 3;
+            break;
+        case SOUTH_WEST:
+            angle = 3 * Math.PI / 4;
+            xArrow = xCenter - 2 * size / 3;
+            yArrow = yCenter + 2 * size / 3;
+            break;
+        case WEST:
+            angle = 4 * Math.PI / 4;
+            xArrow = xCenter - 2 * size / 3;
+            yArrow = yCenter;
+            break;
+        case NORTH_WEST:
+            angle = 5 * Math.PI / 4;
+            xArrow = xCenter - 2 * size / 3;
+            yArrow = yCenter - 2 * size / 3;
+            break;
+        case NORTH:
+            angle = 6 * Math.PI / 4;
+            xArrow = xCenter;
+            yArrow = yCenter - 2 * size / 3;
+            break;
+        case NORTH_EAST:
+            angle = 7 * Math.PI / 4;
+            xArrow = xCenter + 2 * size / 3;
+            yArrow = yCenter - 2 * size / 3;
             break;
         default:
             angle = 0;
@@ -90,76 +133,144 @@ public class Compass {
         } else {
             double cosA = Math.cos(angle);
             double sinA = Math.sin(angle);
-            xTop = (int) (size * cosA);
-            yTop = (int) (size * sinA);
-            xLeft = (int) (size * cosA / 2 - size * sinA / 4);
-            yLeft = (int) (size * sinA / 2 - size * cosA / 4);
-            xRight = (int) (size * cosA / 2 + size * sinA / 4);
-            yRight = (int) (size * sinA / 2 + size * cosA / 4);
+            double arrowLength = size / 2;
+            double arrowWidth = 0.3 * size;
+            xTop = (int) (xArrow + 2 * arrowLength / 3 * cosA);
+            yTop = (int) (yArrow + 2 * arrowLength / 3 * sinA);
+            xLeft = (int) (xArrow - arrowLength / 3 * cosA - arrowWidth * sinA);
+            yLeft = (int) (yArrow + arrowWidth * cosA + (-arrowLength / 3) * sinA);
+            xRight = (int) (xArrow - arrowLength / 3 * cosA + arrowWidth * sinA);
+            yRight = (int) (yArrow - arrowWidth * cosA + (-arrowLength / 3) * sinA);
 
-            int xPoints[] = {xTop + xCenter, xLeft + xCenter, xRight + xCenter};
-            int yPoints[] = {yTop + yCenter, yLeft + yCenter, yRight + yCenter};
+            int xPoints[] = {xTop, xLeft, xRight};
+            int yPoints[] = {yTop, yLeft, yRight};
 
             g.fillPolygon(xPoints, yPoints, 3);
         }
     }
 
-    public void setDirection(CardinalPoint newDirection) {
-        this.currentDirection = newDirection;
+    /**
+     * Toggle a single cardinal point for this compass.
+     *
+     * @param newDirection if that direction was active, it will be turned off;
+     * otherwise it will be activated.
+     */
+    private void toggleDirection(CardinalPoint newDirection) {
+        System.out.println("Compass.toggleDirection(" + newDirection + ");");
+        ((CompassModel) model).toggle(newDirection);
+        repaint();
     }
 
+    public void set(CardinalPoint newDirection) {
+        ((CompassModel) model).setValue(newDirection);
+        repaint();
+    }
+
+    /**
+     * Get the single direction of this compass.
+     *
+     * @return a single CardinalPoint if the compass has only one direction
+     * activated, null otherwise.
+     */
     public CardinalPoint getCurrentDirection() {
-//        System.out.println("Compass " + serial + " getCurrentDirection is " + currentDirection);
-        return currentDirection;
+        return ((CompassModel) model).getValue();
+    }
+
+    /**
+     * Get all the active directions.
+     *
+     * @return the list of active directions
+     */
+    public ArrayList<CardinalPoint> getCurrentDirections() {
+        return ((CompassModel) model).getCurrentDirections();
     }
 
     public String toString() {
 //        System.out.println("Compass " + serial + " toString: <" + currentDirection.toString() + ">");
-        return currentDirection.toString();
-    }
-
-    /**
-     * Take the next possible value, in the order N -> E -> S -> W -> C
-     *
-     */
-    public void toggle() {
-        switch (currentDirection) {
-        case NORTH:
-            currentDirection = CardinalPoint.EAST;
-            break;
-        case EAST:
-            currentDirection = CardinalPoint.SOUTH;
-            break;
-        case SOUTH:
-            currentDirection = CardinalPoint.WEST;
-            break;
-        case WEST:
-            currentDirection = CardinalPoint.CENTER;
-            break;
-        case CENTER:
-            currentDirection = CardinalPoint.NORTH;
-            break;
-        default:
-        // No change
-        }
+        return ((CompassModel) model).getCurrentDirections().toString();
     }
 
     /**
      * Choose a direction at random.
      *
      */
-    private void setRandomDirection() {
-        int rand = (int) (Math.random() * 4);
-        for (int i = 0; i < rand; i++) {
-            toggle();
-        }
-    }
-
+//    private void setRandomDirection() {
+//        int rand = (int) (Math.random() * 4);
+//        for (int i = 0; i < rand; i++) {
+//            toggleDirection(CardinalPoint.NORTH);
+//        }
+//    }
     public int getSerial() {
         return serial;
     }
 
     int getWidth(double zoom) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void receiveCommand(String text) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        // line=0:north, line=1:center, line=2:south
+        // col=0:west, col=1:center, col=2:east
+        int line, col;
+        line = 3 * (e.getY() - this.y) / height;
+        col = 3 * (e.getX() - this.x) / width;
+
+        switch (line) {
+        case 0:
+            switch (col) {
+            case 0:
+                toggleDirection(CardinalPoint.NORTH_WEST);
+                break;
+            case 1:
+                toggleDirection(CardinalPoint.NORTH);
+                break;
+            case 2:
+                toggleDirection(CardinalPoint.NORTH_EAST);
+                break;
+            default:
+                break;
+            }
+            break;
+        case 1:
+
+            switch (col) {
+            case 0:
+                toggleDirection(CardinalPoint.WEST);
+                break;
+            case 1:
+                toggleDirection(CardinalPoint.CENTER);
+                break;
+            case 2:
+                toggleDirection(CardinalPoint.EAST);
+                break;
+            default:
+                break;
+            }
+            break;
+
+        case 2:
+            switch (col) {
+            case 0:
+                toggleDirection(CardinalPoint.SOUTH_WEST);
+                break;
+            case 1:
+                toggleDirection(CardinalPoint.SOUTH);
+                break;
+            case 2:
+                toggleDirection(CardinalPoint.SOUTH_EAST);
+                break;
+            default:
+                break;
+            }
+            break;
+        }
+
+        repaint();
     }
 }

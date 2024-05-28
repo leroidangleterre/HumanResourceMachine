@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 import javax.swing.Timer;
 
@@ -200,7 +201,11 @@ public class ScriptModel extends MyDefaultModel implements Observable {
         w.setDate(this.date);
         w.setCurrentAddress(0);
         workers.add(w);
-        instructions.get(0).addWorker(w);
+
+        // When no instruction exists, do nothing.
+        if (instructions != null && instructions.size() > 0) {
+            instructions.get(0).addWorker(w);
+        }
     }
 
     /**

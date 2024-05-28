@@ -105,7 +105,7 @@ public class MyChoiceBoxModel extends MyDefaultModel {
                         this.isCompass = true;
                     }
                 }
-                compass.setDirection(cp);
+//                compass.toggleDirection(cp);
             } catch (IllegalArgumentException exc) {
                 // The exception simply says that the value is not a cardinal point,
                 // which means it is a normal text value.

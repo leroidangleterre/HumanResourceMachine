@@ -11,6 +11,10 @@ import java.awt.event.MouseEvent;
 public class PickupInstruction extends Instruction {
 
     private final Compass compass;
+
+    private int xCompass, yCompass;
+    private int compassSize;
+
     // Between 0.0 (the direction is a point) and 1.0 (the direction takes the whole height of the instruction)
     private double compassRelativeSize = 0.9;
     private double textRelativeX = 0.01;
@@ -23,7 +27,7 @@ public class PickupInstruction extends Instruction {
         color = Color.gray;
 
         compass = new Compass();
-        compass.setDirection(((PickupInstructionModel) model).getCardinalPoint());
+//        compass.toggleDirection(((PickupInstructionModel) model).getCardinalPoint());
 
         int directionSize = (int) (compassRelativeSize * this.height);
         compass.setSize(directionSize, directionSize);
@@ -89,21 +93,23 @@ public class PickupInstruction extends Instruction {
     @Override
     public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
-
+        System.out.println("Pickup Instruction: mouse pressed");
         // Switch direction with right click
         if (e.getButton() == MouseEvent.BUTTON3) {
-            toggleDirection();
+            if (xClick >= xCompass) {
+                compass.mousePressed(e);
+            }
         }
     }
 
     public final void setDirection(CardinalPoint newDirection) {
         ((PickupInstructionModel) model).setDirection(newDirection);
-        compass.setDirection(((PickupInstructionModel) model).getCardinalPoint());
+//        compass.toggleDirection(((PickupInstructionModel) model).getCardinalPoint());
     }
 
     public void toggleDirection() {
         ((PickupInstructionModel) model).toggleDirection();
-        compass.setDirection(((PickupInstructionModel) model).getCardinalPoint());
+//        compass.toggleDirection(((PickupInstructionModel) model).getCardinalPoint());
         repaint();
     }
 

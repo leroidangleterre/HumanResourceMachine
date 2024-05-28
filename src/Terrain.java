@@ -14,8 +14,9 @@ public class Terrain extends MyDefaultComponent implements Observer {
         model = new TerrainModel(nbLines, nbCols);
         currentTool = TerrainTool.SELECTION;
 
-        x0 = 46;
-        y0 = 251;
+        x0 = 40;
+        y0 = 23;
+        zoom = 46;
     }
 
     /**
@@ -227,8 +228,8 @@ public class Terrain extends MyDefaultComponent implements Observer {
     }
 
     /**
-     * Replace all the worker at the first instruction od the script
-     * so that they are ready to start working again
+     * Replace all the worker at the first instruction of the script so that
+     * they are ready to start working again
      */
     public void resetWorkers() {
         ((TerrainModel) model).resetWorkers();

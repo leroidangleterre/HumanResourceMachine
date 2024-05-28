@@ -201,7 +201,7 @@ public class MyChoiceBox extends MyDefaultComponent {
                 toggle();
             } else {
                 // clicked inside the compass: change the compass orientation
-                compass.toggle();
+                compass.mousePressed(e);
             }
         } else {
             // Switch to the next possible value.

@@ -807,8 +807,8 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     }
 
     /**
-     * Replace all the worker at the first instruction od the script
-     * so that they are ready to start working again
+     * Replace all the worker at the first instruction of the script so that
+     * they are ready to start working again
      */
     public void resetWorkers() {
         for (Square[] list : grid) {

@@ -58,7 +58,7 @@ public class IfInstruction extends Instruction {
 
         ((IfInstructionModel) model).setDirection(CardinalPoint.WEST);
         compass = new Compass();
-        compass.setDirection(((IfInstructionModel) model).getCardinalPoint());
+        compass.set(((IfInstructionModel) model).getCardinalPoint());
 
         boolButton = new BooleanButton(((IfInstructionModel) model).getCurrentBoolean());
 
@@ -184,7 +184,7 @@ public class IfInstruction extends Instruction {
 
         // Test for a click on the compass
         if (xClick >= xCompass && xClick <= xCompass + compassApparentSize) {
-            compass.toggle();
+            compass.mousePressed(e);
             ((IfInstructionModel) model).setDirection(compass.getCurrentDirection());
             repaint();
         } else if (xClick >= xBool && xClick <= xBool + boolApparentWidth) {
@@ -276,7 +276,7 @@ public class IfInstruction extends Instruction {
     }
 
     void setCompass(String newCompassDirection) {
-        compass.setDirection(CardinalPoint.valueOf(newCompassDirection));
+        compass.set(CardinalPoint.valueOf(newCompassDirection));
         ((IfInstructionModel) model).setDirection(CardinalPoint.valueOf(newCompassDirection));
     }
 }

@@ -110,8 +110,8 @@ public class Script extends MyDefaultComponent implements Observer {
     }
 
     /**
-     * Remove and return the instruction at the given rank.
-     * Must also remove the corresponding entry in the model.
+     * Remove and return the instruction at the given rank. Must also remove the
+     * corresponding entry in the model.
      *
      * @param rank
      * @return
@@ -436,6 +436,7 @@ public class Script extends MyDefaultComponent implements Observer {
             selectionIsMoving = false;
             break;
         case MouseEvent.BUTTON3:
+            System.out.println("Script.mousePressed(mousebutton 3)");
             // The right click event is passed to the appropriate instruction.
             Instruction inst = this.getInstruction(yClickInScript);
             if (inst != null) {
@@ -738,8 +739,8 @@ public class Script extends MyDefaultComponent implements Observer {
     void save() {
         try {
 //            System.out.println("Script is saving.");
-            String path = "C:/Users/arthurmanoha/Documents/Programmation/Java/HumanResourceMachine/src/";
-            String filename = "script.txt";
+            String path = HumanResourceMachine.path;
+            String filename = "\\script.txt";
             BufferedWriter writer = new BufferedWriter(new FileWriter(path + filename));
 
             writer.write(((ScriptModel) model).size() + "\n");
@@ -755,8 +756,7 @@ public class Script extends MyDefaultComponent implements Observer {
     }
 
     /**
-     * Remove all instructions.
-     * Must clear the model.
+     * Remove all instructions. Must clear the model.
      */
     public void clear() {
 //        System.out.println("Clearing script");
@@ -766,12 +766,16 @@ public class Script extends MyDefaultComponent implements Observer {
     }
 
     public void load() {
+        String path;
+        String filename = "no filename set";
+
         try {
             clear();
-            String path = "C:/Users/arthurmanoha/Documents/Programmation/Java/HumanResourceMachine/src/";
-            String filename = "script.txt";
+            path = HumanResourceMachine.path;
+            filename = path + "\\script.txt";
+            System.out.println("filename: " + filename);
 
-            FileReader fileReader = new FileReader(path + filename);
+            FileReader fileReader = new FileReader(filename);
 
             BufferedReader reader = new BufferedReader(fileReader);
             String text;
@@ -780,8 +784,10 @@ public class Script extends MyDefaultComponent implements Observer {
             int nbInstructions = -1;
             while ((text = reader.readLine()) != null) {
                 if (nbInstructions == -1) {
+                    System.out.println("text: " + text);
                     // Read the number of instructions on the first line
                     nbInstructions = Integer.valueOf(text);
+                    System.out.println("nb of instructions: " + nbInstructions);
                     // Create NoOps that will be replaced. We need this to be
                     // able to place instructions after a jump target for example
                     for (int i = 0; i < nbInstructions; i++) {
@@ -799,7 +805,7 @@ public class Script extends MyDefaultComponent implements Observer {
             computeSizesAndPositions();
 
         } catch (FileNotFoundException e) {
-            System.out.println("Cannot load: file not found.");
+            System.out.println("Cannot load: file <" + filename + "> not found.");
         } catch (IOException ex) {
             System.out.println("Cannot load: IO exception");
         }
@@ -817,6 +823,7 @@ public class Script extends MyDefaultComponent implements Observer {
      */
     private void decodeInstruction(String text, int index) {
         Instruction inst = null;
+        System.out.println("decodeInstruction(" + text + ", " + index + ");");
 
         if (text.equals("NoOperation")) {
             // Check if this NoInstruction is already the target of an IF or a JUMP
@@ -854,6 +861,8 @@ public class Script extends MyDefaultComponent implements Observer {
             // Set the indentation one level deeper betweeen the IF and the END
             ((IfInstruction) inst).setIndentationWidth(indentationWidth);
         } else if (text.contains("Move")) {
+            String splittedText = text.split(" ")[1];
+            System.out.println("text: " + text + ", splitted text: " + splittedText);
             CardinalPoint direction = CardinalPoint.valueOf(text.split(" ")[1]);
             inst = new MoveInstruction(direction);
         } else if (text.contains("Drop")) {
@@ -910,7 +919,6 @@ public class Script extends MyDefaultComponent implements Observer {
                 step();
             }
         }, delay, period);
-        System.out.println("Script timer new period: " + period);
     }
 
     public void pause() {

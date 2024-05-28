@@ -1,8 +1,12 @@
+import java.util.Random;
+
 /**
  * Main class for the Human Resource Machine game.
  *
  */
 public class HumanResourceMachine {
+
+    public static String path = "C:\\Users\\arthu\\Documents\\Programmation\\Java\\HumanResourceMachine";
 
     public static void main(String args[]) {
 
@@ -28,11 +32,13 @@ public class HumanResourceMachine {
 
         TerrainModel terrainModel = (TerrainModel) terrain.getModel();
 
-        int line = 5;
-        for (int col = 0; col < nbCols; col++) {
-            terrainModel.addDatacube(line, col);
+        int line = 8;
+        for (int col = 1; col < 14; col++) {
+            System.out.println("Adding worker and datacube");
             terrainModel.addNewWorker(line, col);
+            terrainModel.addDatacube(line + 1, col);
         }
+
         w.invalidate();
         w.revalidate();
     }
