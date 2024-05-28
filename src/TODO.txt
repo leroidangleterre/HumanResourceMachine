@@ -1,16 +1,18 @@
-TODO:
+@@@@@@@@@@@@@@@@@@@@@
+@                   @
+@       TODO:       @
+@                   @
+@@@@@@@@@@@@@@@@@@@@@
 
-Remove the green line on IFs.
+Fix the Pickup instruction
+
+Create a datacube source, that generates a cube one or two steps after a worker took the previous one.
 
 Replace all notification names with properly defined constants.
 
 When a Jump is placed in the script, the JumpInstr shall not be selected anymore.
 
 Create a WHILE instruction in the same spirit as the IF.
-
-Improve compass to handle eight directions (N, NE, E, SE, S, SW, W, NW)
-Improve compass to handle multiple directions (randomly)
-Improve compass to select a direction by clicking the corresponding area inside the compass (nine radio-button equivalents).
 
 Adapt the choice in IfInstructions to the current value of the boolean.
 
@@ -31,7 +33,17 @@ Moving an instruction containing sub-instructions, such as If, shall translate a
 
 When a composite instruction is created (Jump or If), the targets shall appear immediately at the bottom of the main instruction, not at the address zero.
 
-DONE:
+@@@@@@@@@@@@@@@@@@@@@
+@                   @
+@       DONE:       @
+@                   @
+@@@@@@@@@@@@@@@@@@@@@
+
+Improve compass to handle eight directions (N, NE, E, SE, S, SW, W, NW)
+Improve compass to handle multiple directions (randomly)
+Improve compass to select a direction by clicking the corresponding area inside the compass (nine radio-button equivalents).
+
+Remove the green line on IFs.
 
 Allow neighbor workers to swap places when they both request a move to each other's location.
 

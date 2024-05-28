@@ -860,19 +860,23 @@ public class Script extends MyDefaultComponent implements Observer {
 
             // Set the indentation one level deeper betweeen the IF and the END
             ((IfInstruction) inst).setIndentationWidth(indentationWidth);
+
         } else if (text.contains("Move")) {
             String splittedText = text.split(" ")[1];
             System.out.println("text: " + text + ", splitted text: " + splittedText);
             CardinalPoint direction = CardinalPoint.valueOf(text.split(" ")[1]);
             inst = new MoveInstruction(direction);
+
         } else if (text.contains("Drop")) {
             inst = new DropInstruction();
+
         } else if (text.contains("Jump")) {
             inst = new JumpInstruction();
             // JUMP target must be set properly
             int targetAddress = Integer.valueOf(text.split(" ")[1]);
             Instruction target = getInstruction(targetAddress);
             ((JumpInstruction) inst).setTargetInstruction(target, targetAddress);
+
         } else if (text.contains("ELSE")) {
             inst = null;
         }

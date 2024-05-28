@@ -14,18 +14,12 @@ public class MoveInstructionModel extends InstructionModel {
 
     private CompassModel currentDirection;
 
-    public MoveInstructionModel() {
+    public MoveInstructionModel(CompassModel newCompassModel) {
         super();
-        currentDirection = new CompassModel();
-    }
-
-    public MoveInstructionModel(CardinalPoint newCardPoint) {
-        this();
-        currentDirection.setValue(newCardPoint);
+        currentDirection = newCompassModel;
     }
 
     public CardinalPoint getCardinalPoint() {
-//        System.out.println("MoveInstrModel.getCardinalPoint: returns only one possible direction.");
         if (currentDirection.getCurrentDirections().size() > 0) {
             return currentDirection.getCurrentDirections().get(0);
         } else {
@@ -33,13 +27,14 @@ public class MoveInstructionModel extends InstructionModel {
         }
     }
 
-    public void toggleDirection() {
-//        System.out.println("MoveInstructionModel.toggleDirection: TODO");
-//        currentDirection.toggle(CardinalPoint.NORTH);
-    }
-
+//    public void toggleDirection() {
+////        System.out.println("MoveInstructionModel.toggleDirection: TODO");
+////        currentDirection.toggle(CardinalPoint.NORTH);
+//    }
     public void setDirection(CardinalPoint newCardPoint) {
         currentDirection.setValue(newCardPoint);
+        Notification n = createNotification();
+        notifyObservers(n);
     }
 
     /**
@@ -87,27 +82,29 @@ public class MoveInstructionModel extends InstructionModel {
 
     public String getOptions() {
         String option = "";
-        System.out.println("MoveInstructionModel.getOptions(): TODO");
-//        switch (this.currentDirection) {
-//        case CENTER:
-        option = "C";
-//            break;
-//        case NORTH:
-//            option = "N";
-//            break;
-//        case SOUTH:
-//            option = "S";
-//            break;
-//        case EAST:
-//            option = "E";
-//            break;
-//        case WEST:
-//            option = "W";
-//            break;
-//        default:
-//            option = "_";
-//            break;
-//        }
+
+        CardinalPoint chosenDirection = currentDirection.getValue();
+
+        switch (chosenDirection) {
+        case CENTER:
+            option = "C";
+            break;
+        case NORTH:
+            option = "N";
+            break;
+        case SOUTH:
+            option = "S";
+            break;
+        case EAST:
+            option = "E";
+            break;
+        case WEST:
+            option = "W";
+            break;
+        default:
+            option = "_";
+            break;
+        }
         return option;
     }
 

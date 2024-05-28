@@ -10,6 +10,8 @@ import java.awt.event.MouseEvent;
  */
 public class MoveInstruction extends Instruction {
 
+    int debug_count = 0;
+
     private Compass compass;
 
     private int xCompass, yCompass;
@@ -22,24 +24,20 @@ public class MoveInstruction extends Instruction {
     public MoveInstruction() {
         super();
 
-        model = new MoveInstructionModel();
-
         color = Color.BLUE.brighter();
-        updateCompass();
+        if (compass == null) {
+            System.out.println("MoveInstr: compass was null");
+            compass = new Compass();
+        } else {
+            System.out.println("MoveInstr: compass was NOT null");
+        }
+
+        model = new MoveInstructionModel((CompassModel) (compass.getModel()));
     }
 
     public MoveInstruction(CardinalPoint newCardPoint) {
         this();
         ((MoveInstructionModel) model).setDirection(newCardPoint);
-        updateCompass();
-    }
-
-    private void updateCompass() {
-        compass = new Compass();
-        compass.set(((MoveInstructionModel) model).getCardinalPoint());
-
-        int directionSize = (int) (directionRelativeSize * this.height);
-        compass.setSize(directionSize, directionSize);
     }
 
     /**
@@ -109,9 +107,10 @@ public class MoveInstruction extends Instruction {
         }
     }
 
-//    private void toggleDirection() {
-//        ((MoveInstructionModel) model).toggleDirection();
-//        compass.toggleDirection(((MoveInstructionModel) model).getCardinalPoint());
-//        repaint();
-//    }
+    public String toString() {
+        String result = model.getName() + " ";
+        // Append all the directions specified by the compass.
+        result += compass.toString();
+        return result;
+    }
 }

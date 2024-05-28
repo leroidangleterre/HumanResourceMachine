@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 import javax.swing.Timer;
 
@@ -139,6 +138,7 @@ public class ScriptModel extends MyDefaultModel implements Observable {
             } else {
                 InstructionModel inst = this.instructions.get(currentAddress);
                 Notification notif = inst.createNotification();
+                System.out.println("ScriptModel creating notification: " + notif.getName());
                 notif.setWorker(w);
                 notifyObservers(notif);
             }

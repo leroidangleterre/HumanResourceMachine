@@ -532,7 +532,6 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
     /* As an observer, we get notified when the script is changed. */
     @Override
     public void update(Notification notif) {
-
         nbCallsUpdate++;
 
         Worker currentWorker;

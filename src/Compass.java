@@ -9,7 +9,7 @@ import java.util.ArrayList;
  *
  * @author arthurmanoha
  */
-public class Compass extends MyDefaultComponent {
+public class Compass extends MyDefaultComponent implements Observer {
 
     private static int NB_DIR_CREATED = 0;
     private int serial;
@@ -27,13 +27,9 @@ public class Compass extends MyDefaultComponent {
         NB_DIR_CREATED++;
 
         model = new CompassModel();
+        ((CompassModel) model).addObserver(this);
 
         color = Color.orange;
-    }
-
-    public Compass(boolean allowMultiple) {
-        this();
-        ((CompassModel) model).setAllowMultipleDirections(allowMultiple);
     }
 
     public void setPos(int newX, int newY) {
@@ -156,7 +152,6 @@ public class Compass extends MyDefaultComponent {
      * otherwise it will be activated.
      */
     private void toggleDirection(CardinalPoint newDirection) {
-        System.out.println("Compass.toggleDirection(" + newDirection + ");");
         ((CompassModel) model).toggle(newDirection);
         repaint();
     }
@@ -185,26 +180,21 @@ public class Compass extends MyDefaultComponent {
         return ((CompassModel) model).getCurrentDirections();
     }
 
+    @Override
     public String toString() {
-//        System.out.println("Compass " + serial + " toString: <" + currentDirection.toString() + ">");
-        return ((CompassModel) model).getCurrentDirections().toString();
+
+        String result = "";
+        for (CardinalPoint s : ((CompassModel) model).getCurrentDirections()) {
+            result += s + " ";
+        }
+        return result;
     }
 
-    /**
-     * Choose a direction at random.
-     *
-     */
-//    private void setRandomDirection() {
-//        int rand = (int) (Math.random() * 4);
-//        for (int i = 0; i < rand; i++) {
-//            toggleDirection(CardinalPoint.NORTH);
-//        }
-//    }
     public int getSerial() {
         return serial;
     }
 
-    int getWidth(double zoom) {
+    public int getWidth(double zoom) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -272,5 +262,17 @@ public class Compass extends MyDefaultComponent {
         }
 
         repaint();
+    }
+
+    // As an Observer, we receive info from Observable objects;
+    @Override
+    public void update(Notification n) {
+        switch (n.getName()) {
+        case "CompassChanged":
+            repaint();
+            break;
+        default:
+            break;
+        }
     }
 }
