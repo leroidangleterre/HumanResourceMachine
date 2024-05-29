@@ -22,20 +22,30 @@ public class PickupInstruction extends Instruction {
     public PickupInstruction() {
         super();
 
-        model = new PickupInstructionModel();
-
         color = Color.gray;
 
         compass = new Compass();
-//        compass.toggleDirection(((PickupInstructionModel) model).getCardinalPoint());
 
         int directionSize = (int) (compassRelativeSize * this.height);
         compass.setSize(directionSize, directionSize);
+
+        model = new PickupInstructionModel((CompassModel) (compass.getModel()));
     }
 
-    public PickupInstruction(CardinalPoint direction) {
+    public PickupInstruction(CardinalPoint newCardPoint) {
         this();
-        this.setDirection(direction);
+        ((PickupInstructionModel) model).setDirection(newCardPoint);
+        this.setDirection(newCardPoint);
+    }
+
+    /**
+     * Create a PickupInstruction with several cardinal points.
+     *
+     * @param parameters one or many CardinalPoints
+     */
+    public PickupInstruction(String parameters) {
+        this();
+        ((PickupInstructionModel) model).setDirection(parameters);
     }
 
     /**
@@ -93,7 +103,7 @@ public class PickupInstruction extends Instruction {
     @Override
     public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
-        System.out.println("Pickup Instruction: mouse pressed");
+
         // Switch direction with right click
         if (e.getButton() == MouseEvent.BUTTON3) {
             if (xClick >= xCompass) {
@@ -104,13 +114,6 @@ public class PickupInstruction extends Instruction {
 
     public final void setDirection(CardinalPoint newDirection) {
         ((PickupInstructionModel) model).setDirection(newDirection);
-//        compass.toggleDirection(((PickupInstructionModel) model).getCardinalPoint());
-    }
-
-    public void toggleDirection() {
-        ((PickupInstructionModel) model).toggleDirection();
-//        compass.toggleDirection(((PickupInstructionModel) model).getCardinalPoint());
-        repaint();
     }
 
     /**
@@ -121,7 +124,19 @@ public class PickupInstruction extends Instruction {
     @Override
     public void receiveCommand(String s) {
         if (s.equals("RECEIVE_RIGHT_CLICK")) {
-            this.toggleDirection();
         }
+    }
+
+    /**
+     * Return the instruction as a String with all the compass directions
+     *
+     * @return
+     */
+    @Override
+    public String toString() {
+        String result = model.getName() + " ";
+        // Append all the directions specified by the compass.
+        result += compass.toString();
+        return result;
     }
 }

@@ -416,16 +416,16 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         int dLine = 0;
         int dCol = 0;
         switch (direction) {
-        case "NORTH":
+        case "N":
             dLine--;
             break;
-        case "SOUTH":
+        case "S":
             dLine++;
             break;
-        case "EAST":
+        case "E":
             dCol++;
             break;
-        case "WEST":
+        case "W":
             dCol--;
             break;
         default:

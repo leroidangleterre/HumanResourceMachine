@@ -832,9 +832,7 @@ public class Script extends MyDefaultComponent implements Observer {
                 if (currentText.contains("ELSE") || currentText.contains("END")) {
                 }
             }
-        } else if (text.contains("WorkerPickup")) {
-            CardinalPoint direction = CardinalPoint.valueOf(text.split(" ")[1]);
-            inst = new PickupInstruction(direction);
+
         } else if (text.contains("If")) {
             inst = new IfInstruction();
             String ifOptions[] = text.split(" ");
@@ -862,10 +860,14 @@ public class Script extends MyDefaultComponent implements Observer {
             ((IfInstruction) inst).setIndentationWidth(indentationWidth);
 
         } else if (text.contains("Move")) {
-            String splittedText = text.split(" ")[1];
-            System.out.println("text: " + text + ", splitted text: " + splittedText);
-            CardinalPoint direction = CardinalPoint.valueOf(text.split(" ")[1]);
-            inst = new MoveInstruction(direction);
+            String parameters = text.substring(text.indexOf(" ") + 1);
+            System.out.println("Parameters: <" + parameters + ">");
+            inst = new MoveInstruction(parameters);
+
+        } else if (text.contains("WorkerPickup")) {
+            String parameters = text.substring(text.indexOf(" ") + 1);
+            System.out.println("Parameters: <" + parameters + ">");
+            inst = new PickupInstruction(parameters);
 
         } else if (text.contains("Drop")) {
             inst = new DropInstruction();

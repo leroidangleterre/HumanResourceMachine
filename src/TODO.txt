@@ -4,9 +4,9 @@
 @                   @
 @@@@@@@@@@@@@@@@@@@@@
 
-Fix the Pickup instruction
-
 Create a datacube source, that generates a cube one or two steps after a worker took the previous one.
+
+Remove method receiveCommand for PickUpInstruction
 
 Replace all notification names with properly defined constants.
 
@@ -38,6 +38,8 @@ When a composite instruction is created (Jump or If), the targets shall appear i
 @       DONE:       @
 @                   @
 @@@@@@@@@@@@@@@@@@@@@
+
+Fix the Pickup instruction
 
 Improve compass to handle eight directions (N, NE, E, SE, S, SW, W, NW)
 Improve compass to handle multiple directions (randomly)
