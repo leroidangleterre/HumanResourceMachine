@@ -10,8 +10,6 @@ import java.awt.event.MouseEvent;
  */
 public class MoveInstruction extends Instruction {
 
-    int debug_count = 0;
-
     private Compass compass;
 
     private int xCompass, yCompass;
@@ -26,10 +24,7 @@ public class MoveInstruction extends Instruction {
 
         color = Color.BLUE.brighter();
         if (compass == null) {
-            System.out.println("MoveInstr: compass was null");
             compass = new Compass();
-        } else {
-            System.out.println("MoveInstr: compass was NOT null");
         }
 
         model = new MoveInstructionModel((CompassModel) (compass.getModel()));
@@ -38,6 +33,16 @@ public class MoveInstruction extends Instruction {
     public MoveInstruction(CardinalPoint newCardPoint) {
         this();
         ((MoveInstructionModel) model).setDirection(newCardPoint);
+    }
+
+    /**
+     * Create a MoveInstruction with several cardinal points.
+     *
+     * @param parameters one or many CardinalPoints
+     */
+    public MoveInstruction(String parameters) {
+        this();
+        ((MoveInstructionModel) model).setDirection(parameters);
     }
 
     /**
@@ -97,8 +102,6 @@ public class MoveInstruction extends Instruction {
     public void mousePressed(MouseEvent e) {
         super.mousePressed(e);
 
-        int xClick = e.getX();
-        int yClick = e.getY();
         // Switch direction with right click
         if (e.getButton() == MouseEvent.BUTTON3) {
             if (xClick >= xCompass) {
@@ -107,6 +110,12 @@ public class MoveInstruction extends Instruction {
         }
     }
 
+    /**
+     * Return the instruction as a String with all the compass directions
+     *
+     * @return
+     */
+    @Override
     public String toString() {
         String result = model.getName() + " ";
         // Append all the directions specified by the compass.

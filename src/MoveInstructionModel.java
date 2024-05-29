@@ -10,31 +10,10 @@ import java.util.Random;
  *
  * @author arthurmanoha
  */
-public class MoveInstructionModel extends InstructionModel {
-
-    private CompassModel currentDirection;
+public class MoveInstructionModel extends DirectionalInstructionModel {
 
     public MoveInstructionModel(CompassModel newCompassModel) {
-        super();
-        currentDirection = newCompassModel;
-    }
-
-    public CardinalPoint getCardinalPoint() {
-        if (currentDirection.getCurrentDirections().size() > 0) {
-            return currentDirection.getCurrentDirections().get(0);
-        } else {
-            return null;
-        }
-    }
-
-//    public void toggleDirection() {
-////        System.out.println("MoveInstructionModel.toggleDirection: TODO");
-////        currentDirection.toggle(CardinalPoint.NORTH);
-//    }
-    public void setDirection(CardinalPoint newCardPoint) {
-        currentDirection.setValue(newCardPoint);
-        Notification n = createNotification();
-        notifyObservers(n);
+        super(newCompassModel);
     }
 
     /**
@@ -78,34 +57,6 @@ public class MoveInstructionModel extends InstructionModel {
         notifyObservers(notif);
 
         super.execute(date, w);
-    }
-
-    public String getOptions() {
-        String option = "";
-
-        CardinalPoint chosenDirection = currentDirection.getValue();
-
-        switch (chosenDirection) {
-        case CENTER:
-            option = "C";
-            break;
-        case NORTH:
-            option = "N";
-            break;
-        case SOUTH:
-            option = "S";
-            break;
-        case EAST:
-            option = "E";
-            break;
-        case WEST:
-            option = "W";
-            break;
-        default:
-            option = "_";
-            break;
-        }
-        return option;
     }
 
     @Override

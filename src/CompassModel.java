@@ -35,6 +35,45 @@ public class CompassModel extends MyDefaultModel implements Observable {
         notifyObservers(notif);
     }
 
+    /**
+     * Give the compass a set of one or several directions.
+     *
+     * @param parameters a string formatted as "SOUTH EAST WEST"
+     */
+    public void setValue(String parameters) {
+        for (String s : parameters.split(" ")) {
+            switch (s) {
+            case "NORTH":
+                activeDirections.add(CardinalPoint.NORTH);
+                break;
+            case "SOUTH":
+                activeDirections.add(CardinalPoint.SOUTH);
+                break;
+            case "EAST":
+                activeDirections.add(CardinalPoint.EAST);
+                break;
+            case "WEST":
+                activeDirections.add(CardinalPoint.WEST);
+                break;
+            case "CENTER":
+                activeDirections.add(CardinalPoint.CENTER);
+                break;
+            case "NORTH_EAST":
+                activeDirections.add(CardinalPoint.NORTH_EAST);
+                break;
+            case "SOUTH_EAST":
+                activeDirections.add(CardinalPoint.SOUTH_EAST);
+                break;
+            case "SOUTH_WEST":
+                activeDirections.add(CardinalPoint.SOUTH_WEST);
+                break;
+            case "NORTH_WEST":
+                activeDirections.add(CardinalPoint.NORTH_WEST);
+                break;
+            }
+        }
+    }
+
     public void setAllowMultipleDirections(boolean allowMultiple) {
         allowMultipleDirections = allowMultiple;
     }
