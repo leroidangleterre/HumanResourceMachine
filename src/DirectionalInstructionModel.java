@@ -51,31 +51,7 @@ public abstract class DirectionalInstructionModel extends InstructionModel {
     @Override
     public String getOptions() {
 
-        String option = "";
-
-        CardinalPoint chosenDirection = currentDirection.getValue();
-
-        switch (chosenDirection) {
-        case CENTER:
-            option = "C";
-            break;
-        case NORTH:
-            option = "N";
-            break;
-        case SOUTH:
-            option = "S";
-            break;
-        case EAST:
-            option = "E";
-            break;
-        case WEST:
-            option = "W";
-            break;
-        default:
-            option = "_";
-            break;
-        }
-        return option;
+        return currentDirection.getValue().toString();
     }
 
 }

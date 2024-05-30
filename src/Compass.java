@@ -153,6 +153,7 @@ public class Compass extends MyDefaultComponent implements Observer {
      */
     private void toggleDirection(CardinalPoint newDirection) {
         ((CompassModel) model).toggle(newDirection);
+        System.out.println("Compass.toggleDirection(" + newDirection + "), final value: " + this.toString());
         repaint();
     }
 
@@ -184,8 +185,19 @@ public class Compass extends MyDefaultComponent implements Observer {
     public String toString() {
 
         String result = "";
-        for (CardinalPoint s : ((CompassModel) model).getCurrentDirections()) {
-            result += s + " ";
+        ArrayList<CardinalPoint> activeDirections = ((CompassModel) model).getCurrentDirections();
+        if (activeDirections.isEmpty()) {
+            result += "CENTER";
+        } else {
+            for (CardinalPoint s : activeDirections) {
+                result += s + " ";
+            }
+        }
+        // Remove trailing space
+        if (result.endsWith(" ")) {
+            System.out.println("Removing training space from <" + result + ">");
+            result = result.substring(0, result.length() - 1);
+            System.out.println("Result is now <" + result + ">");
         }
         return result;
     }

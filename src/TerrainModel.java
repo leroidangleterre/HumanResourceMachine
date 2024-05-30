@@ -339,7 +339,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
      *
      * @param w the worker that includes its own movement heading.
      */
-    private void moveWorker(Worker w, String direction) {
+    private void moveWorker(Worker w, CardinalPoint direction) {
 
         Square startPoint = findWorker(w);
         Square endPoint;
@@ -351,16 +351,16 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         int dLine = 0;
         int dCol = 0;
         switch (direction) {
-        case "N":
+        case NORTH:
             dLine--;
             break;
-        case "S":
+        case SOUTH:
             dLine++;
             break;
-        case "E":
+        case EAST:
             dCol++;
             break;
-        case "W":
+        case WEST:
             dCol--;
             break;
         default:
@@ -404,7 +404,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
      *
      * @param w the worker that includes its own movement heading.
      */
-    private void pickup(Worker w, String direction) {
+    private void pickup(Worker w, CardinalPoint direction) {
 
         Square workerSquare = findWorker(w);
         Square pickupPoint;
@@ -416,19 +416,20 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         int dLine = 0;
         int dCol = 0;
         switch (direction) {
-        case "N":
+        case NORTH:
             dLine--;
             break;
-        case "S":
+        case SOUTH:
             dLine++;
             break;
-        case "E":
+        case EAST:
             dCol++;
             break;
-        case "W":
+        case WEST:
             dCol--;
             break;
         default:
+            System.out.println("TerrainModel.pickup: option was unknown: " + direction);
             break;
         }
         int pickupLine = startLine + dLine;
@@ -543,7 +544,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             notifList.add(notif);
             break;
         case "WorkerPickup":
-            this.pickup((Worker) notif.getObject(), notif.getOptions());
+            this.pickup((Worker) notif.getObject(), CardinalPoint.valueOf(notif.getOptions()));
             break;
         case "WorkerDrop":
             this.drop((Worker) notif.getObject());
@@ -702,7 +703,7 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             if (n.isToBePerformed()) {
                 switch (n.getName()) {
                 case "WorkerMove":
-                    this.moveWorker((Worker) n.getObject(), n.getOptions());
+                    this.moveWorker((Worker) n.getObject(), CardinalPoint.valueOf(n.getOptions()));
                     break;
                 default:
                     System.out.println("    Terrain.applyNotification: other notification: " + n.getName());

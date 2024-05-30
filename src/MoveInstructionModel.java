@@ -58,9 +58,4 @@ public class MoveInstructionModel extends DirectionalInstructionModel {
 
         super.execute(date, w);
     }
-
-    @Override
-    public String toString() {
-        return getName() + " " + currentDirection;
-    }
 }

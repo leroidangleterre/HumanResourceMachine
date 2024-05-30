@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 
 /*
@@ -138,10 +137,5 @@ public class InstructionModel extends MyDefaultModel implements Observable {
 
     public Notification createNotification() {
         return new Notification("Instruction", null, "This instruction needs to override createNotification();");
-    }
-
-    @Override
-    public String toString() {
-        return getName();
     }
 }
