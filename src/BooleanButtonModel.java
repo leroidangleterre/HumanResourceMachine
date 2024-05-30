@@ -7,16 +7,8 @@
  *
  * @author arthurmanoha
  */
-class BooleanButtonModel extends MyDefaultModel {
-//
-//    private enum BOOL_CONSTANT {
-//
-//        EQUAL, NOT_EQUAL,
-//        GREATER_THAN, LOWER_THAN,
-//        STRICTLY_GREATER_THAN, STRICTLY_LOWER_THAN
-//    }
+public class BooleanButtonModel extends MyDefaultModel {
 
-//    private BOOL_CONSTANT value;
     private BooleanConstant value;
 
     public BooleanButtonModel() {

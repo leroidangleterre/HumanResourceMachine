@@ -36,9 +36,4 @@ public class JumpInstructionModel extends InstructionModel {
         return n;
     }
 
-    @Override
-    public String toString() {
-        String text = getText() + " " + targetAddress;
-        return text;
-    }
 }

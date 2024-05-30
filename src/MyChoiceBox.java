@@ -37,7 +37,7 @@ public class MyChoiceBox extends MyDefaultComponent {
         width = 30;
         height = 30;
         compass = new Compass();
-        ((MyChoiceBoxModel) model).setCompass(compass);
+        ((MyChoiceBoxModel) model).setCompassModel((CompassModel) compass.getModel());
     }
 
     public MyChoiceBox(int val, InstructionModel inst) {
@@ -181,7 +181,6 @@ public class MyChoiceBox extends MyDefaultComponent {
 
         xClick = e.getX();
         yClick = e.getY();
-
         if (isNumber()) {
             // Special check for the buttons
             if (xClick > xDisplayButtons) {
@@ -209,4 +208,15 @@ public class MyChoiceBox extends MyDefaultComponent {
         }
     }
 
+    @Override
+    public String toString() {
+        String result;
+
+        if (((MyChoiceBoxModel) model).isCompass()) {
+            result = compass.toString();
+        } else {
+            result = ((MyChoiceBoxModel) model).getValue();
+        }
+        return result;
+    }
 }

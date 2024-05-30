@@ -50,15 +50,16 @@ public class IfInstruction extends Instruction {
     public IfInstruction() {
         super();
 
-        model = new IfInstructionModel();
         elseInstruction = null;
         endInstruction = null;
         color = new Color(255, 140, 0);
         indentationWidth = 0;
 
-        ((IfInstructionModel) model).setDirection(CardinalPoint.WEST);
-        compass = new Compass();
-        compass.set(((IfInstructionModel) model).getCardinalPoint());
+        if (compass == null) {
+            compass = new Compass();
+        }
+
+        model = new IfInstructionModel((CompassModel) compass.getModel());
 
         boolButton = new BooleanButton(((IfInstructionModel) model).getCurrentBoolean());
 
@@ -275,8 +276,40 @@ public class IfInstruction extends Instruction {
         ((IfInstructionModel) model).setCurrentBoolean(BooleanConstant.valueOf(newComparator));
     }
 
-    void setCompass(String newCompassDirection) {
-        compass.set(CardinalPoint.valueOf(newCompassDirection));
-        ((IfInstructionModel) model).setDirection(CardinalPoint.valueOf(newCompassDirection));
+    void setCompass(CardinalPoint newCompassDirection) {
+        compass.set(newCompassDirection);
+        ((IfInstructionModel) model).setDirection(newCompassDirection);
+    }
+
+    /**
+     * Return the instruction as a String with all the useful information
+     *
+     * @return
+     */
+    @Override
+    public String toString() {
+
+        String result = "";
+
+        System.out.println("Model name: " + model.getName());
+        result += model.getName() + " ";
+
+        // Append all the directions specified by the compass.
+        System.out.println("compass: " + compass.toString());
+        result += compass.toString() + " ";
+
+        System.out.println("boolean: " + boolButton.toString());
+        result += boolButton.toString() + " ";
+
+        System.out.println("choice box: " + this.choiceBox.toString());
+        result += choiceBox.toString() + " ";
+
+        System.out.println("else address: " + this.getElseAddress());
+        result += getElseAddress() + " ";
+
+        System.out.println("end address: " + this.getEndAddress());
+        result += getEndAddress();
+
+        return result;
     }
 }

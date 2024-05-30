@@ -171,4 +171,10 @@ public class JumpInstruction extends Instruction {
     public String getText() {
         return ((JumpInstructionModel) model).getText();
     }
+
+    @Override
+    public String toString() {
+        String text = getText() + " " + ((JumpInstructionModel) model).targetAddress;
+        return text;
+    }
 }

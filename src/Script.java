@@ -836,11 +836,18 @@ public class Script extends MyDefaultComponent implements Observer {
         } else if (text.contains("If")) {
             inst = new IfInstruction();
             String ifOptions[] = text.split(" ");
-            ((IfInstruction) inst).setCompass(ifOptions[1]);
-            ((IfInstruction) inst).setComparator(ifOptions[2]);
-            ((IfInstruction) inst).setChoiceBoxValue(ifOptions[3]);
-            int elseAddress = Integer.valueOf(ifOptions[4]);
-            int endAddress = Integer.valueOf(ifOptions[5]);
+
+            CardinalPoint direction = CardinalPoint.valueOf(ifOptions[1]);
+            String comparator = ifOptions[2];
+            String choiceBoxValue = ifOptions[3];
+            String elseAddressString = ifOptions[4];
+            String endAddressString = ifOptions[5];
+
+            ((IfInstruction) inst).setCompass(direction);
+            ((IfInstruction) inst).setComparator(comparator);
+            ((IfInstruction) inst).setChoiceBoxValue(choiceBoxValue);
+            int elseAddress = Integer.valueOf(elseAddressString);
+            int endAddress = Integer.valueOf(endAddressString);
 
             NoInstruction endInst = new NoInstruction();
             instList.set(endAddress, endInst);

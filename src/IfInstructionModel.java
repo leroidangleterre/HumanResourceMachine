@@ -4,10 +4,8 @@ import java.util.ArrayList;
  *
  * @author arthurmanoha
  */
-public class IfInstructionModel extends InstructionModel implements Observable, Observer {
+public class IfInstructionModel extends DirectionalInstructionModel implements Observable, Observer {
 
-    // The direction in which we look for the object we want to test
-    private CardinalPoint currentDirection;
     // The boolean we use to compare the direction and the expected value
     private BooleanConstant currentBoolean;
     private String textValue;
@@ -30,14 +28,14 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
     private static int NB_IIM_CREATED = 0;
     private int id;
 
-    public IfInstructionModel() {
-        super();
+    public IfInstructionModel(CompassModel newCompassModel) {
+        super(newCompassModel);
+        newCompassModel.setAllowMultipleDirections(false);
         elseAddress = 0;
         elseTarget = null;
         endAddress = 0;
         endTarget = null;
         observersList = new ArrayList<>();
-        currentDirection = CardinalPoint.WEST;
         currentBoolean = BooleanConstant.LOWER_THAN;
         choiceBoxModel = null;
         textValue = "If ";
@@ -45,39 +43,8 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
         NB_IIM_CREATED++;
     }
 
-    public CardinalPoint getCardinalPoint() {
-        return this.currentDirection;
-    }
-
     public String getText() {
         return this.textValue;
-    }
-
-    public void toggleDirection() {
-
-        switch (currentDirection) {
-        case NORTH:
-            currentDirection = CardinalPoint.EAST;
-            break;
-        case EAST:
-            currentDirection = CardinalPoint.SOUTH;
-            break;
-        case SOUTH:
-            currentDirection = CardinalPoint.WEST;
-            break;
-        case WEST:
-            currentDirection = CardinalPoint.CENTER;
-            break;
-        case CENTER:
-            currentDirection = CardinalPoint.NORTH;
-            break;
-        default:
-            break;
-        }
-    }
-
-    public void setDirection(CardinalPoint newCardPoint) {
-        this.currentDirection = newCardPoint;
     }
 
     public BooleanConstant getCurrentBoolean() {
@@ -168,42 +135,44 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
     public void update(Notification n) {
         if (n.getName().equals("IfReply")) {
             Worker w = (Worker) n.getObject();
-            // The terrain sent information about the target square.
-            String tab[] = n.getOptions().split(" ");
+            if (w != null) {
+                // The terrain sent information about the target square.
+                String tab[] = n.getOptions().split(" ");
 
-            String notifRecipient = tab[0];
-            if (notifRecipient.equals("IF" + this.id)) {
+                String notifRecipient = tab[0];
+                if (notifRecipient.equals("IF" + this.id)) {
 
-                String firstSquareType = tab[1];
-                String firstDatacubeValue = tab[2];
-                String firstCoWorkerId = tab[3];
-                String firstCoWorkersCube = tab[4];
+                    String firstSquareType = tab[1];
+                    String firstDatacubeValue = tab[2];
+                    String firstCoWorkerId = tab[3];
+                    String firstCoWorkersCube = tab[4];
 
-                String secondSquareType = "null";
-                String secondDatacubeValue = "null";
-                String secondCoWorkerId = "null";
-                String secondCoWorkersCube = "null";
+                    String secondSquareType = "null";
+                    String secondDatacubeValue = "null";
+                    String secondCoWorkerId = "null";
+                    String secondCoWorkersCube = "null";
 
-                // The second square only exists if the choice box is a compass.
-                if (choiceBoxModel.isCompass()) {
-                    secondSquareType = tab[5];
-                    secondDatacubeValue = tab[6];
-                    secondCoWorkerId = tab[7];
-                    secondCoWorkersCube = tab[8];
-                }
+                    // The second square only exists if the choice box is a compass.
+                    if (choiceBoxModel.isCompass()) {
+                        secondSquareType = tab[5];
+                        secondDatacubeValue = tab[6];
+                        secondCoWorkerId = tab[7];
+                        secondCoWorkersCube = tab[8];
+                    }
 
-                if (makeChoice(firstSquareType,
-                        firstDatacubeValue,
-                        firstCoWorkerId,
-                        firstCoWorkersCube,
-                        secondSquareType, secondDatacubeValue, secondCoWorkerId, secondCoWorkersCube)) {
-                    // Goto the THEN part.
-                    // Send a notification to the Worker,
-                    // saying that worker <workerSerial> must go to instruction <address>
-                    w.setCurrentAddress(w.getCurrentAddress() + 1);
-                } else {
-                    // Goto the ELSE part: the first instruction after the "ELSE"
-                    w.setCurrentAddress(elseAddress + 1);
+                    if (makeChoice(firstSquareType,
+                            firstDatacubeValue,
+                            firstCoWorkerId,
+                            firstCoWorkersCube,
+                            secondSquareType, secondDatacubeValue, secondCoWorkerId, secondCoWorkersCube)) {
+                        // Goto the THEN part.
+                        // Send a notification to the Worker,
+                        // saying that worker <workerSerial> must go to instruction <address>
+                        w.setCurrentAddress(w.getCurrentAddress() + 1);
+                    } else {
+                        // Goto the ELSE part: the first instruction after the "ELSE"
+                        w.setCurrentAddress(elseAddress + 1);
+                    }
                 }
             }
         }
@@ -327,12 +296,6 @@ public class IfInstructionModel extends InstructionModel implements Observable, 
         // Worker is set via the ScriptModel.
         Notification n = new Notification(this);
         return n;
-    }
-
-    @Override
-    public String toString() {
-        return getName() + " " + currentDirection + " " + currentBoolean + " "
-                + choiceBoxModel.getValue() + " " + elseAddress + " " + endAddress;
     }
 
     public void setChoiceValue(String newChoiceVal) {
