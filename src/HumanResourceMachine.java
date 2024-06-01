@@ -32,9 +32,14 @@ public class HumanResourceMachine {
 
         terrainModel.addNewWorker(2, 3);
 //        terrainModel.addNewWorker(2, 8);
-        for (int col = 3; col < 15; col++) {
+
+        int firstCol = 1;
+        int lastCol = 28;
+        for (int col = firstCol; col < lastCol; col++) {
             terrainModel.addDatacube(2, col);
         }
+        terrainModel.setSquare(new Wall(), 2, firstCol);
+        terrainModel.setSquare(new Wall(), 2, lastCol);
 
         w.invalidate();
         w.revalidate();

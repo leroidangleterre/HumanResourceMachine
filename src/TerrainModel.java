@@ -829,13 +829,29 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         case NORTH:
             line = line - 1;
             break;
-        case SOUTH:
-            line = line + 1;
+        case NORTHEAST:
+            line = line - 1;
+            col = col + 1;
             break;
         case EAST:
             col = col + 1;
             break;
+        case SOUTHEAST:
+            line = line + 1;
+            col = col + 1;
+            break;
+        case SOUTH:
+            line = line + 1;
+            break;
+        case SOUTHWEST:
+            line = line + 1;
+            col = col - 1;
+            break;
         case WEST:
+            col = col - 1;
+            break;
+        case NORTHWEST:
+            line = line - 1;
             col = col - 1;
             break;
         case CENTER:

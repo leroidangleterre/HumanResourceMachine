@@ -85,7 +85,7 @@ public class Compass extends MyDefaultComponent implements Observer {
             xArrow = xCenter + 2 * size / 3;
             yArrow = yCenter;
             break;
-        case SOUTH_EAST:
+        case SOUTHEAST:
             angle = 1 * Math.PI / 4;
             xArrow = xCenter + 2 * size / 3;
             yArrow = yCenter + 2 * size / 3;
@@ -95,7 +95,7 @@ public class Compass extends MyDefaultComponent implements Observer {
             xArrow = xCenter;
             yArrow = yCenter + 2 * size / 3;
             break;
-        case SOUTH_WEST:
+        case SOUTHWEST:
             angle = 3 * Math.PI / 4;
             xArrow = xCenter - 2 * size / 3;
             yArrow = yCenter + 2 * size / 3;
@@ -105,7 +105,7 @@ public class Compass extends MyDefaultComponent implements Observer {
             xArrow = xCenter - 2 * size / 3;
             yArrow = yCenter;
             break;
-        case NORTH_WEST:
+        case NORTHWEST:
             angle = 5 * Math.PI / 4;
             xArrow = xCenter - 2 * size / 3;
             yArrow = yCenter - 2 * size / 3;
@@ -115,7 +115,7 @@ public class Compass extends MyDefaultComponent implements Observer {
             xArrow = xCenter;
             yArrow = yCenter - 2 * size / 3;
             break;
-        case NORTH_EAST:
+        case NORTHEAST:
             angle = 7 * Math.PI / 4;
             xArrow = xCenter + 2 * size / 3;
             yArrow = yCenter - 2 * size / 3;
@@ -227,13 +227,13 @@ public class Compass extends MyDefaultComponent implements Observer {
         case 0:
             switch (col) {
             case 0:
-                toggleDirection(CardinalPoint.NORTH_WEST);
+                toggleDirection(CardinalPoint.NORTHWEST);
                 break;
             case 1:
                 toggleDirection(CardinalPoint.NORTH);
                 break;
             case 2:
-                toggleDirection(CardinalPoint.NORTH_EAST);
+                toggleDirection(CardinalPoint.NORTHEAST);
                 break;
             default:
                 break;
@@ -259,13 +259,13 @@ public class Compass extends MyDefaultComponent implements Observer {
         case 2:
             switch (col) {
             case 0:
-                toggleDirection(CardinalPoint.SOUTH_WEST);
+                toggleDirection(CardinalPoint.SOUTHWEST);
                 break;
             case 1:
                 toggleDirection(CardinalPoint.SOUTH);
                 break;
             case 2:
-                toggleDirection(CardinalPoint.SOUTH_EAST);
+                toggleDirection(CardinalPoint.SOUTHEAST);
                 break;
             default:
                 break;

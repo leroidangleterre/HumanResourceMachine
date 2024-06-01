@@ -145,10 +145,6 @@ public class IfInstructionModel extends DirectionalInstructionModel implements O
             if (w != null) {
                 // The terrain sent information about the target square.
                 String tab[] = n.getOptions().split(" ");
-                System.out.println("options: ");
-                for (String opt : tab) {
-                    System.out.println("    " + opt);
-                }
 
                 String notifRecipient = tab[0];
                 if (notifRecipient.equals("IF" + this.id)) {

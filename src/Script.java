@@ -436,7 +436,6 @@ public class Script extends MyDefaultComponent implements Observer {
             selectionIsMoving = false;
             break;
         case MouseEvent.BUTTON3:
-            System.out.println("Script.mousePressed(mousebutton 3)");
             // The right click event is passed to the appropriate instruction.
             Instruction inst = this.getInstruction(yClickInScript);
             if (inst != null) {
@@ -773,7 +772,7 @@ public class Script extends MyDefaultComponent implements Observer {
             clear();
             path = HumanResourceMachine.path;
             filename = path + "\\script.txt";
-            System.out.println("filename: " + filename);
+            System.out.println("Loading script file: " + filename);
 
             FileReader fileReader = new FileReader(filename);
 
@@ -784,10 +783,8 @@ public class Script extends MyDefaultComponent implements Observer {
             int nbInstructions = -1;
             while ((text = reader.readLine()) != null) {
                 if (nbInstructions == -1) {
-                    System.out.println("text: " + text);
                     // Read the number of instructions on the first line
                     nbInstructions = Integer.valueOf(text);
-                    System.out.println("nb of instructions: " + nbInstructions);
                     // Create NoOps that will be replaced. We need this to be
                     // able to place instructions after a jump target for example
                     for (int i = 0; i < nbInstructions; i++) {
@@ -803,6 +800,7 @@ public class Script extends MyDefaultComponent implements Observer {
             // Make the links between IfInstructions and their targets.
             // They already know the addresses, not the instructions yet.
             computeSizesAndPositions();
+            System.out.println("Script file loaded successfully.");
 
         } catch (FileNotFoundException e) {
             System.out.println("Cannot load: file <" + filename + "> not found.");
@@ -823,7 +821,6 @@ public class Script extends MyDefaultComponent implements Observer {
      */
     private void decodeInstruction(String text, int index) {
         Instruction inst = null;
-        System.out.println("decodeInstruction(" + text + ", " + index + ");");
 
         if (text.equals("NoOperation")) {
             // Check if this NoInstruction is already the target of an IF or a JUMP
@@ -868,12 +865,10 @@ public class Script extends MyDefaultComponent implements Observer {
 
         } else if (text.contains("Move")) {
             String parameters = text.substring(text.indexOf(" ") + 1);
-            System.out.println("Parameters: <" + parameters + ">");
             inst = new MoveInstruction(parameters);
 
         } else if (text.contains("WorkerPickup")) {
             String parameters = text.substring(text.indexOf(" ") + 1);
-            System.out.println("Parameters: <" + parameters + ">");
             inst = new PickupInstruction(parameters);
 
         } else if (text.contains("Drop")) {
