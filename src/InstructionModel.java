@@ -128,8 +128,6 @@ public class InstructionModel extends MyDefaultModel implements Observable {
 
     @Override
     public void notifyObservers(Notification n) {
-        System.out.println("    INSTRUCTION NOTIFY");
-        System.out.println("Notification " + n.getName() + " with options " + n.getOptions() + " is sent.");
         for (Observer observer : observersList) {
             observer.update(n);
         }

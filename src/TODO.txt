@@ -4,8 +4,6 @@
 @                   @
 @@@@@@@@@@@@@@@@@@@@@
 
-Fix the If comparison
-
 Give a direction to the Drop instruction, similar to the Pickup instruction
 
 Create a datacube source, that generates a cube one or two steps after a worker took the previous one.
@@ -42,6 +40,8 @@ When a composite instruction is created (Jump or If), the targets shall appear i
 @       DONE:       @
 @                   @
 @@@@@@@@@@@@@@@@@@@@@
+
+Fix the If comparison
 
 Fix the If save/load
 

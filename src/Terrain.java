@@ -209,7 +209,6 @@ public class Terrain extends MyDefaultComponent implements Observer {
     // As an Observer, we receive info from Observable objects;
     @Override
     public void update(Notification n) {
-        System.out.println("Terrain receiving notification: " + n.getName());
         switch (n.getName()) {
         case "TerrainRepaint":
             repaint();

@@ -58,17 +58,17 @@ public class CompassModel extends MyDefaultModel implements Observable {
             case "CENTER":
                 activeDirections.add(CardinalPoint.CENTER);
                 break;
-            case "NORTH_EAST":
-                activeDirections.add(CardinalPoint.NORTH_EAST);
+            case "NORTHEAST":
+                activeDirections.add(CardinalPoint.NORTHEAST);
                 break;
-            case "SOUTH_EAST":
-                activeDirections.add(CardinalPoint.SOUTH_EAST);
+            case "SOUTHEAST":
+                activeDirections.add(CardinalPoint.SOUTHEAST);
                 break;
-            case "SOUTH_WEST":
-                activeDirections.add(CardinalPoint.SOUTH_WEST);
+            case "SOUTHWEST":
+                activeDirections.add(CardinalPoint.SOUTHWEST);
                 break;
-            case "NORTH_WEST":
-                activeDirections.add(CardinalPoint.NORTH_WEST);
+            case "NORTHWEST":
+                activeDirections.add(CardinalPoint.NORTHWEST);
                 break;
             }
         }
@@ -113,10 +113,21 @@ public class CompassModel extends MyDefaultModel implements Observable {
     }
 
     public void toggle(CardinalPoint newDirection) {
-        if (activeDirections.contains(newDirection)) {
-            activeDirections.remove(newDirection);
+        if (allowMultipleDirections) {
+            if (activeDirections.contains(newDirection)) {
+                activeDirections.remove(newDirection);
+            } else {
+                activeDirections.add(newDirection);
+            }
         } else {
-            activeDirections.add(newDirection);
+            // Only one direction active, default CENTER
+            activeDirections.clear();
+            if (activeDirections.contains(newDirection)) {
+                // Go back to center
+                activeDirections.add(CardinalPoint.CENTER);
+            } else {
+                activeDirections.add(newDirection);
+            }
         }
         Notification notif = new Notification("CompassChanged", null);
         notifyObservers(notif);

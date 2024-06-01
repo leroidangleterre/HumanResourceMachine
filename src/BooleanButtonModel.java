@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 /**
  *
  * @author arthurmanoha
@@ -19,15 +14,15 @@ public class BooleanButtonModel extends MyDefaultModel {
         switch (value) {
         case EQUAL:
             return "==";
-        case NOT_EQUAL:
+        case NOTEQUAL:
             return "!=";
-        case GREATER_THAN:
+        case GREATERTHAN:
             return ">=";
-        case LOWER_THAN:
+        case LOWERTHAN:
             return "<=";
-        case STRICTLY_GREATER_THAN:
+        case STRICTLYGREATERTHAN:
             return ">";
-        case STRICTLY_LOWER_THAN:
+        case STRICTLYLOWERTHAN:
             return "<";
         default:
             return "?";
@@ -49,21 +44,21 @@ public class BooleanButtonModel extends MyDefaultModel {
     public void toggle() {
         switch (value) {
         case EQUAL:
-            value = BooleanConstant.NOT_EQUAL;
+            value = BooleanConstant.NOTEQUAL;
             break;
-        case NOT_EQUAL:
-            value = BooleanConstant.GREATER_THAN;
+        case NOTEQUAL:
+            value = BooleanConstant.GREATERTHAN;
             break;
-        case GREATER_THAN:
-            value = BooleanConstant.LOWER_THAN;
+        case GREATERTHAN:
+            value = BooleanConstant.LOWERTHAN;
             break;
-        case LOWER_THAN:
-            value = BooleanConstant.STRICTLY_GREATER_THAN;
+        case LOWERTHAN:
+            value = BooleanConstant.STRICTLYGREATERTHAN;
             break;
-        case STRICTLY_GREATER_THAN:
-            value = BooleanConstant.STRICTLY_LOWER_THAN;
+        case STRICTLYGREATERTHAN:
+            value = BooleanConstant.STRICTLYLOWERTHAN;
             break;
-        case STRICTLY_LOWER_THAN:
+        case STRICTLYLOWERTHAN:
             value = BooleanConstant.EQUAL;
             break;
         default:

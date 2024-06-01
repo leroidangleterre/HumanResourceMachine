@@ -428,6 +428,8 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
         case WEST:
             dCol--;
             break;
+        case CENTER:
+            break;
         default:
             System.out.println("TerrainModel.pickup: option was unknown: " + direction);
             break;
@@ -572,87 +574,86 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
             String optionList[] = options.split("_");
 
             // Which If instruction emitted this request.
-            String emitterId = optionList[0];
+            String instructionId = optionList[0];
 
             currentWorker = (Worker) notif.getObject();
             Square s = findWorker(currentWorker);
             int col = findColumn(s);
             int line = findLine(s);
 
-            char firstDirection = optionList[1].charAt(0);
-            Square targetSquare = this.getNeighbor(line, col, firstDirection);
-
             Notification reply = new Notification("IfReply", currentWorker);
 
-            reply.addOption(emitterId + "");
+            reply.addOption(instructionId + "");
 
-            String squareClass;
-            String cubeInSquare;
-            String coworkerId;
+            /////////////////////////////
+            // First operand
+            /////////////////////////////
+            String squareClass = "NOSQUARE";
+            String cubeInSquare = "NOCUBEINSQUARE";
+            String coworkerId = "NOCOWORKER";
+            String carriedCubeVal = "NOCARRIEDCUBE";
 
-            if (targetSquare == null) {
-                squareClass = "null";
-                cubeInSquare = "null";
-                coworkerId = "null";
-            } else {
+            CardinalPoint firstDirection = CardinalPoint.valueOf(optionList[1]);
+            Square firstTargetSquare = this.getNeighbor(line, col, firstDirection);
+
+            if (firstTargetSquare != null) {
                 // Get rid of "class " in "class Ground":
-                squareClass = targetSquare.getClass().toString().substring(6);
-                cubeInSquare = targetSquare.getCubeValue();
-                if (targetSquare.containsWorker()) {
-                    coworkerId = targetSquare.getWorkerId() + "";
+                squareClass = firstTargetSquare.getClass().toString().substring(6);
+                cubeInSquare = firstTargetSquare.getCubeValue();
+                if (firstTargetSquare.containsWorker()) {
+                    coworkerId = "worker" + firstTargetSquare.getWorkerId() + "";
+                    Worker coworker = firstTargetSquare.getWorker(firstTargetSquare.getWorkerId());
+                    if (coworker.hasDataCube()) {
+                        carriedCubeVal = coworker.getCubeValue() + "";
+                    }
                 } else {
-                    coworkerId = "null";
+                    coworkerId = "NOCOWORKER";
                 }
             }
+            reply.addOption(squareClass + " " + cubeInSquare + " " + coworkerId + " " + carriedCubeVal);
 
-            reply.addOption(squareClass + " " + cubeInSquare + " " + coworkerId);
-
-            if (coworkerId.equals("null")) {
-                reply.addOption("null");
-            } else {
-                Worker coWorker = findWorker(Integer.parseInt(coworkerId));
-                if (coWorker != null && coWorker.hasDataCube()) {
-                    reply.addOption(coWorker.getCubeValue() + "");
-                } else {
-                    reply.addOption("null");
-                }
-            }
-
+            /////////////////////////////
+            // Operation
+            /////////////////////////////
             if (optionList.length > 2) {
-                if (optionList[2].length() > 0) {
-                    char secondDirection = optionList[2].charAt(0);
-                    Square secondTargetSquare = this.getNeighbor(line, col, secondDirection);
+                String operation = optionList[2];
+//                System.out.println("    operation: " + operation);
+                reply.addOption(operation + "");
+            }
 
-                    String secondSquareClass;
-                    String secondCubeInSquare;
-                    String secondWorkerId;
+            /////////////////////////////
+            // Second operand
+            /////////////////////////////
+            squareClass = "NOSQUARE";
+            cubeInSquare = "NOCUBEINSQUARE";
+            coworkerId = "NOCOWORKER";
+            carriedCubeVal = "NOCARRIEDCUBE";
 
-                    if (secondTargetSquare == null) {
-                        secondSquareClass = "null";
-                        secondCubeInSquare = "null";
-                        secondWorkerId = "null";
-                    } else {
-                        secondSquareClass = secondTargetSquare.getClass().toString().substring(6);
-                        secondCubeInSquare = secondTargetSquare.getCubeValue();
+            try {
+                // When the operand is a compass
+                CardinalPoint secondDirection = CardinalPoint.valueOf(optionList[3]);
+                Square secondTargetSquare = this.getNeighbor(line, col, secondDirection);
+
+                if (optionList.length > 3) {
+                    if (secondTargetSquare != null) {
+                        // Get rid of "class " in "class Ground":
+                        squareClass = secondTargetSquare.getClass().toString().substring(6);
+                        cubeInSquare = secondTargetSquare.getCubeValue();
                         if (secondTargetSquare.containsWorker()) {
-                            secondWorkerId = secondTargetSquare.getWorkerId() + "";
+                            coworkerId = "worker" + secondTargetSquare.getWorkerId() + "";
+                            Worker coworker = secondTargetSquare.getWorker(secondTargetSquare.getWorkerId());
+                            if (coworker.hasDataCube()) {
+                                carriedCubeVal = coworker.getCubeValue() + "";
+                            }
                         } else {
-                            secondWorkerId = "null";
+                            coworkerId = "NOCOWORKER";
                         }
                     }
-                    reply.addOption(secondSquareClass + " " + secondCubeInSquare + " " + secondWorkerId);
-
-                    if (secondWorkerId.equals("null")) {
-                        reply.addOption("null");
-                    } else {
-                        Worker secondCoWorker = findWorker(Integer.parseInt(secondWorkerId));
-                        if (secondCoWorker.hasDataCube()) {
-                            reply.addOption(secondCoWorker.getCubeValue() + "");
-                        } else {
-                            reply.addOption("null");
-                        }
-                    }
+                    reply.addOption(squareClass + " " + cubeInSquare + " " + coworkerId + " " + carriedCubeVal);
                 }
+            } catch (IllegalArgumentException e) {
+                // When the operand is a value or a string
+                reply.addOption(optionList[3]);
             }
 
             this.notifyObservers(reply);
@@ -822,22 +823,38 @@ public class TerrainModel extends MyDefaultModel implements Observer, Observable
      * Find and return the square that is the neighbor of (line, col) in the
      * given direction
      */
-    private Square getNeighbor(int line, int col, char direction) {
+    private Square getNeighbor(int line, int col, CardinalPoint direction) {
 
         switch (direction) {
-        case 'N':
+        case NORTH:
             line = line - 1;
             break;
-        case 'S':
-            line = line + 1;
-            break;
-        case 'E':
+        case NORTHEAST:
+            line = line - 1;
             col = col + 1;
             break;
-        case 'W':
+        case EAST:
+            col = col + 1;
+            break;
+        case SOUTHEAST:
+            line = line + 1;
+            col = col + 1;
+            break;
+        case SOUTH:
+            line = line + 1;
+            break;
+        case SOUTHWEST:
+            line = line + 1;
             col = col - 1;
             break;
-        case 'C':
+        case WEST:
+            col = col - 1;
+            break;
+        case NORTHWEST:
+            line = line - 1;
+            col = col - 1;
+            break;
+        case CENTER:
             break;
         default:
             break;

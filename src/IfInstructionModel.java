@@ -36,7 +36,7 @@ public class IfInstructionModel extends DirectionalInstructionModel implements O
         endAddress = 0;
         endTarget = null;
         observersList = new ArrayList<>();
-        currentBoolean = BooleanConstant.LOWER_THAN;
+        currentBoolean = BooleanConstant.LOWERTHAN;
         choiceBoxModel = null;
         textValue = "If ";
         id = NB_IIM_CREATED;
@@ -121,10 +121,16 @@ public class IfInstructionModel extends DirectionalInstructionModel implements O
 
         // Example of instruction: if Square north is holds a datacube, then goto 5, else goto 8.
         // res = "_N_==_DataCube_5_8";
-        res += this.currentDirection + "_";
+        res += this.currentDirection.getValue() + "_";
+
+        // Append the boolean
+        res += currentBoolean + "_";
 
         // If the second operand is a compass, we must ask the terrain about it.
         if (choiceBoxModel.isCompass()) {
+            String incrementForChoiceBoxModel = choiceBoxModel.getStringValue();
+            res += incrementForChoiceBoxModel;
+        } else {
             res += choiceBoxModel.getStringValue();
         }
 
@@ -134,6 +140,7 @@ public class IfInstructionModel extends DirectionalInstructionModel implements O
     @Override
     public void update(Notification n) {
         if (n.getName().equals("IfReply")) {
+
             Worker w = (Worker) n.getObject();
             if (w != null) {
                 // The terrain sent information about the target square.
@@ -151,20 +158,23 @@ public class IfInstructionModel extends DirectionalInstructionModel implements O
                     String secondDatacubeValue = "null";
                     String secondCoWorkerId = "null";
                     String secondCoWorkersCube = "null";
+                    String secondArgument = "null"; // Wall, Hole, Ground or integer value
 
                     // The second square only exists if the choice box is a compass.
                     if (choiceBoxModel.isCompass()) {
-                        secondSquareType = tab[5];
-                        secondDatacubeValue = tab[6];
-                        secondCoWorkerId = tab[7];
-                        secondCoWorkersCube = tab[8];
+                        secondSquareType = tab[6];
+                        secondDatacubeValue = tab[7];
+                        secondCoWorkerId = tab[8];
+                        secondCoWorkersCube = tab[9];
+                    } else {
+                        secondArgument = choiceBoxModel.getStringValue();
                     }
 
-                    if (makeChoice(firstSquareType,
-                            firstDatacubeValue,
-                            firstCoWorkerId,
-                            firstCoWorkersCube,
-                            secondSquareType, secondDatacubeValue, secondCoWorkerId, secondCoWorkersCube)) {
+                    if (makeChoice(firstSquareType, firstDatacubeValue,
+                            firstCoWorkerId, firstCoWorkersCube,
+                            secondSquareType, secondDatacubeValue,
+                            secondCoWorkerId, secondCoWorkersCube,
+                            secondArgument)) {
                         // Goto the THEN part.
                         // Send a notification to the Worker,
                         // saying that worker <workerSerial> must go to instruction <address>
@@ -189,8 +199,8 @@ public class IfInstructionModel extends DirectionalInstructionModel implements O
      * false otherwise and we branch to the ELSE part.
      */
     private boolean makeChoice(String firstSquareType, String firstDatacubeVal, String firstWorkerSerial, String firstWorkerDatacube,
-            String secondSquareType, String secondDatacubeVal, String secondWorkerSerial, String secondWorkerDatacube) {
-
+            String secondSquareType, String secondDatacubeVal, String secondWorkerSerial, String secondWorkerDatacube,
+            String secondArgument) {
         boolean result = false;
 
         if (choiceBoxModel.isNumber()) {
@@ -241,7 +251,7 @@ public class IfInstructionModel extends DirectionalInstructionModel implements O
                 // Need to check that the square contains a datacube (no datacube means value MIN_VALUE)
                 boolean datacubeExists = !(firstDatacubeVal.equals("null"));
                 result = currentBoolean.equals(BooleanConstant.EQUAL) && datacubeExists
-                        || currentBoolean.equals(BooleanConstant.NOT_EQUAL) && (!datacubeExists);
+                        || currentBoolean.equals(BooleanConstant.NOTEQUAL) && (!datacubeExists);
             } else if (choiceBoxModel.getStringValue().equals("Empty")) {
                 // Designated square must be either empty or out of bounds.
                 result = firstSquareType.equals("Empty") || firstSquareType.equals("null");
@@ -256,19 +266,19 @@ public class IfInstructionModel extends DirectionalInstructionModel implements O
         case EQUAL:
             result = firstValue == secondValue;
             break;
-        case GREATER_THAN:
+        case GREATERTHAN:
             result = firstValue >= secondValue;
             break;
-        case LOWER_THAN:
+        case LOWERTHAN:
             result = firstValue <= secondValue;
             break;
-        case NOT_EQUAL:
+        case NOTEQUAL:
             result = firstValue != secondValue;
             break;
-        case STRICTLY_GREATER_THAN:
+        case STRICTLYGREATERTHAN:
             result = firstValue > secondValue;
             break;
-        case STRICTLY_LOWER_THAN:
+        case STRICTLYLOWERTHAN:
             result = firstValue < secondValue;
             break;
         default:
@@ -283,7 +293,7 @@ public class IfInstructionModel extends DirectionalInstructionModel implements O
         switch (bool) {
         case EQUAL:
             return firstSquareType.equals(secondSquareType);
-        case NOT_EQUAL:
+        case NOTEQUAL:
             return !firstSquareType.equals(secondSquareType);
         default:
             System.out.println("Square types cannot be compare with " + bool + ", returning false.");
@@ -312,5 +322,6 @@ public class IfInstructionModel extends DirectionalInstructionModel implements O
 
     public void setChoiceBoxModel(MyChoiceBoxModel newChoiceBoxModel) {
         this.choiceBoxModel = newChoiceBoxModel;
+        this.choiceBoxModel.setAllowMultipleDirections(false);
     }
 }

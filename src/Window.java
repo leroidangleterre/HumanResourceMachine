@@ -114,7 +114,6 @@ public class Window extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 Script script = (Script) split.getRightComponent();
                 script.step();
-                System.out.println("-----");
             }
         });
 

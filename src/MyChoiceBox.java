@@ -134,7 +134,7 @@ public class MyChoiceBox extends MyDefaultComponent {
                 leftShift = g.getFontMetrics().stringWidth(text) / 2;
                 g.drawChars(text.toCharArray(), 0, text.length(), xDisplayButtons + height / 2 - leftShift, yDisplay + height);
             }
-            text = ((MyChoiceBoxModel) model).getValue();
+            text = ((MyChoiceBoxModel) model).getStringValue();
             leftShift = g.getFontMetrics().stringWidth(text) / 2;
             // For numbers (with some space used for the buttons), the text can only be displayed in the first part of the box.
             if (isNumber()) {
@@ -158,7 +158,7 @@ public class MyChoiceBox extends MyDefaultComponent {
     }
 
     public String getValue() {
-        return ((MyChoiceBoxModel) model).getValue();
+        return ((MyChoiceBoxModel) model).getStringValue();
     }
 
     public boolean isNumber() {
@@ -215,7 +215,7 @@ public class MyChoiceBox extends MyDefaultComponent {
         if (((MyChoiceBoxModel) model).isCompass()) {
             result = compass.toString();
         } else {
-            result = ((MyChoiceBoxModel) model).getValue();
+            result = ((MyChoiceBoxModel) model).getStringValue();
         }
         return result;
     }
