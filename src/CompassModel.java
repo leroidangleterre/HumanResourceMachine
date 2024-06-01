@@ -113,10 +113,21 @@ public class CompassModel extends MyDefaultModel implements Observable {
     }
 
     public void toggle(CardinalPoint newDirection) {
-        if (activeDirections.contains(newDirection)) {
-            activeDirections.remove(newDirection);
+        if (allowMultipleDirections) {
+            if (activeDirections.contains(newDirection)) {
+                activeDirections.remove(newDirection);
+            } else {
+                activeDirections.add(newDirection);
+            }
         } else {
-            activeDirections.add(newDirection);
+            // Only one direction active, default CENTER
+            activeDirections.clear();
+            if (activeDirections.contains(newDirection)) {
+                // Go back to center
+                activeDirections.add(CardinalPoint.CENTER);
+            } else {
+                activeDirections.add(newDirection);
+            }
         }
         Notification notif = new Notification("CompassChanged", null);
         notifyObservers(notif);

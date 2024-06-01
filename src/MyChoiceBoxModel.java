@@ -68,6 +68,7 @@ public class MyChoiceBoxModel extends MyDefaultModel {
             isNumber = false;
             isCompass = true;
             compassModel.setValue("NORTH");
+            compassModel.setAllowMultipleDirections(false);
             break;
         case "NORTH":
         case "SOUTH":
@@ -102,6 +103,9 @@ public class MyChoiceBoxModel extends MyDefaultModel {
             } catch (IllegalArgumentException exc) {
                 // The exception simply says that the value is not a cardinal point,
                 // which means it is a normal text value.
+                this.isCompass = false;
+                this.isNumber = false;
+                this.textValue = s;
             }
         }
     }
@@ -126,25 +130,15 @@ public class MyChoiceBoxModel extends MyDefaultModel {
         }
     }
 
-    public String getValue() {
-        String result = "";
-        if (this.isNumber) {
-            result = "" + this.intValue;
-        } else if (this.isCompass) {
-            result = compassModel.toString();
-        } else {
-            result = this.textValue;
-        }
-        return result;
-    }
-
     public int getIntValue() {
         return this.intValue;
     }
 
     public String getStringValue() {
         if (isCompass) {
-            return compassModel.toString();
+            return compassModel.getValue().name();
+        } else if (isNumber) {
+            return this.intValue + "";
         } else {
             return this.textValue;
         }
@@ -172,5 +166,9 @@ public class MyChoiceBoxModel extends MyDefaultModel {
                 || textValue.equals("Hole")
                 || textValue.equals("Input")
                 || textValue.equals("Output");
+    }
+
+    public void setAllowMultipleDirections(boolean areMultipleDirectionsAllowed) {
+        this.compassModel.setAllowMultipleDirections(areMultipleDirectionsAllowed);
     }
 }
